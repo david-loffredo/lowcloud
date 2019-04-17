@@ -1,0 +1,94 @@
+---
+# An hour is good enough for packages where we want the latest 
+pkg_cache_life: 3600
+
+# Things that are common across all administered machines.  Initially
+# we are only doing a single machine that provides web and mail for a
+# variety of domains, but if we decide to move some domains onto their
+# own machines, these settings would remain common to them.
+# 
+# Host specific things would go to host_vars/davecloud.net.yml
+#
+domain: davecloud.net
+    
+# Common credentials for root and deploy accounts.  Create crypted
+# passwords with "mkpasswd --method=sha-512"
+#
+# This file defines all of the variables, including "vault_" stubs for
+# sensitive ones like passwords.  The vault.yml file is encrypted and
+# defines the sensitive values.  Use "ansible-vault edit vault.yml" to
+# look at it.   
+#
+# The various things that can be called by lookup things can be found
+# in /usr/lib/python2.7/dist-packages/ansible/plugins/lookup/
+#
+root_acct:
+  name: root 
+  sshkey: "{{ vault_root_sshkey }}"
+
+deploy_acct:
+  name: deploy
+  group: users
+  sshkey: "{{ vault_deploy_sshkey }}"
+  passwd: "{{ vault_deploy_passwd }}"
+
+main_user_shell: "/bin/bash"
+  
+# Admin email
+# apticron, fail2ban reports will be sent to this address
+admin_email: "root@{{ domain }}"
+
+# timezone, 'Etc/UTC' is another choice
+timezone: 'US/Eastern'
+
+#========================================
+# Network and Firewall settings
+#
+openports_list: [ 22 ]
+# blocked if defined
+#blacklist_ip_list:
+friendly_networks:
+  - ""
+
+# ntp_servers:
+
+#========================================
+# Webserver Settings
+#
+# Values to populate the Apache host configuration files.  Dictionary
+# contains name (ServerName required), aliases (list of ServerAlias
+# values), admin (ServerAdmin, defaults to webmaster@{{main.name}})
+# and root (DocumentRoot, defaults to /var/www/{{host}})
+web_main:
+  - name: "{{ domain }}"
+    aliases: [ "www.{{ domain }}" ] 
+
+web_vhosts:
+  - name: machineplan.com
+    aliases: [ 'www.machineplan.com' ] 
+
+
+
+# mail
+mail_virtual_domains:
+  - name: "{{ domain }}"
+    pk_id: 1
+mail_virtual_users:
+  - account: "{{ main_user_name }}"
+    domain: "{{ domain }}"
+    password: TODO
+    domain_pk_id: 1
+mail_virtual_aliases:
+  - source: "root@{{ domain }}"
+    destination: "{{ admin_email }}"
+    domain_pk_id: 1
+  - source: "postmaster@{{ domain }}"
+    destination: "{{ admin_email }}"
+    domain_pk_id: 1
+  - source: "webmaster@{{ domain }}"
+    destination: "{{ admin_email }}"
+    domain_pk_id: 1
+  - source: "abuse@{{ domain }}"
+    destination: "{{ admin_email }}"
+    domain_pk_id: 1
+

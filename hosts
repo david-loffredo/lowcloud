@@ -1,0 +1,4 @@
+# hosts in the dave group  use vars defined in `group_vars/dave`
+# put your host's IP address or domain name below
+[dave]
+davecloud.net

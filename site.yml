@@ -1,0 +1,12 @@
+---
+# Run as the deploy user but become root via sudo when needed.
+- hosts: all
+  user: "{{ deploy_acct.name }}"
+  become: True
+  gather_facts: True
+  roles:
+    - { role: common, tags: common }
+    - { role: apache, tags: apache }
+
+
+##- monitoring  # Monitoring role should be last. See roles/monitoring/README.md

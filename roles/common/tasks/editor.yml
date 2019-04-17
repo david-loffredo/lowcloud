@@ -1,0 +1,25 @@
+---
+# Set up emacs and vim.  Install the No X variants because we are just
+# doing a server machine.  Also include some other emacs modes that we
+# may want.
+- name: latest text editors (emacs/vim) installed
+  apt:
+    name:
+      - emacs-nox
+      - yaml-mode
+      - vim-nox
+    state: latest
+    update_cache: yes
+    cache_valid_time: "{{ pkg_cache_life }}"
+
+- name: default .emacs file installed for all users
+  copy:
+    src: dotemacs
+    dest: "{{ item.dst }}/.emacs"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: 0644
+  with_items:
+    - { dst: '/root', owner: 'root', group: 'root' }
+    - { dst: '/etc/skel', owner: 'root', group: 'root' }
+    - { dst: "/home/{{ deploy_acct.name }}", owner: "{{ deploy_acct.name }}", group: "{{ deploy_acct.group }}" }

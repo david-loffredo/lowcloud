@@ -1,0 +1,89 @@
+---
+
+- name: First setup of new server
+  hosts: all
+  gather_facts: no
+  remote_user: root
+  port: 22
+  tasks:
+    - name: update the package list
+      apt:
+        update_cache: yes
+        cache_valid_time: "{{ pkg_cache_life }}"
+
+    # upgrade yes/safe will not remove or install new pkgs, just
+    # get the latest versions of everything.
+    - name: upgrade a server with apt
+      apt:
+        upgrade: dist
+      register: upgrade
+
+
+    - name: common groups present
+      group: name="{{ item }}" state=present
+      with_items:
+        - users
+        - wheel
+
+    - name: wheel group allowed to sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) ALL'
+        validate: 'visudo -cf %s'
+
+
+    - name: deploy account with wheel group present
+      user:
+        name: "{{ deploy_acct.name }}"
+        group: "{{ deploy_acct.group }}"
+        groups: wheel
+        append: yes
+        state: present
+        reatehome: yes
+        password: "{{ deploy_acct.passwd }}"
+      
+
+    - name: root account has authorized keys
+      authorized_key: user=root key="{{ root_acct.sshkey }}"
+
+    - name: deploy account has authorized keys
+      authorized_key: user=deploy key="{{ deploy_acct.sshkey }}"
+
+    # - name: root account has authorized keys
+    #   authorized_key: user=root key="{{item}}"
+    #   with_file:
+    #     - "{{ root_acct.sshkey }}"
+    # - name: deploy account has authorized keys
+    #   authorized_key: user=deploy key="{{item}}"
+    #   with_file:
+    #     - "{{ deploy_acct.sshkey }}"
+        
+    - name: ssh password authentication off
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        line: 'PasswordAuthentication no'
+        insertafter: EOF
+        state: present
+
+    - name: modern host key present
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        line: 'HostKey /etc/ssh/ssh_host_ed25519_key'
+        insertafter: EOF
+        state: present
+
+    - name: missing host keys generated
+      command: ssh-keygen -A
+
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+
+
+
+
+    
+    

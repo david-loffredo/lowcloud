@@ -1,0 +1,18 @@
+---
+- include: firewall.yml
+- include: ntp.yml
+- include: editor.yml
+
+
+## send email when changes available
+# - include: apticron.yml
+
+# test but probably not what we want
+# - include: debsums.yml
+
+# - include: disk-check.yml
+# - include: htop.yml
+# - include: needrestart.yml
+# - include: dnsmasq.yml
+# #- include: sqlite.yml
+# - include: misc.yml

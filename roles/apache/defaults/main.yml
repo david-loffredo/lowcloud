@@ -1,0 +1,13 @@
+---
+#========================================
+# Webserver Settings
+#
+# Values to populate the Apache host configuration files.  Dictionary
+# contains name (ServerName required), aliases (list of ServerAlias
+# values), admin (ServerAdmin, defaults to webmaster@{{main.name}})
+# and root (DocumentRoot, defaults to /var/www/{{host}})
+web_main:
+  - name: "{{ domain }}"
+    aliases: [ "www.{{ domain }}" ] 
+
+web_vhosts:

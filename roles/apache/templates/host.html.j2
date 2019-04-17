@@ -1,0 +1,15 @@
+<html>
+<head>
+<title>{{ host.name }}</title>
+</head>
+<body>
+<H1>{{ host.name }}</H1>
+
+<p>This site is a peaceful, unchanging sanctuary amidst the furious
+turmoil of the web. You are happy. You don't want to leave. You can't
+imagine any other place.
+
+<p>Contact {{ host.admin | default(host_dflt.admin) }} for any issues.
+
+</body>
+</html>

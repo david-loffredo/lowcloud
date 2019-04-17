@@ -1,0 +1,26 @@
+---
+- name: timezone set to {{ timezone }}
+  timezone:
+    name: "{{ timezone }}"
+
+- name: latest ntp packages are installed
+  apt:
+    name:
+      - ntp
+    state: latest
+    update_cache: yes
+    cache_valid_time: "{{ pkg_cache_life }}"
+
+- name: ntp configured
+  template:
+    src: etc/ntp.conf.j2
+    dest: /etc/ntp.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart ntp
+
+- name: ntp is started and enabled
+  service: name=ntp state=started enabled=yes
+

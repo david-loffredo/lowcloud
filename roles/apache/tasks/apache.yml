@@ -1,0 +1,46 @@
+---
+- name: latest apache packages are installed
+  apt:
+    name:
+      - apache2
+    state: latest
+    update_cache: yes
+    cache_valid_time: "{{ pkg_cache_life }}"
+
+## Standard ports 80/443 are fine.  If you want to change that, you
+## may need to change the Listen defs in /etc/ports.conf
+
+## Joe has a 01_wildcard.conf that uses a rewrite rule to throw
+## anything else to steptools.com
+## apachetop is a monitoring tool
+
+## apache2-utils appears to be installed with the main 
+# rovides some add-on programs useful for any web server. These include:
+
+#  - ab (Apache benchmark tool)
+#  - fcgistarter (Start a FastCGI program)
+#  - logresolve (Resolve IP addresses to hostnames in logfiles)
+#  - htpasswd (Manipulate basic authentication files)
+#  - htdigest (Manipulate digest authentication files)
+#  - htdbm (Manipulate basic authentication files in DBM format, using APR)
+#  - htcacheclean (Clean up the disk cache)
+#  - rotatelogs (Periodically stop writing to a logfile and open a new one)
+#  - split-logfile (Split a single log including multiple vhosts)
+#  - checkgid (Checks whether the caller can setgid to the specified group)
+#  - check_forensic (Extract mod_log_forensic output from Apache log files)
+#  - httxt2dbm (Generate dbm files for use with RewriteMap)
+
+# Should already be present on Debian.  Use for the web management
+# user accounts for each website.
+- name: Create 'www-data' group
+  group: name=www-data state=present
+
+- name: configurations present for each host
+  include_tasks: apache_host.yml
+  with_items:
+    - "{{ web_main }}"
+    - "{{ web_vhosts }}"
+  loop_control:
+    loop_var: host
+
+

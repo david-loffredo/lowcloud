@@ -1,0 +1,20 @@
+---
+# Defines handlers applicable across all machines in the infrastructure.
+
+- name: restart apache
+  service: name=apache2 state=restarted
+
+- name: restart dnsmasq
+  service: name=dnsmasq state=restarted
+
+- name: restart fail2ban
+  service: name=fail2ban state=restarted
+
+- name: restart netfilter-persistent
+  service: name=netfilter-persistent state=restarted
+
+- name: restart ntp
+  service: name=ntp state=restarted
+
+- name: restart ssh
+  service: name=ssh state=restarted

@@ -1,0 +1,48 @@
+---
+main_user_shell: "/bin/bash"
+
+# Admin email
+# apticron, fail2ban reports will be sent to this address
+admin_email: "root@{{ domain }}"
+
+# timezone, 'Etc/UTC' is another choice
+timezone: 'Etc/UTC'
+
+#========================================
+# Network and Firewall settings
+#
+openports_list: 
+  - 22
+# blocked if defined
+#blacklist_ip_list:
+friendly_networks:
+  - ""
+
+# NTP - use nearby ntp servers by default
+#
+# can alternatively use servers tailored to the server location
+# See http://www.pool.ntp.org/en/use.html
+# - 0.north-america.pool.ntp.org
+# - 1.north-america.pool.ntp.org
+# - 2.north-america.pool.ntp.org
+# - 3.north-america.pool.ntp.org
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+  
+
+
+  
+# encfs
+secret_root: '{{ inventory_dir | realpath }}'
+secret_name: 'secret'
+secret: '{{ secret_root + "/" + secret_name }}'
+encfs_password: "{{ lookup('password', secret + '/' + 'encfs_password', length=32) }}"
+
+# let's encrypt
+letsencrypt_server: "https://acme-v01.api.letsencrypt.org/directory"
+acme_certs_dir: /etc/ssl/letsencrypt
+
+  

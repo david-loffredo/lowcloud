@@ -1,0 +1,348 @@
+;; Emacs profile
+;;
+;; This file has evolved over the past twenty years to meet my own
+;; requirements.  Feel free to use it as a starting point for your
+;; own settings.
+;;
+
+(setq auto-save-interval 500)           ; 500 is default
+(setq make-backup-files nil)            ; disable ~ backup files
+(setq auto-save-file-name-list nil)	; disable session save files
+(setq inhibit-local-variables t)        ; disable some lisp viruses
+(setq require-final-newline 'ask)	; force newline at eof
+
+(setq read-buffer-completion-ignore-case t)  ; disable annoying new feature
+
+(line-number-mode t) 			; show lines in status bar
+
+(setq vc-stay-local nil)		; disable .ver.~ files
+(setq vc-cvs-stay-local 'only-file)
+
+(put 'eval-expression 'disabled nil)    ; turn off silly warnings
+(put 'narrow-to-region 'disabled nil)
+
+(defun flymake-simple-make-init ())
+;;
+;; Key bindings
+;;
+
+(global-set-key [f12] 'repeat-complex-command)	
+(global-set-key "\C-l" 'recenter)	; forget top/bottom stuff
+
+(global-set-key [insert] nil)		; disable overwrite key near backspace
+(global-set-key "\M-g" 'goto-line)	; change fill-region to goto-line
+(global-set-key "\M-=" 'what-line)	; change count-lines to what-line
+(global-set-key "\M-`" 'call-last-kbd-macro)	; Easier than C-x e
+
+;; emacs 25 changed this to xref-pop-marker stack, like old behavior better
+(global-set-key "\M-," 'tags-loop-continue)
+
+;; Use Meta-Z for my own bindings
+(global-unset-key "\M-z")		
+(global-set-key "\M-zt" 'insert-time) 
+(global-set-key 
+ "\M-zd" 
+ (lambda () 
+   (interactive)
+   (insert-string (format-time-string "%Y-%m-%d" (current-time)))
+   )
+ )
+
+(global-set-key "\M-zp" 'compile)	
+(global-set-key "\M-z\M-p" 'compile)	
+(global-set-key "\M-z/" 'next-error)	
+(global-set-key "\M-z\M-/" 'next-error)	
+
+
+;;----------------------------------------
+;; File modes and indenting
+;; 
+
+;; C and C++ mode.  All of our code uses BSD style indents with 4
+;; spaces.  Early emacs versions set individual parameters directly.
+;; As of 19.30, they switched to a named styles, and as of 21, they
+;; changed the defaults from 4 to 8 spaces, so override back to 4.
+;;
+(setq c-default-style "bsd"
+      c-basic-offset 4
+      c-tab-always-indent		nil)
+
+;; Default seems to be 4, but node.js style is 2
+(setq js-indent-level 2)
+
+;; HTML mode, part of sgml mode
+(add-hook 'html-mode-hook
+  (lambda ()
+    ;; Turn off because default likes to reindent PRE blocks.
+    (setq-local indent-line-function 'indent-relative)
+    (setq-local tab-always-indent nil)
+    (local-set-key (kbd "C-c b") 'html-bold)
+    (local-set-key (kbd "C-c c") 'html-code)
+    (local-set-key (kbd "C-c i") 'html-em)
+;;    (local-set-key (kbd "C-c a") 'html-ao-href)
+    (local-set-key (kbd "C-c a") 'html-href)
+    (local-set-key (kbd "C-c p") 'html-class-href)
+    (local-set-key (kbd "C-c e") 'html-exp-href)
+    (local-set-key (kbd "C-c -") 'step-docs-function) 
+    (local-set-key (kbd "C-c SPC") 'step-docs-reindent) 
+    (local-set-key (kbd "C-c ESC") 'html-escape-region) 
+  )
+  )
+
+
+;; Always seems to insert an annoying newline
+;; (define-skeleton html-bold  "HTML Bold tags."  nil  "<b>" _ "</b>")
+;; (define-skeleton html-code  "HTML Code tags."  nil  "<code>" _ "</code>")
+;; (define-skeleton html-em    "HTML Em tags."  nil  "<em>" _ "</em>")
+(defun html-bold (p1 p2)
+  "Insert HTML Bold tags"
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2)))
+    (kill-region p1 p2)
+    (insert "<b>" str "</b>")
+    )
+)
+
+(defun html-em (p1 p2)
+  "Insert HTML Emphasis tags"
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2)))
+    (kill-region p1 p2)
+    (insert "<em>" str "</em>")
+    )
+)
+
+(defun html-code (p1 p2)
+  "Insert HTML Code tags"
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2)))
+    (kill-region p1 p2)
+    (insert "<code>" str "</code>")
+    )
+)
+
+
+(defun html-href (p1 p2)
+  "Insert a href."
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2)))
+    (kill-region p1 p2)
+    (insert "<a href=\"#" str "\">" str)
+    (save-excursion (insert "</a>"))
+    )
+)
+
+(defun html-ao-href (p1 p2)
+  "Insert an application object href."
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2)))
+    
+    (kill-region p1 p2)
+    (insert "<a href=\"#ao-" (downcase str) "\">" str)
+    (save-excursion (insert "</a>"))
+    )
+)
+
+
+(defun html-class-href (p1 p2)
+  "Insert a href."
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2)))
+    (kill-region p1 p2)
+    (insert "<a href=\"" str ".html\">" str)
+    (save-excursion (insert "</a>"))
+    )
+)
+
+
+(defun html-exp-href (p1 p2)
+  "Insert a href."
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2))
+	 (exp	(buffer-substring p1 p2)))
+
+    (when (string-match "^stp_" exp)
+      (setq exp (replace-match "" t t exp)))
+    
+    (kill-region p1 p2)
+     (insert "<a href=\"../stp_aim/html/t_" exp ".html\">" str)
+    (save-excursion (insert "</a>"))
+    )
+  
+  )
+
+(defun html-escape-region (p1 p2)
+  "Replace special characters with HTML entities."
+  (interactive "r")
+  (undo-boundary)
+
+  (let* ((str	(buffer-substring p1 p2)))
+    (setq str (replace-regexp-in-string "&" "&amp;" str))
+    (setq str (replace-regexp-in-string "<" "&lt;" str))
+    (setq str (replace-regexp-in-string ">" "&gt;" str))
+    
+    (kill-region p1 p2)
+    (save-excursion (insert str))
+    )
+  )
+
+
+;;----------------------------------------
+;; Window System Settings -- Get rid of the menus and
+;; scrollbars. Always start with our preferred size
+;;
+(cond (window-system
+       (scroll-bar-mode  -1)	;; kill scrollbar
+       (menu-bar-mode  -1 )	;; kill menus
+       (tool-bar-mode  -1 )	;; kill toolbars 
+       (setq default-frame-alist
+	     '((cursor-color . "blue")
+	       (top . 1) (left . 400)
+	       (width . 80)
+	       (height . 45)
+	       ))
+))
+
+
+
+;;----------------------------------------
+;; Keyword Highlighting 
+;; 
+;; This package hooks into most common modes and changes the color of
+;; text.  It uses regexps to detect and highlight comments, keywords,
+;; etc.  Change the background mode to light if you use a white
+;; background.
+;;
+;; I have heavily customized the regular expressions to minimize the
+;; number of highlit items (to save time) and also changed around the
+;; colors for things.  Grinding through a big buffer with regexps can
+;; take a while, so you might want to keep these changes, but if you
+;; want the defaults, all you really need is the require hilit19.
+;; 
+
+(setq font-lock-maximum-decoration
+      '((c++-mode . 1) (makefile-mode . 1)))
+
+(make-face 'font-lock-label-face)
+(make-face 'font-lock-pnew-face)
+(make-face 'font-lock-include-face)
+(make-face 'font-lock-rule-face)
+
+(set-face-foreground 'font-lock-label-face "cyan")
+(set-face-foreground 'font-lock-pnew-face "cyan")
+(set-face-foreground 'font-lock-include-face "yellow")
+(set-face-foreground 'font-lock-rule-face "cyan")
+
+(set-face-foreground 'font-lock-comment-face "green")
+(set-face-foreground 'font-lock-preprocessor-face "green")
+(set-face-foreground 'font-lock-string-face "yellow")
+
+;; Set basic faces.   Hilight region uses the "region" face
+
+(set-face-bold-p 'bold nil)  ;; disable bolds
+(set-face-foreground 'bold "yellow")
+
+
+(add-hook 
+ 'makefile-mode-hook
+ (lambda ()
+   ;; Redefine makefile highlighting so that it catches all the colon
+   ;; separated lines at the beginning.  The production for rule is
+   ;; overly simplistic, but is easy to understand.
+
+   (setq 
+    font-lock-defaults
+    '((("^[^#].*:" 0 'font-lock-rule-face t)
+      ("^[_A-Za-z0-9]+[ \t]*\+?="      
+       0 'font-lock-preprocessor-face t)
+      ("\\( \\|:=\\)[_A-Za-z0-9]+[ \t]*\\+="
+       0 'font-lock-preprocessor-face t)
+      ("^\\(include\\|!include\\) " 0 'font-lock-include-face t)
+      ) t))
+))
+
+
+;;(transient-mark-mode 0) ; 1 for on, 0 for off
+;;(setq shift-select-mode nil) ; t for true, nil for false
+;;(delete-selection-mode 1) ; make typing override text selection
+
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+'(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 90 :width normal :foundry "outline" :family "Noto Mono")))))
+
+
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(inhibit-startup-screen t)
+ '(read-quoted-char-radix 16))
+
+
+;; ------------------------------
+;; EXPERIMENTAL
+
+
+(defun step-docs-function (p1 p2 fn-name)
+ 
+  "Insert a section heading for a function using our conventions."
+
+  (interactive "r\nsFunction: ")
+  (undo-boundary)
+  (beginning-of-line)
+
+  (let* ((fn-decl	(buffer-substring p1 p2)))
+    (save-restriction
+      (kill-region p1 p2)
+      ;;(narrow-to-region (point) (point))
+      (insert "\n\n\n<!-- ============================== -->\n")
+      (insert "<H2 class=rule>\n")
+      (insert (format "<A NAME=%s></A>%s()</H2>\n" fn-name fn-name))
+      (insert "<PRE>\n")
+      (insert (replace-regexp-in-string fn-name (format "<b>%s</b>" fn-name) fn-decl))
+      (insert "</PRE>\n")
+      (insert "\n<P>The <b>" fn-name "</b>() function \n")
+      )
+    )
+)
+
+(defun step-docs-reindent (p1 p2)
+ 
+  "Reindent function arguments."
+
+  (interactive "r")
+  (undo-boundary)
+  (save-restriction
+    (narrow-to-region p1 p2)
+    (indent-region (point-min) (point-max) -90)
+    (indent-region (point-min) (point-max) 8)
+    )
+)
+
+(defun step-docs-reindent-all()
+  "Reindent function arguments."
+  (interactive)
+  (query-replace-regexp "
+ \\{3,7\\}\\([^ ]\\)" "
+        \\1")
+)
