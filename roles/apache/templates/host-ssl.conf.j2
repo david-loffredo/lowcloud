@@ -9,8 +9,8 @@
 		ServerAdmin {{ host.admin | default(host_dflt.admin) }}
 		DocumentRoot {{ host.root | default(host_dflt.root) }}
 
-		ErrorLog ${APACHE_LOG_DIR}/{{ host.name }}/error.log
-		CustomLog ${APACHE_LOG_DIR}/{{ host.name }}/access.log combined
+		ErrorLog ${APACHE_LOG_DIR}/{{host.name | replace('.', '_')}}_error.log
+		CustomLog ${APACHE_LOG_DIR}/{{host.name | replace('.', '_')}}_access.log combined
 
 		# Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
 		# error, crit, alert, emerg.

@@ -44,3 +44,10 @@
     loop_var: host
 
 
+- name: "disable default site"
+  command: a2dissite 000-default
+  args:
+    removes: /etc/apache2/sites-enabled/000-default.conf
+  notify:
+    - restart apache
+

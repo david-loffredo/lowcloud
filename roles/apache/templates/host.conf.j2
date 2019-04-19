@@ -21,8 +21,8 @@
 	# modules, e.g.
 	#LogLevel info ssl:warn
 
-	ErrorLog ${APACHE_LOG_DIR}/{{ host.name }}/error.log
-	CustomLog ${APACHE_LOG_DIR}/{{ host.name }}/access.log combined
+	ErrorLog ${APACHE_LOG_DIR}/{{host.name | replace('.', '_')}}_error.log
+	CustomLog ${APACHE_LOG_DIR}/{{host.name | replace('.', '_')}}_access.log combined
 
 	# For most configuration files from conf-available/, which are
 	# enabled or disabled at a global level, it is possible to

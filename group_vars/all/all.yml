@@ -44,7 +44,9 @@ timezone: 'US/Eastern'
 #========================================
 # Network and Firewall settings
 #
+#openports_list: [ 22, 80, 443 ]
 openports_list: [ 22 ]
+
 # blocked if defined
 #blacklist_ip_list:
 friendly_networks:

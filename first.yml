@@ -18,7 +18,6 @@
         upgrade: dist
       register: upgrade
 
-
     - name: common groups present
       group: name="{{ item }}" state=present
       with_items:
@@ -33,7 +32,6 @@
         line: '%wheel ALL=(ALL) ALL'
         validate: 'visudo -cf %s'
 
-
     - name: deploy account with wheel group present
       user:
         name: "{{ deploy_acct.name }}"
@@ -41,25 +39,14 @@
         groups: wheel
         append: yes
         state: present
-        reatehome: yes
         password: "{{ deploy_acct.passwd }}"
       
-
-    - name: root account has authorized keys
-      authorized_key: user=root key="{{ root_acct.sshkey }}"
-
-    - name: deploy account has authorized keys
-      authorized_key: user=deploy key="{{ deploy_acct.sshkey }}"
-
-    # - name: root account has authorized keys
-    #   authorized_key: user=root key="{{item}}"
-    #   with_file:
-    #     - "{{ root_acct.sshkey }}"
-    # - name: deploy account has authorized keys
-    #   authorized_key: user=deploy key="{{item}}"
-    #   with_file:
-    #     - "{{ deploy_acct.sshkey }}"
-        
+    - name: accounts have authorized keys
+      authorized_key: user="{{ item.user }}" key="{{ item.sshkey }}"
+      with_items:
+        - "{{ root_acct }}"
+        - "{{ deploy_acct }}"
+      
     - name: ssh password authentication off
       lineinfile:
         dest: /etc/ssh/sshd_config

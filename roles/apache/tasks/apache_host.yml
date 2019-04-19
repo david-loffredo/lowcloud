@@ -24,7 +24,6 @@
     # mode: 0644
     force: no    # only add if it does not exist
 
-
 - name: http config present
   template:
     src: host.conf.j2
@@ -32,6 +31,8 @@
     owner: root
     group: root
     mode: 0644
+  notify:
+    - restart apache
 
 - name: https config present
   template:
@@ -40,6 +41,23 @@
     owner: root
     group: root
     mode: 0644
+  notify:
+    - restart apache
     
 # install template vhosts and vhosts-ssh.conf for each domain.
+    
+- name: "{{ host.name }} http enabled"
+  command: a2ensite {{ host.name }}
+  args:
+    creates: /etc/apache2/sites-enabled/{{ host.name }}.conf
+  notify:
+    - restart apache
+
+- name: "{{ host.name }} https enabled"
+  command: a2ensite {{ host.name }}-ssl
+  args:
+    creates: /etc/apache2/sites-enabled/{{ host.name }}-ssl.conf
+  notify:
+    - restart apache
+
     
