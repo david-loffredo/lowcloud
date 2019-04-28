@@ -5,8 +5,6 @@
       - iptables-persistent
       - fail2ban
     state: latest
-    update_cache: yes
-    cache_valid_time: "{{ pkg_cache_life }}"
       
 - name: iptables v4 configured
   template:

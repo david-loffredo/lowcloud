@@ -8,8 +8,6 @@
     name:
       - ntp
     state: latest
-    update_cache: yes
-    cache_valid_time: "{{ pkg_cache_life }}"
 
 - name: ntp configured
   template:

@@ -9,8 +9,6 @@
       - yaml-mode
       - vim-nox
     state: latest
-    update_cache: yes
-    cache_valid_time: "{{ pkg_cache_life }}"
 
 - name: default .emacs file installed for all users
   copy:
