@@ -47,6 +47,20 @@ timezone: 'US/Eastern'
 #openports_list: [ 22, 80, 443 ]
 openports_list: [ 22 ]
 
+webports_list: [80, 443]
+mailports_list: [25, 465, 587, 110, 995, 143, 993]
+
+
+#    IMAP | Port 993 (Secure Transport   — SSL function enabled)
+#    POP3 | Port 995 (Secure Transport   — SSL function enabled)
+#    IMAP | Port 143 (Insecure Transport — No SSL function enabled)
+#    POP3 | Port 110 (Insecure Transport — No SSL function enabled)
+
+#    SMTP | Port 587 (Insecure Transport, but can be upgraded to a secure connection using STARTTLS)
+#    SMTP | Port 465 (Secure Transport — SSL function enabled)
+#    SMTP | Port 25 (Outdated and not recommended. username/password authentication MUST be enabled if using this port.)
+
+
 # blocked if defined
 #blacklist_ip_list:
 friendly_networks:
@@ -74,26 +88,32 @@ certbot_certs:
   - domains: "{{ [ web_vhosts.0.name ] + web_vhosts.0.aliases }}"
 
   
-# mail
-mail_virtual_domains:
-  - name: "{{ domain }}"
-    pk_id: 1
-mail_virtual_users:
-  - account: "{{ main_user_name }}"
-    domain: "{{ domain }}"
-    password: TODO
-    domain_pk_id: 1
+# Mail domains and users.  Set into the virtual.sqlite database for
+# use with postfix, dovecot, and roundcube.
+mail_db_dir: /var/mailconf
+mail_db: virtual.sqlite3
+mail_domains:
+  - { name: "{{ domain }}", id: 1 }
+  - { name: machineplan.com, id: 2 }
+
+mail_users:
+  - email: "{{ main_user_name }}"
+    pw: TODO
+    domid: 1
+  - email: "somebody@machineplan.com"
+    pw: TODO
+    domid: 2
 mail_virtual_aliases:
-  - source: "root@{{ domain }}"
-    destination: "{{ admin_email }}"
-    domain_pk_id: 1
-  - source: "postmaster@{{ domain }}"
-    destination: "{{ admin_email }}"
-    domain_pk_id: 1
+  - src: "root@{{ domain }}"
+    dst: "{{ admin_email }}"
+    dom_id: 1
+  - src: "postmaster@{{ domain }}"
+    dst: "{{ admin_email }}"
+    dom_id: 1
   - source: "webmaster@{{ domain }}"
-    destination: "{{ admin_email }}"
-    domain_pk_id: 1
-  - source: "abuse@{{ domain }}"
-    destination: "{{ admin_email }}"
-    domain_pk_id: 1
+    dst: "{{ admin_email }}"
+    dom_id: 1
+  - src: "abuse@{{ domain }}"
+    dst: "{{ admin_email }}"
+    dom_id: 1
 

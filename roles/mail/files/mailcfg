@@ -1,0 +1,348 @@
+#! /usr/bin/perl
+# 
+# Copyright (c) 2018-2019 by David Loffredo. 
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+
+use DBI qw(:sql_types);
+use Data::Dumper;
+
+my $dbfile = 'maildb.sqlite3';
+my %sql;
+
+
+sub usage {
+    print <<PERL_EOF;
+Usage: $0 [command] <options>
+
+Manage postfix virtual users/domains database.  Uses SQLite3 because
+the database is tiny, static, and has a much lower attack surface than
+MySQL, MariaDB, or Postgres.  Aside from the connection string, most
+of this script would work fine for the other DBs too.
+
+Commands available are:
+
+ help		Print this message
+
+ addalias <src> <dst>	Adds alias if missing
+ adddom <dom>		Add domain if missing
+ adduser <email> <pw>	Adds user if missing
+
+ lsalias [<dom>]	List aliases, all or for a domain
+ lsdom			List known domain
+ lsuser [<dom>]		List users, all or for a domain
+
+ rmalias <src>		Remove alias
+ rmalias -id <num>	Remove alias with given id
+ rmdom <dom>		Remove domain
+ rmuser <email> 	Removes user
+
+ passwd <email> <pw>	Changes user password 
+ disable <email>	Marks user as inactive
+ enable <email>		Marks user as active
+PERL_EOF
+;
+    exit(0);
+}
+
+
+sub main {
+    my $dozips = 1;
+    $_ = shift;
+
+    /^-?help$/ && usage();
+
+    /^addalias$/ && do { 
+	my ($src,$dst) = @_;
+	my $dbh = dbinit();
+	my $id = create_domain($dbh, sym_domain($src));
+	my $val = $dbh->do(
+	    q{INSERT OR IGNORE INTO aliases (src, dst, domain_id) 
+	    VALUES (?,?,?);}, {}, sym_safe($src), $dst, $id)
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	print "added alias\n" if $val > 0; 
+	return 0;
+    };
+    /^rmalias$/ && do { 
+	my ($src) = @_;
+	my $dbh = dbinit();
+	if ($src eq '-id') {
+	    my $val = $dbh->do(
+		q{DELETE FROM aliases WHERE id = ?;}, {}, $_[1])
+		or die "Couldn't prepare statement: " . $dbh->errstr;
+	    print "deleted alias\n" if $val > 0; 
+	}
+	else {
+	    my $val = $dbh->do(
+		q{DELETE FROM aliases WHERE src = ?;}, {}, $src)
+		or die "Couldn't prepare statement: " . $dbh->errstr;
+	    print "deleted alias\n" if $val > 0; 
+	}
+	return 0;
+    };
+    /^lsalias$/ && do { 
+	my ($dom) = @_;
+	my $dbh = dbinit();
+	my $sth;
+	if (defined $dom) {
+	    $sth = $dbh->prepare( 
+		q{SELECT aliases.id, aliases.src, aliases.dst, domains.name
+		FROM aliases, domains 
+		WHERE aliases.domain_id = domains.id AND domains.name = ?
+		ORDER BY aliases.src;}) 
+		or die "Couldn't prepare statement: " . $dbh->errstr;
+	    $sth-> execute(sym_safe($dom));
+	}
+	else {
+	    $sth = $dbh->prepare( 
+		q{SELECT aliases.id, aliases.src, aliases.dst, domains.name
+		FROM aliases, domains 
+		WHERE aliases.domain_id = domains.id
+		ORDER BY domains.name, aliases.src;}) 
+		or die "Couldn't prepare statement: " . $dbh->errstr;
+	    $sth-> execute();
+	}
+
+	my ($id, $src, $dst);
+	while (($id, $src, $dst) = $sth->fetchrow_array()) {
+            print "$id\t$src\t$dst\n";
+	}          
+	return 0;
+    };
+    
+    /^adddom$/ && do {
+	my ($dom) = @_;
+	my $dbh = dbinit();
+	create_domain($dbh, sym_domain($dom));
+	return 0;
+    };
+    /^rmdom$/ && do { 
+	my ($dom) = @_;
+	my $dbh = dbinit();
+	my $val = $dbh->do(
+	    q{DELETE FROM domains WHERE name = ?;}, {}, sym_domain($dom))
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	print "deleted domain\n" if $val > 0; 
+	return 0;
+    };
+    /^lsdom$/ && do { 
+	my $dbh = dbinit();
+	my $sth = $dbh->prepare( 
+	    q{SELECT id, name FROM domains ORDER BY name;}) 
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	
+	$sth-> execute();
+	my ($id, $nm);
+	while (($id, $nm) = $sth->fetchrow_array()) {
+            print "$nm (id $id)\n";
+	}          
+	return 0;
+    };
+
+    /^adduse?r$/ && do {
+	my ($usr,$pw) = @_;
+	$pw = '*' if not defined $pw;
+	
+	# The OR IGNORE is sqlite specific ON CONFLICT behavior which
+	# will be triggered if a unique constratint would be violated.
+	# This means that we already have an entry for that.
+	my $dbh = dbinit();
+	my $id = create_domain($dbh, sym_domain($usr));
+	my $val = $dbh->do(
+	    q{INSERT OR IGNORE INTO users (email, password, domain_id) 
+	    VALUES (?,?,?);}, {}, sym_safe($usr), $pw, $id)
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	print "added user\n" if $val > 0; 
+	return 0;
+    };
+    /^rmuse?r$/ && do {
+	my ($usr) = @_;
+	my $dbh = dbinit();
+	my $val = $dbh->do(
+	    q{DELETE FROM users WHERE email = ?;}, {}, sym_safe($usr))
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	print "deleted user\n" if $val > 0; 
+	return 0;
+    };
+    /^lsuse?r$/ && do {
+	my ($dom) = @_;
+	my $dbh = dbinit();
+	my $sth;
+	if (defined $dom) {
+	    $sth = $dbh->prepare( 
+		q{SELECT users.email, users.password, users.active 
+		FROM users, domains 
+		WHERE users.domain_id = domains.id AND domains.name = ?
+		ORDER BY users.email;}) 
+		or die "Couldn't prepare statement: " . $dbh->errstr;
+	
+	    $sth-> execute(sym_safe($dom));
+	}
+	else {
+	    $sth = $dbh->prepare( 
+		q{SELECT users.email, users.password, users.active 
+		FROM users, domains 
+		WHERE users.domain_id = domains.id
+		ORDER BY domains.name, users.email;}) 
+		or die "Couldn't prepare statement: " . $dbh->errstr;
+	
+	    $sth-> execute();
+	}
+
+	my ($email, $pw, $act);
+	while (($email, $pw, $act) = $sth->fetchrow_array()) {
+            print $email;
+            print " (DISABLED)" if $act == 0;
+            print "\t$pw\n";
+	}          
+	return 0;
+    };
+
+    /^passwd$/ && do {
+	my ($usr,$pw) = @_;
+	my ($usr) = @_;
+	my $dbh = dbinit();
+	my $val = $dbh->do(
+	    q{UPDATE users SET password = ? WHERE email = ?;}, {}, 
+	    $pw, sym_safe($usr))
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	print "password updated\n" if $val > 0; 
+	return 0;
+    };
+    /^enable$/ && do {
+	my ($usr) = @_;
+	my $dbh = dbinit();
+	my $val = $dbh->do(
+	    q{UPDATE users SET active = 1 WHERE email = ?;}, {}, sym_safe($usr))
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	print "enabled user\n" if $val > 0; 
+	return 0;
+    };
+    /^disable$/ && do {
+	my ($usr) = @_;
+	my $dbh = dbinit();
+	my $val = $dbh->do(
+	    q{UPDATE users SET active = 0 WHERE email = ?;}, {}, sym_safe($usr))
+	    or die "Couldn't prepare statement: " . $dbh->errstr;
+	print "disabled user\n" if $val > 0; 
+	return 0;
+    };
+
+    usage();
+    return 0;
+}
+
+
+sub sym_safe {
+    my ($str) = @_;
+    $str = lc $str;
+    $str =~ s/\s//g;
+    return $str;
+}
+
+sub sym_domain {
+    my ($str) = @_;
+    $str = sym_safe($str);
+    $str =~ s/.*@//;
+    return $str;
+}
+
+sub create_domain {
+    my ($dbh, $dom) = @_;
+    my $id;
+
+    # The OR IGNORE is sqlite specific ON CONFLICT behavior which
+    # will be triggered if a unique constratint would be violated.
+    # This means that we already have an entry for that.
+
+    my $sth = $dbh->prepare(q{SELECT id FROM domains WHERE name = ?;})
+	or die "Couldn't prepare statement: " . $dbh->errstr;
+    $sth-> execute($dom);
+
+    my ($id) = $sth->fetchrow_array();
+    return $id if defined $id;
+
+    my $val = $dbh->do(
+	q{INSERT OR IGNORE INTO domains (name) VALUES (?);}, 
+	{}, $dom) or die "Couldn't prepare statement: " . $dbh->errstr;
+    print "added domain\n" if $val > 0;
+    $sth-> execute($dom);
+    ($id) = $sth->fetchrow_array();
+
+    die "could not add domain $dom" if not defined $id;
+    return $id;
+}
+
+
+
+
+sub dbinit() {
+    my ($fn) = @_;
+    $fn = $dbfile if not defined $fn;
+    
+    my $db_exists = -e $fn and -w $fn;
+    my $dbh = DBI->connect("dbi:SQLite:dbname=$fn",'','',
+			   {AutoCommit=>1,
+			    RaiseError=>1,
+			    PrintError=>0});
+    
+    if (!$db_exists) {
+	print "creating database $fn\n";
+	foreach $s (@{$sql{init}}) {
+	    $dbh->do($s) or die "Couldn't init db: " . $dbh->errstr;
+	}
+    }
+    return $dbh;
+}
+
+
+
+#my $sth = $dbh->prepare(q{SELECT * from foo where bar = ?};);
+#$sth->bind_param(1, $blob, SQL_BLOB);
+#$sth->execute();
+$sql{init} = [
+    q{CREATE TABLE IF NOT EXISTS "domains" (
+	"id" INTEGER PRIMARY KEY,
+	"name" TEXT NOT NULL); },
+    
+    q{CREATE UNIQUE INDEX name_idx ON domains (name);},
+
+    q{CREATE TABLE IF NOT EXISTS "users" (
+        "id" INTEGER PRIMARY KEY,
+        "domain_id" INTEGER NOT NULL,
+        "password" TEXT NOT NULL,
+        "email" TEXT NOT NULL UNIQUE,
+        "active" INTEGER DEFAULT 1,
+        FOREIGN KEY (domain_id) REFERENCES domains(id) 
+	ON DELETE CASCADE
+    );},
+
+    q{CREATE UNIQUE INDEX email_idx ON users (email);},
+
+    q{CREATE TABLE IF NOT EXISTS "aliases" (
+        "id" INTEGER PRIMARY KEY,
+        "domain_id" INTEGER NOT NULL,
+        "src" TEXT NOT NULL,
+        "dst" TEXT NOT NULL,
+        UNIQUE (src,dst)
+        FOREIGN KEY (domain_id) REFERENCES domains(id) 
+	ON DELETE CASCADE);},
+
+
+    q{CREATE INDEX source_idx ON aliases (src);},
+    ];
+
+
+
+exit main(@ARGV);
