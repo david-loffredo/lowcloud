@@ -161,7 +161,7 @@ sub main {
 	my $id = create_domain($dbh, sym_domain($usr));
 	my $val = $dbh->do(
 	    q{INSERT OR IGNORE INTO users (email, password, domain_id) 
-	    VALUES (?,?,?);}, {}, sym_safe($usr), $pw, $id)
+	    VALUES (?,?,?);}, {}, sym_safe($usr), crypt_passwd($pw), $id)
 	    or die "Couldn't prepare statement: " . $dbh->errstr;
 	print "added user\n" if $val > 0; 
 	return 0;
@@ -204,7 +204,6 @@ sub main {
 	while (($email, $pw, $act) = $sth->fetchrow_array()) {
             print $email;
             print " (DISABLED)" if $act == 0;
-            print "\t$pw\n";
 	}          
 	return 0;
     };
@@ -215,7 +214,7 @@ sub main {
 	my $dbh = dbinit();
 	my $val = $dbh->do(
 	    q{UPDATE users SET password = ? WHERE email = ?;}, {}, 
-	    $pw, sym_safe($usr))
+	    crypt_passwd($pw), sym_safe($usr))
 	    or die "Couldn't prepare statement: " . $dbh->errstr;
 	print "password updated\n" if $val > 0; 
 	return 0;
@@ -257,6 +256,18 @@ sub sym_domain {
     $str =~ s/.*@//;
     return $str;
 }
+
+
+sub crypt_passwd {
+    my ($raw) = @_;
+    my $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')
+	[rand 64, rand 64, rand 64, rand 64, rand 64, 
+	 rand 64, rand 64, rand 64, rand 64, rand 64, 
+	 rand 64, rand 64, rand 64, rand 64, rand 64 ];
+
+    return crypt($raw,"\$6\$$salt\$");
+}
+
 
 sub create_domain {
     my ($dbh, $dom) = @_;
