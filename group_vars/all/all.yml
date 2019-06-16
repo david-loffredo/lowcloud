@@ -91,29 +91,26 @@ certbot_certs:
 # Mail domains and users.  Set into the virtual.sqlite database for
 # use with postfix, dovecot, and roundcube.
 mail_db_dir: /var/mailconf
-mail_db: virtual.sqlite3
+mail_db_util:   "{{ mail_db_dir }}/mailcfg"
+mail_db:        "{{ mail_db_dir }}/maildb.sqlite3"
+
 mail_domains:
-  - { name: "{{ domain }}", id: 1 }
-  - { name: machineplan.com, id: 2 }
+  - "{{ domain }}"
+  - machineplan.com
 
 mail_users:
   - email: "{{ main_user_name }}"
     pw: TODO
-    domid: 1
   - email: "somebody@machineplan.com"
     pw: TODO
-    domid: 2
+
 mail_virtual_aliases:
   - src: "root@{{ domain }}"
     dst: "{{ admin_email }}"
-    dom_id: 1
   - src: "postmaster@{{ domain }}"
     dst: "{{ admin_email }}"
-    dom_id: 1
   - source: "webmaster@{{ domain }}"
     dst: "{{ admin_email }}"
-    dom_id: 1
   - src: "abuse@{{ domain }}"
     dst: "{{ admin_email }}"
-    dom_id: 1
 

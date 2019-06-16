@@ -1,0 +1,41 @@
+
+# The virtual user database holds account details.  We use SQLite
+# because this small, simple, and relatively static, but you can use
+# MySQL, Maria, or Postgres if you prefer.  I've written the mailcfg
+# perl utility to manage the database.  It uses DBI and might just
+# need minor changes to the connect statement and SQL for use with
+# other RDBs.
+
+- name: Postfix and related packages present
+  apt:
+    name:
+      - libdbd-sqlite3
+    state: absent
+
+
+- name: Postfix and related packages present
+  apt:
+    name:
+      - postfix
+      - postfix-sqlite
+      - libdbi-perl
+      - libdbd-sqlite3-perl
+    state: present
+
+# Simple Authentication Security Layer (SASL)
+#      - libsasl2-modules
+#      - sasl2-bin
+#      - postfix-pcre
+#      - postgrey
+#      - python-psycopg2
+    
+- name: Mail database directory present
+  file: path={{ mail_db_dir }} state=directory owner=root group=root
+
+- name: Mail account utility present
+  template: src=mailcfg.j2 dest={{mail_db_util}} owner=root group=root mode=0755
+    
+- name: Mail account database present
+  command: "{{ mail_db_util }} adddom {{ item }}"
+  with_items: "{{ mail_domains }}"
+

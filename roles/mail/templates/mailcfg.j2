@@ -15,16 +15,16 @@
 # limitations under the License.
 # 
 
+use strict;
 use DBI qw(:sql_types);
-use Data::Dumper;
 
-my $dbfile = 'maildb.sqlite3';
+my $dbfile = '{{ mail_db }}';
 my %sql;
 
 
 sub usage {
     print <<PERL_EOF;
-Usage: $0 [command] <options>
+Usage: $0 <options> [command] 
 
 Manage postfix virtual users/domains database.  Uses SQLite3 because
 the database is tiny, static, and has a much lower attack surface than
@@ -63,6 +63,12 @@ sub main {
 
     /^-?help$/ && usage();
 
+    # for debugging purposes
+    # /^-file$/ && do {
+    # 	$dbfile = shift;
+    # 	$_ = shift; # fall through
+    # };
+    
     /^addalias$/ && do { 
 	my ($src,$dst) = @_;
 	my $dbh = dbinit();
@@ -310,7 +316,7 @@ sub dbinit() {
     
     if (!$db_exists) {
 	print "creating database $fn\n";
-	foreach $s (@{$sql{init}}) {
+	foreach my $s (@{$sql{init}}) {
 	    $dbh->do($s) or die "Couldn't init db: " . $dbh->errstr;
 	}
     }
