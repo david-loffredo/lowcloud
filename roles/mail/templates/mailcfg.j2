@@ -356,7 +356,8 @@ $sql{init} = [
         FOREIGN KEY (domain_id) REFERENCES domains(id) 
 	ON DELETE CASCADE);},
 
-
+    # If a src expands to multiple destination, the table will have
+    # one row for each.  So src alone is not unique, but src+dst is.
     q{CREATE INDEX source_idx ON aliases (src);},
     ];
 

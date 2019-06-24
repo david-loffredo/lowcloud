@@ -9,13 +9,6 @@
 - name: Postfix and related packages present
   apt:
     name:
-      - libdbd-sqlite3
-    state: absent
-
-
-- name: Postfix and related packages present
-  apt:
-    name:
       - postfix
       - postfix-sqlite
       - libdbi-perl

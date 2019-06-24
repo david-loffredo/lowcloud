@@ -1,0 +1,174 @@
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+
+# Debian specific:  Specifying a file name will cause the first
+# line of that file to be used as the name.  The Debian default
+# is /etc/mailname.
+#myorigin = /etc/mailname
+
+smtpd_banner = $myhostname ESMTP $mail_name
+biff = no
+
+# Accept messages up to 50MB
+message_size_limit = 51200000
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+readme_directory = no
+
+# See http://www.postfix.org/COMPATIBILITY_README.html -- default to 2 on
+# fresh installs.
+compatibility_level = 2
+
+
+# Basic Parameters - More or less the same as the stock install,
+# except as noted below.
+myhostname = {{ mail_server_hostname }}
+myorigin = $mydomain
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+# change: restrict to just localhost
+mydestination = localhost
+relayhost =
+# change: ansible may add friendly networks if we have any.
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 {{ ' '.join(friendly_networks) }}
+mailbox_size_limit = 0
+# change: Do not bother with user-defined address extensions
+#recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+
+
+# dovecot db
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+mailbox_transport = lmtp:unix:private/dovecot-lmtp
+
+dovecot_destination_recipient_limit = 1
+virtual_mailbox_domains = sqlite:/etc/postfix/sqlite-virtual-mailbox-domains.cf
+virtual_mailbox_maps = sqlite:/etc/postfix/sqlite-virtual-mailbox-maps.cf
+virtual_alias_maps = sqlite:/etc/postfix/sqlite-virtual-alias-maps.cf
+local_recipient_maps = $virtual_mailbox_maps
+
+
+
+
+# ==============================
+# TLS parameters
+
+# TLSv1 is broken and we disable it on the web connection, but there
+#   may be many more mail agents out there that have not yet updated.
+#   consider adding !TLSv1 at some point.  As of mid 2019, the postfix
+#   default is still !SSLv2,!SSLv3.
+smtpd_tls_mandatory_protocols= !SSLv2,!SSLv3
+smtp_tls_mandatory_protocols=  !SSLv2,!SSLv3
+smtp_tls_protocols =  !SSLv2,!SSLv3
+smtpd_tls_protocols = !SSLv2,!SSLv3
+smtpd_tls_cert_file=/etc/letsencrypt/live/{{ domain }}/fullchain.pem
+smtpd_tls_key_file= /etc/letsencrypt/live/{{ domain }}/privkey.pem
+smtpd_use_tls=yes
+smtpd_tls_auth_only = yes
+smtp_tls_security_level = may
+smtp_tls_loglevel = 2
+smtpd_tls_received_header = yes
+smtp_tls_note_starttls_offer = yes
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+# http://www.postfix.org/FORWARD_SECRECY_README.html
+smtp_tls_ciphers = medium
+#smtpd_tls_dh1024_param_file = /etc/ssl/private/dhparam2048.pem
+
+# this was in the default install
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database =  btree:${data_directory}/smtp_scache
+
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+# Compatibility for ancient outlook express 4 and MS Exhchange 5
+#broken_sasl_auth_clients = yes
+# default is noplaintext,noanonymous
+#smtpd_sasl_security_options = noanonymous
+
+
+# ==============================
+# Spam control: exclude local clients and authenticated clients from
+# checks. RBL checks can go in here.
+smtpd_recipient_restrictions =
+  permit_sasl_authenticated,
+  permit_mynetworks,
+  reject_unauth_pipelining,
+  # reject_unauth_destination is not needed here if the mail
+  # relay policy is specified under smtpd_relay_restrictions
+  # (available with Postfix 2.10 and later).
+  #reject_unauth_destination
+  reject_invalid_hostname,
+  reject_non_fqdn_hostname,
+  reject_non_fqdn_recipient,
+  reject_unknown_recipient_domain
+
+# Relay control: local clients and authenticated clients may specify
+# any destination domain.
+smtpd_relay_restrictions =
+  permit_mynetworks,
+  permit_sasl_authenticated,
+  reject_unauth_destination
+
+smtpd_helo_required = yes
+smtpd_helo_restrictions = permit_mynetworks, reject_invalid_helo_hostname
+smtpd_sender_restrictions = reject_unknown_address
+
+# Disable the SMTP VRFY command. This stops some techniques used to
+# harvest email addresses.
+disable_vrfy_command = yes
+
+# Reject from/to addresses that are not well wrapped with <>
+strict_rfc821_envelopes = yes
+
+# Deny any useful feedback to abusing systems by changing all errors
+# to 554: Transaction Failed
+# invalid_hostname_reject_code = 554
+# multi_recipient_bounce_reject_code = 554
+# non_fqdn_reject_code = 554
+# relay_domains_reject_code = 554
+# unknown_address_reject_code = 554
+# unknown_client_reject_code = 554
+# unknown_hostname_reject_code = 554
+# unknown_local_recipient_reject_code = 554
+# unknown_relay_recipient_reject_code = 554
+# unknown_virtual_alias_reject_code = 554
+# unknown_virtual_mailbox_reject_code = 554
+# unverified_recipient_reject_code = 554
+# unverified_sender_reject_code = 554
+
+
+
+
+
+# # Milters: Rspamd
+# smtpd_milters = inet:127.0.0.1:11332
+# non_smtpd_milters = $smtpd_milters
+# milter_protocol = 6
+# milter_mail_macros = i {mail_addr} {client_addr} {client_name} {auth_authen} {auth_type}
+# milter_default_action = accept
+
+# smtpd_client_restrictions = permit_sasl_authenticated
+
+# # Postscreen
+# postscreen_access_list = permit_mynetworks
+# postscreen_dnsbl_sites =
+#   sbl-xbl.spamhaus.org*2
+#   cbl.abuseat.org*2
+#   bl.spamcop.net*2
+#   dnsbl.sorbs.net*1
+#   spam.spamrats.com*2
+# postscreen_dnsbl_threshold = 3
+# postscreen_dnsbl_action = enforce
+# postscreen_greet_action = enforce
+
+# {% if mail_header_privacy == 1 %}
+# # Remove local client IP from headers
+# smtp_header_checks = pcre:/etc/postfix/maps/smtp_header_checks.pcre
+# {% endif %}

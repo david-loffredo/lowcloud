@@ -1,0 +1,8 @@
+
+# Simple SQLite query for virtual domains.  This query is a test that
+# returns '1' if the domain is a virtual domain.  It doesn't matter
+# what is returned - the test is any result vs no result.  See mailcfg
+# script to manage the domains and for the SQL table declarations.
+
+dbpath = {{ mail_db }}
+query = SELECT 1 FROM domains WHERE name='%s'

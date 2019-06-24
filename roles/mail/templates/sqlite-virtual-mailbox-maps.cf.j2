@@ -1,0 +1,12 @@
+
+# Simple SQLite query for virtual address map.  If we were using
+# postfix as the local delivery agent (LDA), this would return the
+# mailbox directory.  We use dovecot as the LDA, but postfix still
+# uses the map to test if the address is valid.
+#
+# This query returns '1' if the address is valid.  It doesn't matter
+# what is returned - the test is any result vs no result.  See mailcfg
+# script to manage the addresses and for the SQL table declarations.
+
+dbpath = {{ mail_db }}
+query = SELECT 1 FROM users WHERE email='%s' AND active=1

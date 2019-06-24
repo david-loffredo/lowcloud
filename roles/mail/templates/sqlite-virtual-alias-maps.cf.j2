@@ -1,0 +1,8 @@
+
+# Simple SQLite query for mail aliases.  If an address expands to
+# multiple destination, the table will have one row for each.  So src
+# alone is not unique, but src+dst is.  See mailcfg script to manage
+# the aliases and for the SQL table declarations.
+
+dbpath = {{ mail_db }}
+query = SELECT dst FROM aliases WHERE src='%s'
