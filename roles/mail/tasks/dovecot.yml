@@ -1,0 +1,15 @@
+---
+# Dovecot for local mail delivery and IMAP access.  Do not install the
+# dovecot-pop3 package, because we will only use IMAP.
+
+- name: Dovecot and related packages present
+  apt:
+    name:
+      - dovecot-core
+      - dovecot-imapd
+      - dovecot-lmtpd
+      - dovecot-sqlite
+    state: present
+
+
+

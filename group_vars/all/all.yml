@@ -90,9 +90,16 @@ certbot_certs:
   
 # Mail domains and users.  Set into the virtual.sqlite database for
 # use with postfix, dovecot, and roundcube.
-mail_db_dir: /var/mailconf
-mail_db_util:   "{{ mail_db_dir }}/mailcfg"
-mail_db:        "{{ mail_db_dir }}/maildb.sqlite3"
+
+# On Debian, smtpd normally runs chrooted to /var/spool/postfix, so we
+# need to put the database under there or else it will not be able to
+# authenticate.  Put our mail config script under the normal /etc
+# though for simplicity.
+
+mail_cfg_dir: /etc/postfix
+mail_db_dir:  /var/spool/postfix/etc/postfix
+mail_db_util: "{{ mail_cfg_dir }}/mailcfg"
+mail_db: "{{ mail_db_dir }}/maildb.sqlite3"
 
 mail_domains:
   - "{{ domain }}"

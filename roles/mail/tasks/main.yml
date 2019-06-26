@@ -1,6 +1,6 @@
 ---
 - include: postfix.yml
-# - include: dovecot.yml
+- include: dovecot.yml
 # - include: rspamd.yml
 # - include: checkrbl.yml
 # - include: z-push.yml

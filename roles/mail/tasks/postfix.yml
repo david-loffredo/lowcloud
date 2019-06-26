@@ -1,4 +1,4 @@
-
+---
 # The virtual user database holds account details.  We use SQLite
 # because this small, simple, and relatively static, but you can use
 # MySQL, Maria, or Postgres if you prefer.  I've written the mailcfg
@@ -32,3 +32,12 @@
   command: "{{ mail_db_util }} adddom {{ item }}"
   with_items: "{{ mail_domains }}"
 
+- name: Mail config files present
+  template: src={{item}} dest="{{mail_cfg_dir}}/{{item}}" owner=root group=root mode=0644
+  with_items:
+    - main.cf.j2
+    - sqlite-virtual-alias-maps.cf.j2
+    - sqlite-virtual-mailbox-domains.cf.j2
+    - sqlite-virtual-mailbox-maps.cf.j2
+  notify: restart postfix
+    

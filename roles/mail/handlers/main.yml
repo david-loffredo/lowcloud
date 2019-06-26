@@ -1,0 +1,14 @@
+---
+# Defines handlers applicable across all machines in the infrastructure.
+
+- name: restart postfix
+  service: name=postfix state=restarted
+
+- name: restart dovecot
+  service: name=dovecot state=restarted
+
+- name: restart opendkim
+  service: name=opendkim state=restarted
+
+- name: restart rspamd
+  service: name=rspamd state=restarted
