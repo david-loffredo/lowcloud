@@ -32,7 +32,15 @@
   command: "{{ mail_db_util }} adddom {{ item }}"
   with_items: "{{ mail_domains }}"
 
-- name: Mail config files present
+- name: Mail users present
+  command: "{{ mail_db_util }} adduser {{ item.email }} {{ item.pw }}"
+  with_items: "{{ mail_users }}"
+  
+- name: Mail aliases present
+  command: "{{ mail_db_util }} addalias {{ item.src }} {{ item.dst }}"
+  with_items: "{{ mail_aliases }}"
+  
+- name: Mail config templates present
   template: src={{item}} dest="{{mail_cfg_dir}}/{{item}}" owner=root group=root mode=0644
   with_items:
     - main.cf.j2
@@ -40,4 +48,20 @@
     - sqlite-virtual-mailbox-domains.cf.j2
     - sqlite-virtual-mailbox-maps.cf.j2
   notify: restart postfix
-    
+
+- name: Mail config files present
+  copy: src={{item}} dest="{{mail_cfg_dir}}/{{item}}" owner=root group=root mode=0644
+  with_items:
+    - master.cf
+  notify: restart postfix
+
+
+# This strips outgoing mail headers
+#      - postfix-pcre
+
+# - name: Create postfix maps directory
+#   file: path=/etc/postfix/maps state=directory owner=root group=root
+
+# - name: Copy smtp_header_checks.pcre
+#   copy: src=etc_postfix_maps_smtp_header_checks.pcre dest=/etc/postfix/maps/smtp_header_checks.pcre owner=root group=root
+  
