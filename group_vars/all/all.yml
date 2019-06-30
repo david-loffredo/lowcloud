@@ -93,13 +93,25 @@ certbot_certs:
 
 # On Debian, smtpd normally runs chrooted to /var/spool/postfix, so we
 # need to put the database under there or else it will not be able to
-# authenticate.  Put our mail config script under the normal /etc
-# though for simplicity.
+# authenticate.  For security at rest, we encrypt the directory where
+# the user database is located as well as the mail spool.
+# 
+# The mail scripts for config and boot are just under /etc/postfix for
+# simplicity.
+#
+mail_server_hostname: "mail.{{ domain }}"
+mail_server_autoconfig_hostname: "autoconfig.{{ domain }}"
 
 mail_cfg_dir: /etc/postfix
-mail_db_dir:  /var/spool/postfix/etc/postfix
+mail_db_crypt:  /var/spool/postfix/etc/maildb_crypt
+mail_db_clear:  /var/spool/postfix/etc/maildb_clear
 mail_db_util: "{{ mail_cfg_dir }}/mailcfg"
 mail_db: "{{ mail_db_dir }}/maildb.sqlite3"
+
+# Encrypt mail data at rest with EncFS, and cleartext mountpoint
+mail_spool_crypt: "/var/mail_crypt"
+mail_spool_clear: "/var/mail_clear"
+mail_spool_pw:    "{{vault_mail_spool_pw}}"
 
 mail_domains:
   - "{{ domain }}"
@@ -107,11 +119,11 @@ mail_domains:
 
 mail_users:
   - email: "{{ admin_email }}"
-    pw: poopdog
+    pw: "{{vault_mbox_admin_pw}}"
   - email: "dave@davecloud.com"
-    pw: dogpoop
+    pw: "{{vault_mbox_dave_pw}}"
   - email: "somebody@machineplan.com"
-    pw: TODO
+    pw: "{{vault_mbox_someone_pw}}"
 
 mail_aliases:
   - src: "root@{{ domain }}"

@@ -1,8 +1,14 @@
 ---
 # Defines handlers applicable across all machines in the infrastructure.
 
+# Do not start postfix at boot, Wait until the encrypted spool is
+# mounted.  Our "mailboot" script mounts and starts.  The "enabled"
+# value of "no" below should disable this.
+
+# This should run "sudo update-rc.d postfix disable" and remove the
+# postfix links from rc3.d/ and rc5.d/S01postfix.  Verify.
 - name: restart postfix
-  service: name=postfix state=restarted
+  service: name=postfix enabled=no state=restarted
 
 - name: restart dovecot
   service: name=dovecot state=restarted

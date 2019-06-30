@@ -6,6 +6,10 @@
 # need minor changes to the connect statement and SQL for use with
 # other RDBs.
 
+# Do not start postfix at boot, Wait until the encrypted spool is
+# mounted.  Our "mailboot" script mounts and starts.  The "restart
+# postfix" action in handlers/main.yml should disable boot start.
+#
 - name: Postfix and related packages present
   apt:
     name:
@@ -15,6 +19,7 @@
       - libdbd-sqlite3-perl
     state: present
 
+
 # Simple Authentication Security Layer (SASL)
 #      - libsasl2-modules
 #      - sasl2-bin
@@ -22,12 +27,15 @@
 #      - postgrey
 #      - python-psycopg2
     
-- name: Mail database directory present
-  file: path={{ mail_db_dir }} state=directory owner=root group=root
+- name: Mail account utilities present
+  template: src={{ item }}.j2 dest={{ mail_cfg_dir }}/{{ item }}
+    owner=root group=root mode=0755
+  with_items:
+    - mailboot
+    - mailcfg
 
-- name: Mail account utility present
-  template: src=mailcfg.j2 dest={{mail_db_util}} owner=root group=root mode=0755
-    
+# The database directory should have been created and encrypted by the
+# encfs.yml playbook.
 - name: Mail account database present
   command: "{{ mail_db_util }} adddom {{ item }}"
   with_items: "{{ mail_domains }}"
@@ -41,18 +49,14 @@
   with_items: "{{ mail_aliases }}"
   
 - name: Mail config templates present
-  template: src={{item}} dest="{{mail_cfg_dir}}/{{item}}" owner=root group=root mode=0644
+  template: src="postfix/{{item}}.j2" dest="{{mail_cfg_dir}}/{{item}}"
+    owner=root group=root mode=0644
   with_items:
-    - main.cf.j2
-    - sqlite-virtual-alias-maps.cf.j2
-    - sqlite-virtual-mailbox-domains.cf.j2
-    - sqlite-virtual-mailbox-maps.cf.j2
-  notify: restart postfix
-
-- name: Mail config files present
-  copy: src={{item}} dest="{{mail_cfg_dir}}/{{item}}" owner=root group=root mode=0644
-  with_items:
+    - main.cf
     - master.cf
+    - sqlite-virtual-alias-maps.cf
+    - sqlite-virtual-mailbox-domains.cf
+    - sqlite-virtual-mailbox-maps.cf
   notify: restart postfix
 
 

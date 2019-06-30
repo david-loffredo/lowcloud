@@ -1,0 +1,58 @@
+---    
+- name: EncFS present
+  apt: name=encfs state=present
+
+##
+## Mail Spool Directory
+##
+- name: Encrypted mail spool directory present
+  file: state=directory path={{mail_spool_crypt}}
+
+- name: Encrypted mail spool contents check
+  shell: ls {{mail_spool_crypt}}/*
+  ignore_errors: True
+  changed_when: False  # never report as "changed"
+  register: encfs_spool_check
+
+# Check for the presence of a flag file to see if the filesystem has
+# been initialized yet.  On first call, EncFS gathers info and inits
+# the filesystem.  The "p" is for paranoia mode.
+#
+- name: Encrypted mail spool empty, creating new
+  shell: printf "p\n{{ encfs_password }}" | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass && touch {{mail_spool_clear}}/mounted.txt
+  when: encfs_spool_check.rc > 0
+
+- name: Encrypted mail spool present, mounted if needed
+  shell: command="printf '{{ encfs_password }}' | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass" creates="{{mail_spool_clear}}/mounted.txt"
+  when: encfs_spool_check.rc == 0
+
+- name: Cleartext mail spool directory permissions
+  file: state=directory path={{mail_spool_clear}} group=mail mode=0775
+
+##
+## Mail User Database Directory
+##
+- name: Encrypted mail database directory present
+  file: state=directory path={{mail_db_crypt}}
+
+- name: Encrypted mail database contents check
+  shell: ls {{mail_db_crypt}}/*
+  ignore_errors: True
+  changed_when: False  # never report as "changed"
+  register: encfs_db_check
+
+# Check for the presence of a flag file to see if the filesystem has
+# been initialized yet.  On first call, EncFS gathers info and inits
+# the filesystem.  The "p" is for paranoia mode.
+#
+- name: Encrypted mail database empty, creating new
+  shell: printf "p\n{{ encfs_password }}" | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass && touch {{mail_db_clear}}/mounted.txt
+  when: encfs_db_check.rc > 0
+
+- name: Encrypted mail database present, mounted if needed
+  shell: command="printf '{{ encfs_password }}' | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass" creates="{{mail_db_clear}}/mounted.txt"
+  when: encfs_db_check.rc == 0
+
+- name: Cleartext mail database directory permissions
+  file: state=directory path={{mail_db_clear}} group=mail mode=0775
+  

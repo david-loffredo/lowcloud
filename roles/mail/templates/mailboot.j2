@@ -1,0 +1,23 @@
+#!/bin/sh
+# 
+# Postfix is not started automatically at boot because the encrypted
+# spool must first be mounted manually.  Log in and run this script to
+# decrypt the mail spool and start postfix.
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Consider using read to get the password once then echo, but we then
+# need to make sure the crypted volume has first been created.
+# read -s -p "EncFS Password: " PASS
+
+if [ ! -f {{ mail_spool_clear }}/mounted.txt ]; then
+   echo "Mount encrypted mail spool"
+   encfs {{ mail_spool_crypt }} {{ mail_spool_clear }} --public
+fi
+
+if [ ! -f {{ mail_db_clear }}/mounted.txt ]; then
+   echo "Mount encrypted mail user database"
+   encfs {{ mail_db_crypt }} {{ mail_db_clear }} --public
+fi
+
+/usr/sbin/service start postfix

@@ -68,3 +68,111 @@ To completely uninstall and reinstall a package.
 
 apt-get --purge remove <pkg>
 apt-get install <pkg>
+
+
+------------------------------------------------------------
+MAIL
+
+The email configuration is handled by the "mail" role.  Postfix is
+used as the MTA and Dovecot for the LDA and IMAP server.  Rspamd is
+the only milter used.
+
+All accounts are virtual mailboxes.  The machine only has system unix
+accounts and no mail is delivered to them.  The virtual user database
+holds the account details in a set of SQL tables.  Some background can
+be found at:
+
+   http://www.postfix.org/VIRTUAL_README.html
+
+We use SQLite for the database because this is small, simple, and
+relatively static, but you can use MySQL, Maria, or Postgres if you
+prefer.  I've written the mailcfg perl utility to manage the database.
+It uses DBI and might just need minor changes to the connect statement
+and SQL for use with other RDBs.  The utility is in /etc/postfix, and
+is run as "mailcfg <command>".   The following commands are available:
+
+ help		Print this message
+
+ addalias <src> <dst>	Adds alias if missing
+ adddom <dom>		Add domain if missing
+ adduser <email> <pw>	Adds user if missing
+
+ lsalias [<dom>]	List aliases, all or for a domain
+ lsdom			List known domain
+ lsuser [<dom>]		List users, all or for a domain
+
+ rmalias <src>		Remove alias
+ rmalias -id <num>	Remove alias with given id
+ rmdom <dom>		Remove domain
+ rmuser <email> 	Removes user
+
+ passwd <email> <pw>	Changes user password 
+ disable <email>	Marks user as inactive
+ enable <email>		Marks user as active
+
+On Debian, smtpd normally runs chrooted to /var/spool/postfix, so the
+maildb.sqlite3 database is kept there so the postfix can authenticate
+against it.  If you also run dovecot chrooted, you may have to switch
+to mysql so that you can access via network port rather than file.
+
+Mail is stored in maildir format and encrypted using EncFS.  The
+encrypted directory is /var/mail_crypt and mounted as cleartext in
+/var/mail_clear.  All mail is owned by the vmail user.
+
+Postfix is not started automatically at boot because the encrypted
+spool must first be mounted manually.  Log in and run the "mailboot"
+script to decrypt the mail spool and start postfix.
+
+
+Postfix is started in init.d, so you can use update-rc.d to disable it on startup:
+
+sudo update-rc.d postfix disable
+
+When you want to enable it again:
+
+sudo update-rc.d postfix enable
+
+Even if it's disabled you can still start it manually with sudo service postfix start.
+
+If update-rc.d is not in your system, you'll have to install the package sysvinit-utils or sysv-rc, or similar (those are for 12.04, I don't remember if 10.04 use the same names).
+
+
+
+Mail delivery looks like this:
+
+  Remote MTA -> Rspamd (milter) -> Postfix -> Rspamd (rspamc) -> Dovecot -> user mailbox
+
+Mail from the remote MTA is received by Postfix and run through
+Rspamd.  Greylisting and rejects happen in this pipeline.  Once
+Postfix receives the message, it is sent to Dovecot over LMTP.
+Dovecot uses the antispam module to run rspamc (employing Rspamd).
+The sieve module is finally used to process headers added by Rspamd or
+any other milters.
+
+## Mail filters
+
+The only mail filter (milter) used is [Rspamd](https://rspamd.com),
+which runs on port 11332.  Rspamd is hooked into postfix with the
+`smtpd_milters` variable.  See `etc_postfix_main.cf`.
+
+## Debugging
+
+### Rspamd
+
+A few tips:
+
+- Rspam's console listens on `127.0.0.1:11334`.  As above, you can use
+  ssh to port forward (e.g., -L 8080:localhost:11334).  The password is `d1`.
+- Use `rspamadm` to look at the configuration.
+- Use `rspamc` or the web-based console to scan problematic messages
+  and see how rspamd scores them.
+
+### DMARC
+
+For verifying DMARC operation, read the rpsamd log in
+`/var/log/rspamd` to verify the report generator is running.
+
+For receiving reports, you will get an email if a message comes from
+your server that fails authentication (although by configuring
+`p=none`, any such email should not be rejected by the other
+server).
