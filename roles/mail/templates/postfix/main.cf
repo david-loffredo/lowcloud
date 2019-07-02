@@ -63,21 +63,23 @@ local_recipient_maps = $virtual_mailbox_maps
 #   may be many more mail agents out there that have not yet updated.
 #   consider adding !TLSv1 at some point.  As of mid 2019, the postfix
 #   default is still !SSLv2,!SSLv3.
-smtpd_tls_mandatory_protocols= !SSLv2,!SSLv3
-smtp_tls_mandatory_protocols=  !SSLv2,!SSLv3
 smtp_tls_protocols =  !SSLv2,!SSLv3
-smtpd_tls_protocols = !SSLv2,!SSLv3
-smtpd_tls_cert_file=/etc/letsencrypt/live/{{ domain }}/fullchain.pem
-smtpd_tls_key_file= /etc/letsencrypt/live/{{ domain }}/privkey.pem
-smtpd_use_tls=yes
-smtpd_tls_auth_only = yes
-smtp_tls_security_level = may
-smtp_tls_loglevel = 2
-smtpd_tls_received_header = yes
-smtp_tls_note_starttls_offer = yes
+smtp_tls_mandatory_protocols=  !SSLv2,!SSLv3
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 # http://www.postfix.org/FORWARD_SECRECY_README.html
 smtp_tls_ciphers = medium
+smtp_tls_loglevel = 2
+smtp_tls_note_starttls_offer = yes
+smtp_tls_security_level = may
+
+smtpd_tls_protocols = !SSLv2,!SSLv3
+smtpd_tls_mandatory_protocols= !SSLv2,!SSLv3
+smtpd_use_tls=yes
+smtpd_tls_cert_file=/etc/letsencrypt/live/{{ domain }}/fullchain.pem
+smtpd_tls_key_file= /etc/letsencrypt/live/{{ domain }}/privkey.pem
+smtpd_tls_auth_only = yes
+smtpd_tls_received_header = yes
+smtpd_tls_security_level = may
 #smtpd_tls_dh1024_param_file = /etc/ssl/private/dhparam2048.pem
 
 # this was in the default install
@@ -87,11 +89,30 @@ smtp_tls_session_cache_database =  btree:${data_directory}/smtp_scache
 smtpd_sasl_type = dovecot
 smtpd_sasl_path = private/auth
 smtpd_sasl_auth_enable = yes
-# Compatibility for ancient outlook express 4 and MS Exhchange 5
-#broken_sasl_auth_clients = yes
-# default is noplaintext,noanonymous
-#smtpd_sasl_security_options = noanonymous
+smtpd_sasl_security_options = noanonymous, noplaintext
+smtpd_sasl_tls_security_options = noanonymous
 
+# Even more Restrictions and MTA params
+# Disable the SMTP VRFY command. This stops some techniques used to
+# harvest email addresses.
+disable_vrfy_command = yes
+
+# Reject from/to addresses that are not well wrapped with <>
+strict_rfc821_envelopes = yes
+#smtpd_etrn_restrictions = reject
+#smtpd_reject_unlisted_sender = yes
+#smtpd_reject_unlisted_recipient = yes
+smtpd_delay_reject = yes
+smtpd_helo_required = yes
+smtp_always_send_ehlo = yes
+#smtpd_hard_error_limit = 1
+smtpd_timeout = 30s
+smtp_helo_timeout = 15s
+smtp_rcpt_timeout = 15s
+#smtpd_recipient_limit = 40
+# should be >= queue_run_delay
+#minimal_backoff_time = 180s
+#maximal_backoff_time = 3h
 
 # ==============================
 # Spam control: exclude local clients and authenticated clients from
@@ -116,35 +137,12 @@ smtpd_relay_restrictions =
   permit_sasl_authenticated,
   reject_unauth_destination
 
-smtpd_helo_required = yes
 smtpd_helo_restrictions = permit_mynetworks, reject_invalid_helo_hostname
 smtpd_sender_restrictions = reject_unknown_address
 
-# Disable the SMTP VRFY command. This stops some techniques used to
-# harvest email addresses.
-disable_vrfy_command = yes
-
-# Reject from/to addresses that are not well wrapped with <>
-strict_rfc821_envelopes = yes
 
 # Deny any useful feedback to abusing systems by changing all errors
 # to 554: Transaction Failed
-# invalid_hostname_reject_code = 554
-# multi_recipient_bounce_reject_code = 554
-# non_fqdn_reject_code = 554
-# relay_domains_reject_code = 554
-# unknown_address_reject_code = 554
-# unknown_client_reject_code = 554
-# unknown_hostname_reject_code = 554
-# unknown_local_recipient_reject_code = 554
-# unknown_relay_recipient_reject_code = 554
-# unknown_virtual_alias_reject_code = 554
-# unknown_virtual_mailbox_reject_code = 554
-# unverified_recipient_reject_code = 554
-# unverified_sender_reject_code = 554
-
-
-
 
 
 # # Milters: Rspamd

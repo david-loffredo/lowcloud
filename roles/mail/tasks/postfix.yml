@@ -69,3 +69,11 @@
 # - name: Copy smtp_header_checks.pcre
 #   copy: src=etc_postfix_maps_smtp_header_checks.pcre dest=/etc/postfix/maps/smtp_header_checks.pcre owner=root group=root
   
+
+- name: certbot post-renew hook to reload postfix
+  copy:
+    content: "#!/bin/bash\n\nservice postfix reload\n"
+    dest: /etc/letsencrypt/renewal-hooks/post/postfix
+    owner: root
+    group: root
+    mode: 0755
