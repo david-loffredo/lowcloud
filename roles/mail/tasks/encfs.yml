@@ -2,12 +2,18 @@
 - name: EncFS present
   apt: name=encfs state=present
 
+- name: Encrypted and cleartext directories present
+  file: state=directory path={{item}}
+  with_items:
+    - "{{mail_spool_crypt}}"
+    - "{{mail_spool_clear}}"
+    - "{{mail_db_crypt}}"
+    - "{{mail_db_clear}}"
+  
 ##
 ## Mail Spool Directory
 ##
-- name: Encrypted mail spool directory present
-  file: state=directory path={{mail_spool_crypt}}
-
+  
 - name: Encrypted mail spool contents check
   shell: ls {{mail_spool_crypt}}/*
   ignore_errors: True
@@ -29,9 +35,6 @@
 ##
 ## Mail User Database Directory
 ##
-- name: Encrypted mail database directory present
-  file: state=directory path={{mail_db_crypt}}
-
 - name: Encrypted mail database contents check
   shell: ls {{mail_db_crypt}}/*
   ignore_errors: True

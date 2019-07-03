@@ -7,12 +7,12 @@
 # so it can be called frequently.
 #
 
-- name: latest certbot packages are installed
+- name: certbot packages are installed
   apt:
     name:
       - certbot
       - python-certbot-apache
-    state: latest
+    state: present
 
 - name: common ssl config present
   copy:

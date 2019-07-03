@@ -48,7 +48,7 @@ timezone: 'US/Eastern'
 openports_list: [ 22 ]
 
 webports_list: [80, 443]
-mailports_list: [25, 465, 587, 110, 995, 143, 993]
+mailports_list: [25, 465, 587, 993]
 
 
 #    IMAP | Port 993 (Secure Transport   — SSL function enabled)
@@ -106,7 +106,7 @@ mail_cfg_dir: /etc/postfix
 mail_db_crypt:  /var/spool/postfix/etc/maildb_crypt
 mail_db_clear:  /var/spool/postfix/etc/maildb_clear
 mail_db_util: "{{ mail_cfg_dir }}/mailcfg"
-mail_db: "{{ mail_db_dir }}/maildb.sqlite3"
+mail_db: "{{ mail_db_clear }}/maildb.sqlite3"
 
 # Encrypt mail data at rest with EncFS, and cleartext mountpoint
 mail_spool_crypt: "/var/mail_crypt"

@@ -35,9 +35,8 @@
 #  also has a protocol lmtp.   Not sure whether it is needed.
 
 - name: Dovecot conf.d files present
-  template: src="dovecot/{{item}}.j2" dest="/etc/dovecot/{{item}}"
+  template: src="dovecot/{{item}}" dest="/etc/dovecot/conf.d/{{item}}"
     owner=root group=root mode=0644
-  copy: src=etc_dovecot_conf.d_{{ item }} dest=/etc/dovecot/conf.d/{{ item }}
   with_items:
     - 10-auth.conf
     - 10-mail.conf

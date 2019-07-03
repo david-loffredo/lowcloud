@@ -2,13 +2,13 @@
 # Set up emacs and vim.  Install the No X variants because we are just
 # doing a server machine.  Also include some other emacs modes that we
 # may want.
-- name: latest text editors (emacs/vim) installed
+- name: text editors (emacs/vim) installed
   apt:
     name:
       - emacs-nox
       - yaml-mode
       - vim-nox
-    state: latest
+    state: present
 
 - name: default .emacs file installed for all users
   copy:

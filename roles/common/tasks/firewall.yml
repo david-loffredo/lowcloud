@@ -1,10 +1,10 @@
 ---
-- name: latest network filtering packages are installed 
+- name: network filtering packages are installed 
   apt:
     name:
       - iptables-persistent
       - fail2ban
-    state: latest
+    state: present
       
 - name: iptables v4 configured
   template:

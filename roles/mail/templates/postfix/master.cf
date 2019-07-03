@@ -5,6 +5,7 @@
 #
 # Do not forget to execute "postfix reload" after editing this file.
 #
+# smtp is port 25, submission is port 587, and smtps is port 465
 # ==========================================================================
 # service type  private unpriv  chroot  wakeup  maxproc command + args
 #               (yes)   (yes)   (no)    (never) (100)

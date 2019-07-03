@@ -3,11 +3,8 @@
   timezone:
     name: "{{ timezone }}"
 
-- name: latest ntp packages are installed
-  apt:
-    name:
-      - ntp
-    state: latest
+- name: ntp packages are installed
+  apt: name=ntp state=present
 
 - name: ntp configured
   template:
