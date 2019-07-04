@@ -166,7 +166,7 @@ smtpd_sender_restrictions = reject_unknown_address
 # postscreen_dnsbl_action = enforce
 # postscreen_greet_action = enforce
 
-# {% if mail_header_privacy == 1 %}
+#  mail_header_privacy
 # # Remove local client IP from headers
 # smtp_header_checks = pcre:/etc/postfix/maps/smtp_header_checks.pcre
-# {% endif %}
+

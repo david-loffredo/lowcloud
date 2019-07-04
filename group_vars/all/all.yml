@@ -126,12 +126,13 @@ mail_users:
     pw: "{{vault_mbox_someone_pw}}"
 
 mail_aliases:
-  - src: "root@{{ domain }}"
-    dst: "{{ admin_email }}"
-  - src: "postmaster@{{ domain }}"
-    dst: "{{ admin_email }}"
-  - source: "webmaster@{{ domain }}"
-    dst: "{{ admin_email }}"
-  - src: "abuse@{{ domain }}"
-    dst: "{{ admin_email }}"
+  - { src: "root@{{ domain }}",         dst: "{{ admin_email }}" }
+  - { src: "postmaster@{{ domain }}",   dst: "{{ admin_email }}" }
+  - { src: "webmaster@{{ domain }}",    dst: "{{ admin_email }}" }
+  - { src: "abuse@{{ domain }}",        dst: "{{ admin_email }}" }
+  - { src: "root@machineplan.com",         dst: "{{ admin_email }}" }
+  - { src: "postmaster@machineplan.com",   dst: "{{ admin_email }}" }
+  - { src: "webmaster@machineplan.com",    dst: "{{ admin_email }}" }
+  - { src: "abuse@machineplan.com",        dst: "{{ admin_email }}" }
+  - { src: "cloud@machineplan.com",        dst: "{{ admin_email }}" }
 

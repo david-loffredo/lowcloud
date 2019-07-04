@@ -38,18 +38,24 @@
 # encfs.yml playbook.
 - name: Mail account database present
   command: "{{ mail_db_util }} adddom {{ item }}"
+  register: result
+  changed_when: result.stdout != ""  
   with_items: "{{ mail_domains }}"
 
 - name: Mail users present
   command: "{{ mail_db_util }} adduser {{ item.email }} {{ item.pw }}"
+  register: result
+  changed_when: result.stdout != ""  
   with_items: "{{ mail_users }}"
   
 - name: Mail aliases present
   command: "{{ mail_db_util }} addalias {{ item.src }} {{ item.dst }}"
+  register: result
+  changed_when: result.stdout != ""  
   with_items: "{{ mail_aliases }}"
   
 - name: Mail config templates present
-  template: src="postfix/{{item}}.j2" dest="{{mail_cfg_dir}}/{{item}}"
+  template: src="postfix/{{item}}" dest="{{mail_cfg_dir}}/{{item}}"
     owner=root group=root mode=0644
   with_items:
     - main.cf
