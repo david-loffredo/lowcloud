@@ -5,12 +5,7 @@
 # perl utility to manage the database.  It uses DBI and might just
 # need minor changes to the connect statement and SQL for use with
 # other RDBs.
-
-# Do not start postfix at boot, Wait until the encrypted spool is
-# mounted.  Our "mailboot" script mounts and starts.  The "restart
-# postfix" action in handlers/main.yml should disable boot start.
-#
-- name: Postfix and related packages present
+- name: postfix and related packages present
   apt:
     name:
       - postfix
@@ -19,15 +14,19 @@
       - libdbd-sqlite3-perl
     state: present
 
-
-# Simple Authentication Security Layer (SASL)
-#      - libsasl2-modules
-#      - sasl2-bin
 #      - postfix-pcre
 #      - postgrey
 #      - python-psycopg2
+
+# Do not start postfix at boot, Wait until the encrypted spool is
+# mounted.  Our "mailboot" script mounts and starts.  This should run
+# "sudo update-rc.d postfix disable" and change the postfix links from
+# rc3.d/ and rc5.d/S01postfix to the equivalent K links.
+#
+- name: postfix not started at boot
+  service: name=postfix enabled=no
     
-- name: Mail account utilities present
+- name: mail account utilities present
   template: src={{ item }}.j2 dest={{ mail_cfg_dir }}/{{ item }}
     owner=root group=root mode=0755
   with_items:
@@ -36,25 +35,25 @@
 
 # The database directory should have been created and encrypted by the
 # encfs.yml playbook.
-- name: Mail account database present
+- name: mail account database present
   command: "{{ mail_db_util }} adddom {{ item }}"
   register: result
   changed_when: result.stdout != ""  
   with_items: "{{ mail_domains }}"
 
-- name: Mail users present
+- name: mail users present
   command: "{{ mail_db_util }} adduser {{ item.email }} {{ item.pw }}"
   register: result
   changed_when: result.stdout != ""  
   with_items: "{{ mail_users }}"
   
-- name: Mail aliases present
+- name: mail aliases present
   command: "{{ mail_db_util }} addalias {{ item.src }} {{ item.dst }}"
   register: result
   changed_when: result.stdout != ""  
   with_items: "{{ mail_aliases }}"
   
-- name: Mail config templates present
+- name: mail config templates present
   template: src="postfix/{{item}}" dest="{{mail_cfg_dir}}/{{item}}"
     owner=root group=root mode=0644
   with_items:
@@ -67,8 +66,6 @@
 
 
 # This strips outgoing mail headers
-#      - postfix-pcre
-
 # - name: Create postfix maps directory
 #   file: path=/etc/postfix/maps state=directory owner=root group=root
 

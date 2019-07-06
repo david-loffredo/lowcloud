@@ -1,0 +1,44 @@
+[DEFAULT]
+ignoreip  = 127.0.0.1 {{ ansible_default_ipv4.address }} {{ ' '.join(friendly_networks) }}
+bantime   = 86400
+##destemail = {{ admin_email }}
+banaction = iptables-multiport
+action    = %(action_)s
+
+# JAILS
+[sshd]
+enabled   = true
+maxretry  = 3
+
+# custom jail for extra ssh rules things
+[sshd-extra]
+port    = ssh
+enabled   = true
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+maxretry  = 3
+
+[pam-generic]
+enabled   = true
+banaction = iptables-allports
+
+[dovecot]
+enabled = true
+maxretry  = 3
+
+[postfix]
+enabled  = true
+maxretry  = 3
+
+# see comments about mail.log vs mail.warn in jail.conf
+# logpath = /var/log/mail.warn
+# originally has imap3, which causes problems - change to imap
+[postfix-sasl]
+enabled  = true
+port     = smtp,465,submission,imap,imaps,pop3,pop3s
+maxretry  = 3
+
+[apache-auth]
+enabled = true
+maxretry = 3
+

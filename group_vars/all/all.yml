@@ -120,7 +120,7 @@ mail_domains:
 mail_users:
   - email: "{{ admin_email }}"
     pw: "{{vault_mbox_admin_pw}}"
-  - email: "dave@davecloud.com"
+  - email: "dave@{{ domain }}"
     pw: "{{vault_mbox_dave_pw}}"
   - email: "somebody@machineplan.com"
     pw: "{{vault_mbox_someone_pw}}"

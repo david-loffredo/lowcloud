@@ -33,14 +33,6 @@ ntp_servers:
   - 3.pool.ntp.org
   
 
-
-  
-# encfs
-secret_root: '{{ inventory_dir | realpath }}'
-secret_name: 'secret'
-secret: '{{ secret_root + "/" + secret_name }}'
-encfs_password: "{{ lookup('password', secret + '/' + 'encfs_password', length=32) }}"
-
 # let's encrypt
 letsencrypt_server: "https://acme-v01.api.letsencrypt.org/directory"
 acme_certs_dir: /etc/ssl/letsencrypt

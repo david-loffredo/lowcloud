@@ -2,7 +2,7 @@
 # Dovecot for local mail delivery and IMAP access.  Do not install the
 # dovecot-pop3 package, because we will only use IMAP.
 
-- name: Dovecot and related packages present
+- name: dovecot and related packages present
   apt:
     name:
       - dovecot-core
@@ -11,17 +11,18 @@
       - dovecot-sqlite
     state: present
 
-- name: Spool directories for mail domain are present
+# Do not start dovecot at boot, Wait until the encrypted spool is
+# mounted.  Our "mailboot" script mounts and starts.  
+#
+- name: dovecot not started at boot
+  service: name=dovecot enabled=no 
+
+- name: spool directories for mail domain are present
   file: state=directory path="{{mail_spool_clear}}/{{ item }}"
     owner=vmail group=vmail mode=0770
   with_items: "{{ mail_domains }}"
 
-# - name: Spool directories for users are present
-#   file: state=directory path="{{mail_spool_clear}}/{{ item.domain }}/{{ item.user }}/"
-#   with_items: '{{ mail_users }}'
-
-
-- name: Dovecot etc files present
+- name: dovecot etc files present
   template: src="dovecot/{{item}}" dest="/etc/dovecot/{{item}}"
     owner=root group=root mode=0644
   with_items:
@@ -34,7 +35,7 @@
 #  date.  Soverign also has a 20-imap.conf that loads some plugins and
 #  also has a protocol lmtp.   Not sure whether it is needed.
 
-- name: Dovecot conf.d files present
+- name: dovecot conf.d files present
   template: src="dovecot/{{item}}" dest="/etc/dovecot/conf.d/{{item}}"
     owner=root group=root mode=0644
   with_items:

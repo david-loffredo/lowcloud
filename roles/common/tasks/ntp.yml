@@ -8,7 +8,7 @@
 
 - name: ntp configured
   template:
-    src: etc/ntp.conf.j2
+    src: ntp.conf.j2
     dest: /etc/ntp.conf
     owner: root
     group: root

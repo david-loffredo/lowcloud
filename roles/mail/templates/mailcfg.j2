@@ -210,6 +210,7 @@ sub main {
 	while (($email, $pw, $act) = $sth->fetchrow_array()) {
             print $email;
             print " (DISABLED)" if $act == 0;
+            print "\n";
 	}          
 	return 0;
     };

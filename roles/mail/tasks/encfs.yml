@@ -2,7 +2,7 @@
 - name: EncFS present
   apt: name=encfs state=present
 
-- name: Encrypted and cleartext directories present
+- name: encrypted and cleartext directories present
   file: state=directory path={{item}}
   with_items:
     - "{{mail_spool_crypt}}"
@@ -14,7 +14,7 @@
 ## Mail Spool Directory
 ##
   
-- name: Encrypted mail spool contents check
+- name: encrypted mail spool contents check
   shell: ls {{mail_spool_crypt}}/*
   ignore_errors: True
   changed_when: False  # never report as "changed"
@@ -24,18 +24,18 @@
 # been initialized yet.  On first call, EncFS gathers info and inits
 # the filesystem.  The "p" is for paranoia mode.
 #
-- name: Encrypted mail spool empty, creating new
-  shell: printf "p\n{{ encfs_password }}" | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass && touch {{mail_spool_clear}}/mounted.txt
+- name: encrypted mail spool empty, creating new
+  shell: printf "p\n{{ mail_spool_pw }}" | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass && touch {{mail_spool_clear}}/mounted.txt
   when: encfs_spool_check.rc > 0
 
-- name: Encrypted mail spool present, mounted if needed
-  shell: command="printf '{{ encfs_password }}' | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass" creates="{{mail_spool_clear}}/mounted.txt"
+- name: encrypted mail spool present, mounted if needed
+  shell: command="printf '{{ mail_spool_pw }}' | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass" creates="{{mail_spool_clear}}/mounted.txt"
   when: encfs_spool_check.rc == 0
 
 ##
 ## Mail User Database Directory
 ##
-- name: Encrypted mail database contents check
+- name: encrypted mail database contents check
   shell: ls {{mail_db_crypt}}/*
   ignore_errors: True
   changed_when: False  # never report as "changed"
@@ -45,30 +45,29 @@
 # been initialized yet.  On first call, EncFS gathers info and inits
 # the filesystem.  The "p" is for paranoia mode.
 #
-- name: Encrypted mail database empty, creating new
-  shell: printf "p\n{{ encfs_password }}" | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass && touch {{mail_db_clear}}/mounted.txt
+- name: encrypted mail database empty, creating new
+  shell: printf "p\n{{ mail_spool_pw }}" | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass && touch {{mail_db_clear}}/mounted.txt
   when: encfs_db_check.rc > 0
 
-- name: Encrypted mail database present, mounted if needed
-  shell: command="printf '{{ encfs_password }}' | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass" creates="{{mail_db_clear}}/mounted.txt"
+- name: encrypted mail database present, mounted if needed
+  shell: command="printf '{{ mail_spool_pw }}' | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass" creates="{{mail_db_clear}}/mounted.txt"
   when: encfs_db_check.rc == 0
 
-- name: Cleartext mail database directory permissions
+- name: cleartext mail database directory permissions
   file: state=directory path={{mail_db_clear}} mode=0755
 
 
 ##
 ## VMAIL user/group and permissions
 ##
-
-- name: Group vmail present
+- name: group vmail present
   group: name=vmail state=present gid=5000
 
-- name: User vmail present
+- name: user vmail present
   user: name=vmail group=vmail state=present uid=5000
     home={{mail_spool_clear}} shell=/usr/sbin/nologin
 
 # use mode=02775 to setgid
-- name: Cleartext mail spool directory permissions 
+- name: cleartext mail spool directory permissions 
   file: state=directory path={{mail_spool_clear}} group=vmail mode=0775
 

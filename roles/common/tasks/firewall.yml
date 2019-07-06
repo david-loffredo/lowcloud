@@ -8,7 +8,7 @@
       
 - name: iptables v4 configured
   template:
-    src: etc/iptables/{{ item }}.j2
+    src: iptables/{{ item }}.j2
     dest: /etc/iptables/{{ item }}
     owner: root
     group: root
@@ -20,7 +20,7 @@
 
 - name: iptables v6 configured
   template:
-    src: etc/iptables/{{ item }}.j2
+    src: iptables/{{ item }}.j2
     dest: /etc/iptables/{{ item }}
     owner: root
     group: root
@@ -48,10 +48,13 @@
   service: name=netfilter-persistent state=started enabled=yes
   when: iptablesconf4.changed or iptablesconf6.changed
 
-  
+# Assume we will have ssh, apache, postfix, and dovecot and enable the
+# jails for them.  If we do not use some of those, perhaps we can play
+# some tag and template games to selectively enable parts.
+# 
 - name: fail2ban jails configured
   template:
-    src: etc/fail2ban/jail.local.j2
+    src: fail2ban/jail.local.j2
     dest: /etc/fail2ban/jail.local
     owner: root
     group: root
@@ -71,7 +74,7 @@
 #
 - name: fail2ban extra filters installed
   copy:
-    src: etc/fail2ban/filter.d/{{ item }}
+    src: fail2ban/{{ item }}
     dest: /etc/fail2ban/filter.d
     owner: root
     group: root
