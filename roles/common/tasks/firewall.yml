@@ -5,6 +5,9 @@
       - iptables-persistent
       - fail2ban
     state: present
+
+- debug:
+    msg: OPEN PORTS {{ openports_list }}
       
 - name: iptables v4 configured
   template:

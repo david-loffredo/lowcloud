@@ -1,25 +1,41 @@
 ---
-- name: Check if certificate already exists.
-  stat:
-    path: /etc/letsencrypt/live/{{ cert_item.domains | first | replace('*.', '') }}/cert.pem
-  register: letsencrypt_cert
+# This checks if a certificate is there and verifies that it has the
+# same list of DNS entries as we need.  To do that we need dump the
+# domains encoded in the cert with "openssl x509 -text < cert.pem" and
+# then grep the output for names prefixed with DNS:
+#
+#               DNS:davecloud.net, DNS:www.davecloud.net
+#
+# We use a custom perl script "testcertnames" to do this analysis.
+#
 
-- name: Stop services to allow certbot to generate a cert.
+# We use the script to check whether the cert exists and matches all
+# of the names that we are looking for.
+- name: certificate exists and matches domains
+  command: "{{certbot_test_util}} -d {{ cert_item.domains | join(',') }}"
+  register: cert_result
+  failed_when: no
+  changed_when: cert_result.rc != 0
+
+- name: services stopped before certbot create
   service:
     name: "{{ item }}"
     state: stopped
-  when: not letsencrypt_cert.stat.exists
+  when: cert_result.rc != 0
   with_items: "{{ certbot_create_standalone_stop_services }}"
 
-- name: Generate new certificate if one doesn't exist.
+- name: certbot create new certificate
   command: "{{ certbot_create_command }}"
-  when: not letsencrypt_cert.stat.exists
+  when: "'No cert file' in cert_result.stdout"
 
-- name: Start services after cert has been generated.
+- name: certbot expand existing certificate 
+  command: "{{ certbot_modify_command }}"
+  when: "'cert missing' in cert_result.stdout"
+
+- name: services started after certbot create
   service:
     name: "{{ item }}"
     state: started
-  when: not letsencrypt_cert.stat.exists
+  when: cert_result.rc != 0
   with_items: "{{ certbot_create_standalone_stop_services }}"
-
 

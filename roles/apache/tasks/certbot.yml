@@ -22,6 +22,14 @@
     group: root
     mode: 0644
 
+- name: certificate testing script present
+  copy:
+    src: testcertnames
+    dest: "{{certbot_test_util}}"
+    owner: root
+    group: root
+    mode: 0755
+
 - include_tasks: certbot_create.yml
   with_items: "{{ certbot_certs }}"
   loop_control:
@@ -47,8 +55,6 @@
     owner: root
     group: root
     mode: 0755
-
-
 
 # - name: Add group name ssl-cert for SSL certificates
 #   group: name=ssl-cert state=present

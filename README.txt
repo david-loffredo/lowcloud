@@ -37,7 +37,6 @@ The -K flag is a shorthand for --ask-become-pass
 
 
 
-
 FIREWALL (iptable.yml)
 
 This uses raw iptables.  Some people install the ufw front end, which
@@ -69,9 +68,36 @@ To completely uninstall and reinstall a package.
 apt-get --purge remove <pkg>
 apt-get install <pkg>
 
+DNS
 
-------------------------------------------------------------
-MAIL
+Add an A record,
+SPF roles/apache/tasks/
+    v=spf1 ip4:45.79.180.69 -all
+    v=spf1 mx -all   # recursively includes the MX
+
+CERTBOT ------------------------------------------------------------
+
+We use certbot to acquire LetsEncrypt SSL certificates.  We generate
+one certificate per root domain.  Each certificate matches all of the
+aliases that we use for that domain (www., mail., etc).  This should
+make it easier to move domains to separate machines if needed.
+
+The "certbot_certs" is a list of structs, one for each root domain,
+which themselves contains a list of all the machine names that cert
+should support.
+
+Default permissions for the letsencrypt directory are 755.  We switch
+it to 750 and make it part of the ssl-cert group.  Postfix and dovecot
+run as root, but if other apps need access, they can be added to the
+ssl-cert group.
+
+Certificate renewal is done using cron.  Services that depend on them
+are stopped and started by adding small shell scripts to the pre and
+post renewal directories.  Some can just be bounced by adding a reload
+or restart action to the post-renewal directory.
+
+
+MAIL ------------------------------------------------------------
 
 The email configuration is handled by the "mail" role.  Postfix is
 used as the MTA and Dovecot for the LDA and IMAP server.  Rspamd is

@@ -1,0 +1,80 @@
+#! /usr/bin/perl
+# 
+# Copyright (c) 2018-2019 by David Loffredo. 
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+use strict;
+
+sub usage {
+    print <<PERL_EOF;
+Usage: $0 -d <dom1>,[<dom2>,...] 
+
+Check if a LetsEncrypt certificate exists for <dom1> and verify that
+it covers any additional DNS entries <dom2>, etc.  The syntax follows
+what is given to the certbot command.  The script returns 0 if the
+cert exists and covers all of the DNS entries and non-zero otherwise.
+
+PERL_EOF
+;
+    exit(0);
+}
+
+
+sub main {
+    $_ = shift;
+
+    /^-h(elp)?$/ && usage();
+    /^-d$/ && do { 
+	my $lst = shift;
+	return check_cert(split /,/, $lst);
+    };
+
+    usage();
+    return 1;
+}
+
+
+sub check_cert {
+    my %known;
+    my $base = $_[0];
+    $base =~ s/^\*\.//;   # might be a wildcard cert
+
+    my $cert = '/etc/letsencrypt/live/' . $base . '/cert.pem';
+    if (not -e $cert) {
+	print "No cert file $cert exists\n";
+	return 1;
+    }
+
+    # Extract the known DNS entries in the cert.  These are printed in
+    # a list like DNS:davecloud.net, DNS:www.davecloud.net
+    #
+    foreach (`openssl x509 -text < $cert`) {
+	next if not /DNS:/;
+	foreach my $ln (split /,/, $_) {
+	    $ln =~ /DNS:([^\s]+)/ && do { $known{$1} = 1; };
+	}
+    }
+    # match requested against known
+    my $err = 0;
+    foreach (@_) {
+	if (not exists $known{$_}) {
+	    print "cert missing $_\n";
+	    $err = 1;
+	}
+    }
+    return $err;
+}
+
+
+exit main(@ARGV);

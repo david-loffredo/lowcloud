@@ -44,13 +44,6 @@ timezone: 'US/Eastern'
 #========================================
 # Network and Firewall settings
 #
-#openports_list: [ 22, 80, 443 ]
-openports_list: [ 22 ]
-
-webports_list: [80, 443]
-mailports_list: [25, 465, 587, 993]
-
-
 #    IMAP | Port 993 (Secure Transport   — SSL function enabled)
 #    POP3 | Port 995 (Secure Transport   — SSL function enabled)
 #    IMAP | Port 143 (Insecure Transport — No SSL function enabled)
@@ -59,6 +52,14 @@ mailports_list: [25, 465, 587, 993]
 #    SMTP | Port 587 (Insecure Transport, but can be upgraded to a secure connection using STARTTLS)
 #    SMTP | Port 465 (Secure Transport — SSL function enabled)
 #    SMTP | Port 25 (Outdated and not recommended. username/password authentication MUST be enabled if using this port.)
+
+#openports_list: "{{ sshports_list }}"
+#openports_list: "{{ sshports_list + mailports_list }}"
+openports_list: "{{ sshports_list + webports_list + mailports_list }}"
+
+sshports_list: [22]
+webports_list: [80, 443]
+mailports_list: [25, 465, 587, 993]
 
 
 # blocked if defined
@@ -77,11 +78,15 @@ friendly_networks:
 # and root (DocumentRoot, defaults to /var/www/{{host}})
 web_main:
   - name: "{{ domain }}"
-    aliases: [ "www.{{ domain }}" ] 
+    aliases:
+      - www.{{ domain }}
+      - mail.{{ domain }}
 
 web_vhosts:
   - name: machineplan.com
-    aliases: [ 'www.machineplan.com' ] 
+    aliases:
+      - www.machineplan.com
+      - mail.machineplan.com
 
 certbot_certs:
   - domains: "{{ [ web_main.0.name ] + web_main.0.aliases }}"
