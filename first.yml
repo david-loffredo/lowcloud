@@ -1,4 +1,5 @@
 ---
+# Initial config of a server to lock down ssh.
 
 - name: First setup of new server
   hosts: all
@@ -14,9 +15,7 @@
     # upgrade yes/safe will not remove or install new pkgs, just
     # get the latest versions of everything.
     - name: upgrade a server with apt
-      apt:
-        upgrade: dist
-      register: upgrade
+      apt: upgrade=dist
 
     - name: common groups present
       group: name="{{ item }}" state=present
@@ -65,9 +64,7 @@
       command: ssh-keygen -A
 
     - name: restart ssh
-      service:
-        name: ssh
-        state: restarted
+      service: name=ssh state=restarted
 
 
 

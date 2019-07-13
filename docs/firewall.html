@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>Firewall</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
+
+<H1>Firewall</H1>
+
+<p><b>ROLE</b> common, iptable.yml
+
+<p>This uses raw iptables.  Some people install the ufw front end,
+which makes it easier to block everything and open up a few ports.
+Since we might eventually geoblock china, russia, etc. we stick to raw
+iptables so that we can use includes.  We use iptables-persistent to
+reload our config on boot.
+
+<p>The playbook writes our IPv4 and IPv6 rules to the following,
+
+<PRE>
+    /etc/iptables/testrules.v4
+    /etc/iptables/testrules.v6
+</PRE>
+
+<p>It then runs iptables-restore/iptables-save to cycle them into the
+corresponding rules.v* files, which are what is loaded on boot.  To
+change rules, edit etc/iptables/testrules.v* in the templates dir and
+rerun the playbook.
+
+<p>We run fail2ban to scan the logs for repeated intrusion attempts
+and temporarily ban IPs.  The debian package is not the latest so we
+add a few of our own custom rules.
+
+<PRE>
+    /etc/fail2ban/filter.d/*-extra.conf
+</PRE>
+
+
+</BODY>
+</HTML>

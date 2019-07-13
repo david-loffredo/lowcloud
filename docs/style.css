@@ -1,0 +1,227 @@
+/* 
+ * Simple Documentation CSS Styles 
+ * David Loffredo
+ */
+
+BODY {
+	background: white;
+}
+
+/* Use the default browser color, but flash the underline and color */
+A:link    { text-decoration: underline; }
+A:visited { text-decoration: underline; }
+A:hover   { color: #FF0000; text-decoration: none; }
+
+
+H1,H2,H3 { 
+	font-family: helvetica, arial; 
+}
+
+/* add a rule separator */
+.rule { border-top:1px solid black; padding-top:0.2em; margin-top:3em; }
+H1.rule { }
+H2.rule { width:75% }
+H3.rule { width:50% }
+
+.shadow {
+    box-shadow: 5px 5px 5px #555;
+    -moz-box-shadow: 5px 5px 5px #555;
+    -webkit-box-shadow: 5px 5px 5px #555;
+}
+  
+/* Use for main content in a single column flow */
+DIV.main {
+	margin-left: 5%; 
+	margin-right:5%; 
+	padding: 0.5em; 
+}
+
+/* Use for single column flow content that you want to stand out */
+DIV.box {
+	margin-left: 10%; 
+	margin-right:10%; 
+	padding: 0.5em; 
+ 	background: #DEE7EF; 
+	border: solid 1px black;
+}
+
+DIV.figure {
+	text-align:center; 
+	padding-top: 1em;
+	padding-bottom: 1em;
+}
+
+P.caption {
+	font-weight: bold;
+	text-align:center; 
+}
+
+DIV.copyright {
+	font-size: 	70%;
+	margin-right: 	20%;
+	margin-left: 	20%;
+	margin-top: 	2em;
+	margin-bottom: 	1em;
+	padding: 	0.5em;
+	text-align: 	center;
+	border-top: 	1px solid #000000;
+	clear: both; /* avoid interference with floats */
+}
+
+/* ============================================================
+ * TABLES - Since tables are often used for formatting, make them
+ * borderless so that we dont have to turn things off.
+ */
+TABLE { 
+	vertical-align: top; 
+	border: none; 
+	border-collapse: collapse;
+} 
+
+/* For normal text tables, as opposed to ones used for  formatting. 
+ * The auto margins will center tables on Moz and opera, but we force
+ * center in the html tag because IE will not center tables through
+ * CSS unless you center the entire body block.
+ */
+TABLE.normal { 	width: 70%; 
+	/* margin-left: auto; */
+	/* margin-right: auto; */
+	margin-top: 1em;
+	margin-bottom: 1em;
+	border: solid 2px black}
+TABLE.normal TD { 	vertical-align: top; margin: 0px; padding: 0.25em; } 
+TABLE.normal TH { 	vertical-align: top; margin: 0px; padding: 0.25em; 
+			border-bottom: solid 2px black; } 
+
+
+/* For fancy text tables, with odd/even highlighting.  We define local
+ * styles for TDs that match certain types of content
+ */
+
+TABLE.fancy {
+	border: 1px solid black; 
+	border-collapse: collapse; 
+	font-size: 90%; 
+}
+
+TABLE.fancy TD { padding: 0.2em; }
+TABLE.fancy TH {
+	padding: 0.2em; 
+	color: white; 
+	background: #5A79A5; 
+	font-family: helvetica, arial; 
+	font-weight: bold; 
+	white-space: nowrap; 
+	border-bottom: 1px solid black; 
+}
+
+TR.even { background: white; }
+TR.odd {  background: #DEE7EF; }
+
+
+/* Table of contents display box.  For local links to all of the
+ * sections on the current page. We usually put a search box there 
+ * too.  Do not put external links here, put them in the page body.
+ */
+DIV.toc {
+	font-size: 	80%;
+	min-width: 		20em; 
+	border: 	solid 1px black; 
+/*	background: #efefef; */
+ 	background: #DEE7EF; 
+	padding: 	1em; 
+	margin-left: 	1em; 
+	margin-bottom: 	1em; 
+	float: 		right;
+}
+
+/* Kill the indent on lists and use different bullets.  Some browsers
+ * use margin and others use padding, so set both to zero and just use
+ * the padding 
+ */
+.toc UL{
+	margin: 0; 
+	padding: 0;
+	padding-left: 1.5em;
+	list-style-type: square;
+}
+.toc UL UL {
+	list-style-type: disc; 
+}
+
+
+
+/* ============================================================
+ * PARAGRAPH AND FONT STYLES - Used primarily by the reference manuals
+ * generated from Framemaker, but available for other pages as well.
+ */
+SPAN.keyword {
+	font-weight: bold;
+}
+
+SPAN.code {
+	font-size: 95%;
+	font-weight: bold;
+ 	font-family: monospace;
+}
+
+PRE.code {
+	margin-left: 5%; 
+	margin-right:5%; 
+	padding: 0.5em; 
+ 	background: #DEE7EF; 
+	border: solid 1px black;
+}
+
+/* Turn off the fancy backgrounds when used in tables */
+TD PRE.code, TH PRE.code { 
+	background: none; 
+	border: none;
+	margin: 0; 
+	padding: 0; 
+}
+
+/* In the printed manuals, we use an alert icon, here we just use red
+ * bars on each side.  There may be better ways to make it stand out.
+ */
+P.alert {
+	border-left: solid 3px #CE0000; 
+	border-right: solid 3px #CE0000; 
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}
+
+
+/* Nicely indented definition list for terms.  Consider applying this
+ * to the base DL element.
+ */
+DL.termdefs  { margin: 2em; padding: 0; }
+DL.termdefs DT { font-weight: bold; }
+DL.termdefs DD { margin: 0 3em 1em 3em; }
+
+UL.tight LI { margin-top: 0; margin-bottom: 0; }
+UL.loose LI { margin-top: 1em; margin-bottom: 1em; }
+
+
+/* Table for displaying command line arguments.  Originally we did
+   termdefs but this seems to work better.  The arg is in a TH and the
+   description is in a TD */
+
+TABLE.cmdopts TH {
+    vertical-align: baseline;
+    text-align: left;
+    min-width: 10em;
+    font-weight: bold;
+    font-family: monospace;
+    padding-right: 1em;
+    white-space: nowrap; 
+}
+TABLE.cmdopts TD {
+    vertical-align: baseline;
+    text-align: left;
+    padding-bottom: 0.5em;
+}
+/* need to use px because the fonts are different size */
+TABLE.cmdopts TR.subhead TH { padding-top: 20px;}
+TABLE.cmdopts TR.subhead TD { padding-top: 20px;}
+TABLE.cmdopts  { margin: 1em 2em 2em 2em; padding: 0; }

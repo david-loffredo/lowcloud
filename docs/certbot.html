@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>Certbot</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
+
+<H1>Certbot</H1>
+
+<p><b>ROLE</b> apache, certbot.yml
+
+<p>We use certbot to acquire LetsEncrypt SSL certificates.  We
+generate one certificate per root domain.  Each certificate matches
+all of the aliases that we use for that domain (www., mail., etc).
+This should make it easier to move domains to separate machines if
+needed.  Now that we are managing our own DNS, we could use the DNS
+challenge and get a wildcard cert, but that is not really recommended
+unless you really are creating machines dynamically.</p>
+
+<p>The "certbot_certs" is a list of structs, one for each root domain,
+which themselves contains a list of all the machine names that cert
+should support.</p>
+
+<p>Default permissions for the letsencrypt directory are 755.  We
+switch it to 750 and make it part of the ssl-cert group.  Postfix and
+dovecot run as root, but if other apps need access, they can be added
+to the ssl-cert group.</p>
+
+<p>Certificate renewal is done using cron.  Services that depend on
+them are stopped and started by adding small shell scripts to the pre
+and post renewal directories.  Some can just be bounced by adding a
+reload or restart action to the post-renewal directory.</p>
+
+</BODY>
+</HTML>
+

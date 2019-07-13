@@ -1,0 +1,24 @@
+# DNS configuration for {{ network.domain }}
+zone    "{{ network.domain }}" IN {
+        type master;
+        file "forward.{{ network.domain }}";
+{% if bind.dnssec.active %}
+        key-directory "/etc/bind/keys";
+        inline-signing yes;
+        auto-dnssec maintain;
+{% endif %}
+        };
+
+# Main IP reverse DNS entries
+zone    "{{ reverse_ip }}" {
+        type master;
+        file "reverse-main.{{ network.domain }}";
+        };
+
+{% if backup_ip is defined and backup_ip != "" %}
+# Backup IP reverse DNS entries
+zone    "{{ reverse_backup_ip }}" {
+        type master;
+        file "reverse-backup.{{ network.domain }}";
+        };
+{% endif %}
