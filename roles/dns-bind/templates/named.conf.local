@@ -1,24 +1,27 @@
-# DNS configuration for {{ network.domain }}
-zone    "{{ network.domain }}" IN {
-        type master;
-        file "forward.{{ network.domain }}";
-{% if bind.dnssec.active %}
-        key-directory "/etc/bind/keys";
-        inline-signing yes;
-        auto-dnssec maintain;
+//
+// Do any local configuration here
+//
+{% if dns_ns.replica is defined and dns_ns.replica %}
+acl "replica" {
+{% for item in dns_ns.replica %}
+    # {{ trust.comment | default(None) }}
+    {{ item.ip }};
+{% endfor %}
+};
 {% endif %}
-        };
 
-# Main IP reverse DNS entries
-zone    "{{ reverse_ip }}" {
+{% for item in dns_zones %}
+zone "{{ item.name }}" {
         type master;
-        file "reverse-main.{{ network.domain }}";
-        };
-
-{% if backup_ip is defined and backup_ip != "" %}
-# Backup IP reverse DNS entries
-zone    "{{ reverse_backup_ip }}" {
-        type master;
-        file "reverse-backup.{{ network.domain }}";
-        };
+        file "/etc/bind/db.{{ item.name }}";
+{% if dns_ns.replica is defined and dns_ns.replica %}
+        notify yes;
+        allow-transfer { replica; };
 {% endif %}
+};
+
+{% endfor %}
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+include "/etc/bind/zones.rfc1918";

@@ -1,0 +1,39 @@
+$TTL    {{ dns_time_ttl }}
+$ORIGIN {{ zone.name }}.
+
+@       IN      SOA     {{ dns_ns.master }}. {{ dns_ns.email }}. (
+                        {{ serial }}
+                        {{ dns_time_refresh }}
+                        {{ dns_time_retry }}
+                        {{ dns_time_expire }}
+                        {{ dns_time_neg_cache_ttl }} )
+
+@       IN      NS      {{ dns_ns.master }}.
+{% if dns_ns.replica is defined and dns_ns.replica %}
+{% for item in dns_ns.replica %}
+@       IN      NS      {{ item.name }}.
+{% endfor %}
+{% endif %}
+
+@	IN      A 	{{ ipv4_address }}
+{% if zone.master is defined and zone.master %}
+mail	IN      A 	{{ ipv4_address }}
+ns1	IN      A 	{{ ipv4_address }}
+{% endif %}
+
+@	IN	MX	10	{{ dns_mx.master }}.
+{% if dns_mx.backup is defined and dns_mx.backup %}
+{% for item in dns_mx.backup %}
+@       IN      MX      20	{{ item }}.
+{% endfor %}
+{% endif %}
+
+{% for item in zone.cnames %}
+{{ item }}	IN     CNAME	{{ zone.name }}.
+{% endfor %}
+
+;; CAA records: https://en.wikipedia.org/wiki/DNS_Certification_Authority_Authorization
+{{ zone.name }}. CAA 1 issue "letsencrypt.org"
+{{ zone.name }}. CAA 1 iodef "mailto:security@{{ zone.name }}"
+
+;; mail._domainkey 3600 IN TXT "k=rsa; p=somekey" ; A DKIM public key record.

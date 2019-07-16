@@ -86,7 +86,6 @@ web_vhosts:
   - name: machineplan.com
     aliases:
       - www.machineplan.com
-      - mail.machineplan.com
 
 certbot_certs:
   - domains: "{{ [ web_main.0.name ] + web_main.0.aliases }}"
@@ -134,10 +133,46 @@ mail_aliases:
   - { src: "root@{{ domain }}",         dst: "{{ admin_email }}" }
   - { src: "postmaster@{{ domain }}",   dst: "{{ admin_email }}" }
   - { src: "webmaster@{{ domain }}",    dst: "{{ admin_email }}" }
+  - { src: "security@{{ domain }}",     dst: "{{ admin_email }}" }
   - { src: "abuse@{{ domain }}",        dst: "{{ admin_email }}" }
   - { src: "root@machineplan.com",         dst: "{{ admin_email }}" }
   - { src: "postmaster@machineplan.com",   dst: "{{ admin_email }}" }
   - { src: "webmaster@machineplan.com",    dst: "{{ admin_email }}" }
+  - { src: "security@machineplan.com",        dst: "{{ admin_email }}" }
   - { src: "abuse@machineplan.com",        dst: "{{ admin_email }}" }
-  - { src: "cloud@machineplan.com",        dst: "{{ admin_email }}" }
 
+
+
+dns_ns:  
+  master: "ns1.{{ domain }}"
+  email: "root.{{ domain }}"
+  replica:
+#  - { name: "ns1.foo.com", ip: "1.2.3.4" }
+
+# name: "linode-slaves-v6"
+#     provide-xfr: 2600:3c00::a NOKEY
+#     provide-xfr: 2600:3c01::a NOKEY
+#     provide-xfr: 2600:3c02::a NOKEY
+#     provide-xfr: 2600:3c03::a NOKEY
+#     provide-xfr: 2a01:7e00::a NOKEY
+ 
+# pattern:
+#     name: "linode-slaves-v4"
+#     provide-xfr: 65.19.178.10 NOKEY
+#     provide-xfr: 69.93.127.10 NOKEY
+#     provide-xfr: 75.127.96.10 NOKEY
+#     provide-xfr: 109.74.194.10 NOKEY
+#     provide-xfr: 207.192.70.10 NOKEY
+
+dns_mx:  
+  master: "mail.{{ domain }}"
+  backup:
+
+dns_zones:  
+  - name: "{{ domain }}"
+    master: true
+    cnames: [ www ]
+
+  - name: machineplan.com
+    cnames: [ www ]
+  

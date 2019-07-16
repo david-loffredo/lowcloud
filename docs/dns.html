@@ -16,13 +16,45 @@
 <p>Originally I just used my registrars DNS service and added records
 using their web form.  This worked fine during the initial testing but
 when it came time to advertize DKIM records, best practice says they
-should be rotated periodically.
+should be rotated periodically.  I decided to set up bind and make the
+machine the DNS master for all domains, then automate DKIM rotation.
 
-<p>It would be tedious to do that manually, so I decided to set up
-bind and make the machine the authoritative DNS source for all of the
-domains.  This configuration is mostly stolen from homebox, because
-they have a nice setup that handles DNSSEC.
+<p>I wanted to do DNSSEC, and the homebox config that I started with
+can set that up, but it is difficult to find anyone that will support
+secondary DNS with DNSSEC.  DNSMadeEasy ($30/yr), BuddyNS ($18/mo),
+and the Bulgarian CloudNS claim to do it, but they do not even have it
+configured properly for their own domains.   
 
+<p>At the moment, the choice seems to be DNSSEC and run your own one
+or two servers that could be DDOSed, or none and use broadly available
+secondaries.  It also seems that key rotation is a big problem.  Mail
+in a box has probably the best setup and even they do not do it
+because of the potential for DNS outages.</p>
+
+<p>We will probably use Linode's and BuddyNS nameservers as slaves.
+For Linode, you need to go into their domain manager and add each
+domain as a slave, pointing it to the master.  Allow AXFR/IXFR from
+ns1-ns5.linode.com and add them to your domain's authoritative
+nameservers.  Configure notifies for ns1-ns5.linode.com
+
+<p>In order for Linode’s DNS servers to function as slaves, your DNS
+master server must notify and allow AXFR requests from the following
+IP addresses:
+
+<PRE>
+    104.237.137.10
+    65.19.178.10
+    75.127.96.10
+    207.192.70.10
+    109.74.194.10
+    2600:3c00::a
+    2600:3c01::a
+    2600:3c02::a
+    2600:3c03::a
+    2a01:7e00::a
+</PRE>
+
+Buddy instructions are at https://www.buddyns.com/support/setup/zone-transfer/
 
 
 <!-- ============================== -->
