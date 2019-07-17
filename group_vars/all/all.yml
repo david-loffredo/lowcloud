@@ -53,13 +53,15 @@ timezone: 'US/Eastern'
 #    SMTP | Port 465 (Secure Transport — SSL function enabled)
 #    SMTP | Port 25 (Outdated and not recommended. username/password authentication MUST be enabled if using this port.)
 
-#openports_list: "{{ sshports_list }}"
-#openports_list: "{{ sshports_list + mailports_list }}"
-openports_list: "{{ sshports_list + webports_list + mailports_list }}"
+openports_list: "{{ sshports + webports + mailports + dnsports }}"
+#openports_list: "{{ sshports + webports + mailports }}"
 
-sshports_list: [22]
-webports_list: [80, 443]
-mailports_list: [25, 465, 587, 993]
+#openports_udp_list: "{{ dnsports }}"
+
+sshports: [22]
+webports: [80, 443]
+mailports: [25, 465, 587, 993]
+dnsports: [53]
 
 
 # blocked if defined

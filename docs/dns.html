@@ -61,27 +61,16 @@ Buddy instructions are at https://www.buddyns.com/support/setup/zone-transfer/
 <H2 class=rule>
 <A NAME=config></A>Configuration</H2>
 
+<p>Linode machines run a network helper at each boot to set up
+/etc/network/interfaces and /etc/resolv.conf for the machine.  It sets
+the resolv.conf for the Linode DNS servers, but if we want to use our
+own local DNS, we have to turn off that network helper for the
+machine.  Then we can can configure theirs as the forward address and
+use our local one.
 
-<PRE>
-```yaml
-#  Bind server de<b>f</b>aults
-bind:
-  install: true
-  # De<b>f</b>ault servers to <b>f</b>orward queries
-  <b>f</b>orward:
-    - 8.8.8.8
-    - 1.1.1.1
-    - 2001:4860:4860::8888
-    - 2001:4860:4860::8844
-
-
-
-Add an A record,
-SPF roles/apache/tasks/
-    v=spf1 ip4:45.79.180.69 -all
-    v=spf1 mx -all   # recursively includes the MX
-
-</PRE>
+<blockquote>
+    <a href="https://www.linode.com/docs/platform/network-helper/">https://www.linode.com/docs/platform/network-helper/</a>
+</blockquote>
 
 
 <!-- ============================== -->

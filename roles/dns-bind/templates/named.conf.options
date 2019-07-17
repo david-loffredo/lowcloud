@@ -52,4 +52,7 @@ options {
 
     // ban everyone by default
     allow-transfer { none; };
+
+    // do not advertize version
+    version none;
 };
