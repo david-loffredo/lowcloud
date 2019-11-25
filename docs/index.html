@@ -17,12 +17,25 @@
 
 <H1>Server Configuration</H1>
 
-<p>These are Ansible roles that I have built for my own use.  Most of
-them started as part of sovereign, homebox, or frjo's ansible roles.
-They assume that you are using Debian 9.
+<p>These are Ansible roles that I have built for my own use.  Most
+were inspired by similar roles in sovereign, homebox, or frjo's
+ansible setups.  They assume that you are using Debian 9.
 
 <p>Common configurations including things like firewall, dns and
 ntp. I add this role to all my playbooks, hence the name.
+
+<p>TO DO LIST
+<UL>
+<LI>Test with Debian 10
+<LI>Deploy DNS on live machine
+<LI>Configure DKIM and automate key rotation with postfix and DNS.
+<LI>Configure RSPAMD with postfix.
+<LI>Configure DMARC entry in the DNS.
+<LI>Configure borg for backups, possibly rsync to block storage on
+linode, might also move the mail spool to linode block storage for
+easier expansion.
+<LI>Cut over on actual sites.
+</UL>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -80,6 +93,37 @@ apt-get --purge remove &lt;pkg&gt;
 apt-get install &lt;pkg&gt;
 </PRE>
 
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
 
+<p>The ansible variables are located under the <b>group_vars</b>
+directory.  Right now we are just using a single <b>all</b> set, but
+you can get fancier if you have multiple machines and want to track
+more variations.</p>
+
+<p>Private information like passwords and such are stored encrypted in a
+<a href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">vault
+file</a>.  Ansible asks for the password to this when
+the <code>--ask-vault-pass</code> flag is given.  You can edit and
+manipulate it from the command line with:
+<PRE class=code>
+ansible-vault edit foo.yml 		# run EDITOR on file
+
+ansible-vault rekey foo.yml 		# change password on file
+ansible-vault encrypt foo.yml 		# encrypt plain file
+ansible-vault decrypt foo.yml 		# convert encrypted to plain file
+</PRE>
+
+<p>To make it easier to keep track of everything, the cleartext vars
+file has a stub for each value hidden in the vault.  The stub simply
+references a similar variable with a "vault_" prefix that is stored in
+the encrypted vault file.  For example, a password might show up like
+the following in the cleartext file.
+
+<PRE class=code>
+  - email: "somebody@foobar.com"
+    pw: "{{vault_mbox_someone_pw}}"
+</PRE>
 </BODY>
 </HTML>

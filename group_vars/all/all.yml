@@ -53,8 +53,8 @@ timezone: 'US/Eastern'
 #    SMTP | Port 465 (Secure Transport — SSL function enabled)
 #    SMTP | Port 25 (Outdated and not recommended. username/password authentication MUST be enabled if using this port.)
 
-openports_list: "{{ sshports + webports + mailports + dnsports }}"
-#openports_list: "{{ sshports + webports + mailports }}"
+#openports_list: "{{ sshports + webports + mailports + dnsports }}"
+openports_list: "{{ sshports + webports + mailports }}"
 
 #openports_udp_list: "{{ dnsports }}"
 
@@ -70,6 +70,19 @@ friendly_networks:
   - ""
 
 # ntp_servers:
+
+#========================================
+# Snapshot/Backup Settings
+#
+# If present, the roles will restore tar files of data found in the
+# directory below.  This is useful if we are restoring a machine
+# rather than creating something from scratch.
+#
+snapshot_dir: "{{inventory_dir}}/backup"
+
+# Known snapshots are:
+# letsencrypt_backup.tgz - /etc/letsencrypt contents with symlinks
+
 
 #========================================
 # Webserver Settings

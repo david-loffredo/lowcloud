@@ -73,6 +73,22 @@ use our local one.
 </blockquote>
 
 
+<p>DNS entries can be used to tell mail clients how to configure
+themselves.  This is documented in RFC 6186 The listings below say use
+imaps and imap is not supported.  Imaps has the lower priority than
+pop3s so that is indicated as preferred.
+
+<PRE>
+       _imap._tcp     SRV  0 0 0   .
+       _imaps._tcp    SRV  0 1 993 imap.example.com.
+       _pop3._tcp     SRV  0 0 0   .
+       _pop3s._tcp    SRV 10 1 995 pop3.example.com.
+
+ _submission._tcp     SRV 0 1 587 mail.example.com.
+
+</PRE>
+
+
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=propagation></A>Monitor World-Wide Propagation</H2>

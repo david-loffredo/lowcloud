@@ -1,0 +1,8 @@
+---
+# Run as the deploy user but become root via sudo when needed.
+- hosts: all
+  user: "{{ deploy_acct.name }}"
+  become: True
+  gather_facts: True
+  roles:
+    - snapshot

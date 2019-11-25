@@ -1,0 +1,13 @@
+---
+
+#========================================
+# Snapshot/Backup Settings
+#
+# If present, the roles will restore tar files of data found in the
+# directory below.  This is useful if we are restoring a machine
+# rather than creating something from scratch.
+#
+snapshot_dir: "{{inventory_dir}}/backup"
+
+# Known snapshots are:
+# letsencrypt_backup.tgz - /etc/letsencrypt contents with symlinks

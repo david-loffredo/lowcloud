@@ -1,0 +1,9 @@
+---
+# Snapshot of certbot keys in /etc/letsencrypt
+
+# Restore snapshot from existing machine if needed
+- name: backup certbot keys
+  archive:
+    path: /etc/letsencrypt
+    format: gz
+    dest: /tmp/letsencrypt_backup.tgz
