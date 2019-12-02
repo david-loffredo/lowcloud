@@ -33,6 +33,27 @@
     - mailboot
     - mailcfg
 
+
+
+# Restore snapshot from existing machine if needed
+- name: check for mail database backup
+  become: False
+  local_action:
+    stat path="{{snapshot_dir}}/{{ mail_db_name }}"
+  register: mail_db_backup
+
+- name: restore mail database backup
+  copy:
+    src: "{{snapshot_dir}}/{{ mail_db_name }}"
+    dest: "{{ mail_db }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: mail_db_backup.stat.exists == true
+
+    
+
+    
 # The database directory should have been created and encrypted by the
 # encfs.yml playbook.
 - name: mail account database present

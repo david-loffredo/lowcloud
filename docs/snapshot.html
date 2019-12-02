@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>Snapshot</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
+
+<H1>Snapshot</H1>
+
+<p><b>ROLE</b> snapshot, snapshot.yml playbook
+
+<p>When migrating to a new machine most of the user data like the mail
+spool and HTML root directories can be restored from backups once the
+machine is up and running.</p>
+
+<p>There are some configuration files that we would prefer to save and
+install as part of the first pass configuration by ansible (SLL keys,
+the mail users database) rather than recreate then from scratch and
+then replace later.</p>
+
+<p>In particular, with the SSL keys, we want to avoid creating a new
+account and allocating new keys which we would then abandon and get
+warnings about later.  The mail user DB might have new users or
+changed passwords that have accumulated over time.  It doesn't matter
+much if this is replaced in the second pass, but this way it is good
+right out of the box.</p>
+
+<p>The top level snapshot.yml playbook runs this role and populates
+the "backup" local directory with subdirectories for every hostname.
+
+<PRE class=code>
+$ ansible-playbook -K --ask-vault-pass -i hosts snapshot.yml
+</PRE>
+
+<p><b>NOTE</b> - you generally want to get rid of the snapshot
+directory after you are done with it so that it does not go stale and
+inadvertantly overwrite good data.
+
+</BODY>
+</HTML>
+

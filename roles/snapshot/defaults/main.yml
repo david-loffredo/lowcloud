@@ -7,7 +7,7 @@
 # directory below.  This is useful if we are restoring a machine
 # rather than creating something from scratch.
 #
-snapshot_dir: "{{inventory_dir}}/backup"
+snapshot_dir: "{{inventory_dir}}/snapshot/{{inventory_hostname}}"
 
 # Known snapshots are:
 # letsencrypt_backup.tgz - /etc/letsencrypt contents with symlinks

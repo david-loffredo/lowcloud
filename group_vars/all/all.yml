@@ -75,10 +75,11 @@ friendly_networks:
 # Snapshot/Backup Settings
 #
 # If present, the roles will restore tar files of data found in the
-# directory below.  This is useful if we are restoring a machine
-# rather than creating something from scratch.
+# directory below.  This can be populated by running the snapshot.yml
+# playbook on the original machine and is useful if we are restoring
+# or updating rather than a clean install.
 #
-snapshot_dir: "{{inventory_dir}}/backup"
+snapshot_dir: "{{inventory_dir}}/snapshot/{{inventory_hostname}}"
 
 # Known snapshots are:
 # letsencrypt_backup.tgz - /etc/letsencrypt contents with symlinks
@@ -125,7 +126,8 @@ mail_cfg_dir: /etc/postfix
 mail_db_crypt:  /var/spool/postfix/etc/maildb_crypt
 mail_db_clear:  /var/spool/postfix/etc/maildb_clear
 mail_db_util: "{{ mail_cfg_dir }}/mailcfg"
-mail_db: "{{ mail_db_clear }}/maildb.sqlite3"
+mail_db_name: maildb.sqlite3
+mail_db: "{{ mail_db_clear }}/{{ mail_db_name }}"
 
 # Encrypt mail data at rest with EncFS, and cleartext mountpoint
 mail_spool_crypt: "/var/mail_crypt"

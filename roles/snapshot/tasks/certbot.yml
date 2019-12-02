@@ -6,4 +6,15 @@
   archive:
     path: /etc/letsencrypt
     format: gz
-    dest: /tmp/letsencrypt_backup.tgz
+    dest: /tmp/letsencrypt_keys.tgz
+
+- name: return certbot keys to mothership
+  fetch:
+    src: /tmp/letsencrypt_keys.tgz
+    dest: "{{snapshot_dir}}/"
+    flat: yes
+
+- name: clean up temporary archive
+  file:
+    path: /tmp/letsencrypt_keys.tgz
+    state: absent

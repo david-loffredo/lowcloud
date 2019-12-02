@@ -19,12 +19,12 @@
 - name: Check for certbot local key backup
   become: False
   local_action:
-    stat path="{{snapshot_dir}}/letsencrypt_backup.tgz"
+    stat path="{{snapshot_dir}}/letsencrypt_keys.tgz"
   register: certbot_key_backup
 
 - name: restore certbot local key backup
   unarchive:
-    src: "{{snapshot_dir}}/letsencrypt_backup.tgz"
+    src: "{{snapshot_dir}}/letsencrypt_keys.tgz"
     dest: /etc/letsencrypt
     owner: root
     group: root

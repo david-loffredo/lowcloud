@@ -1,0 +1,8 @@
+---
+# Snapshot of mail account database
+
+- name: return mail database to mothership
+  fetch:
+    src: "{{mail_db}}"
+    dest: "{{snapshot_dir}}/"
+    flat: yes
