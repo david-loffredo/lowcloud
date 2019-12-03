@@ -46,11 +46,12 @@ the first.yml playbook to lock down SSH.  This should be the only time
 a password based login is used with the machine.  You need "sshpass"
 installed locally because the remote machine does not yet have any
 keys installed.  After this, remote password login is disabled and
-everything uses ssh keys.
+everything uses ssh keys.  It is also a good idea to change the root
+password manually because the original passed through the Linode UI.
 
 <PRE class=code>
 $ export ANSIBLE_HOST_KEY_CHECKING=False
-$ ansible-playbook first.yml --ask-pass -i hosts
+$ ansible-playbook --ask-pass --ask-vault-pass -i hosts first.yml
 </PRE>
 
 <p>The public key needs to be in single line openssh form; to convert

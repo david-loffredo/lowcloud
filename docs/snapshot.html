@@ -42,6 +42,12 @@ $ ansible-playbook -K --ask-vault-pass -i hosts snapshot.yml
 directory after you are done with it so that it does not go stale and
 inadvertantly overwrite good data.
 
+<p>We might also want to include the SSH keys in the snapshot so that
+we don't trip up people with the host changed warning.
+
+<p>
+/etc/ssh/ssh_host_ed25519_key'
+
 </BODY>
 </HTML>
 

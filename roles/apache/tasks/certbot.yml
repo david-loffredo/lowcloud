@@ -25,7 +25,7 @@
 - name: restore certbot local key backup
   unarchive:
     src: "{{snapshot_dir}}/letsencrypt_keys.tgz"
-    dest: /etc/letsencrypt
+    dest: /etc
     owner: root
     group: root
   when: certbot_key_backup.stat.exists == true

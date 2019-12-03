@@ -41,7 +41,7 @@
         password: "{{ deploy_acct.passwd }}"
       
     - name: accounts have authorized keys
-      authorized_key: user="{{ item.user }}" key="{{ item.sshkey }}"
+      authorized_key: user="{{ item.name }}" key="{{ item.sshkey }}"
       with_items:
         - "{{ root_acct }}"
         - "{{ deploy_acct }}"
