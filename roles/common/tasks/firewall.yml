@@ -64,28 +64,6 @@
     mode: 0644
   notify: restart fail2ban
 
-
-# On Debian 9, the default install of fail2ban is 0.9.x, but the ssh
-# configs there are a bit outdated.  Use the most recent configs from
-# the 0.9 branch at https://github.com/fail2ban/fail2ban.  We will be
-# using the sshd-aggressive jail because it picks up "Did not receive
-# identification string" and "Unable to negotiate with" failures that
-# the default did not.
-#
-# Revisit this when updating to fail2ban 0.10, 0.11, or later as the
-# filter format changes a bit.
-#
-- name: fail2ban extra filters installed
-  copy:
-    src: fail2ban/{{ item }}
-    dest: /etc/fail2ban/filter.d
-    owner: root
-    group: root
-    mode: 0644
-  with_items:
-    - sshd-extra.conf
-  notify: restart fail2ban
-
 - name: fail2ban is started
   service: name=fail2ban state=started
 

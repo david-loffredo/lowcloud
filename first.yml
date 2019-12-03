@@ -7,6 +7,12 @@
   remote_user: root
   port: 22
   tasks:
+    # do this first to minimize the number of log entries in
+    # a different time zone
+    - name: timezone set to {{ timezone }}
+      timezone:
+        name: "{{ timezone }}"
+        
     - name: update the package list
       apt:
         update_cache: yes

@@ -17,16 +17,18 @@
 
 <H1>Server Configuration</H1>
 
-<p>These are Ansible roles that I have built for my own use.  Most
-were inspired by similar roles in sovereign, homebox, or frjo's
-ansible setups.  They assume that you are using Debian 9.
+<p>These are Ansible roles that I have built for my own use to run web
+service and email.  They assume Debian 10 but were begun on Debian 9.
+I did study sovereign, homebox, frjo's ansible setups and many other
+resources, but avoid cargo cult sysadmin.  I try to use the simplest
+solutions wherever possible, such as SQLite rather than a full MySQL
+install for a half dozen virtual mailboxes.</p>
 
 <p>Common configurations including things like firewall, dns and
-ntp. I add this role to all my playbooks, hence the name.
+ntp. I add this role to all my playbooks, hence the name.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Test with Debian 10
 <LI>Deploy DNS on live machine
 <LI>Configure DKIM and automate key rotation with postfix and DNS.
 <LI>Configure RSPAMD with postfix.
@@ -88,8 +90,18 @@ $ ansible-playbook -K --ask-vault-pass -i hosts site.yml
 <li><a href="snapshot.html">Snapshot</a> for migration
 </ul>
 
-<p>Debian uses <code>apt</code> as the package manager.  To completely
-uninstall and reinstall a package.
+<p>Debian uses <code>apt</code> as the package manager.  The
+<a href=https://www.debian.org/distrib/packages>Debian packages</a>
+and the <a href=https://backports.debian.org/Packages/>Backport
+packages</a> are available for install.  To list the
+installed and available versions
+
+<PRE class=code>
+apt list &lt;pkg&gt;
+apt list &lt;pkg&gt; -a    # list all versions in the repo
+</PRE>
+
+<p>If you need to completely uninstall and reinstall a package.
 
 <PRE class=code>
 apt-get --purge remove &lt;pkg&gt;
