@@ -18,8 +18,8 @@
 <p>This uses raw iptables.  Some people install the ufw front end,
 which makes it easier to block everything and open up a few ports.
 Since we might eventually geoblock china, russia, etc. we stick to raw
-iptables so that we can use includes.  We use iptables-persistent to
-reload our config on boot.
+iptables so that we can use includes and ipset.  We use
+iptables-persistent to reload our config on boot.
 
 <p>The playbook writes our IPv4 and IPv6 rules to the following,
 
@@ -34,13 +34,9 @@ change rules, edit etc/iptables/testrules.v* in the templates dir and
 rerun the playbook.
 
 <p>We run fail2ban to scan the logs for repeated intrusion attempts
-and temporarily ban IPs.  The debian package is not the latest so we
-add a few of our own custom rules.
-
-<PRE>
-    /etc/fail2ban/filter.d/*-extra.conf
-</PRE>
-
-
+and temporarily ban IPs.  Debian 10 has a fairly updated package so we
+use it stock and enable checks for sshd, dovecot, postfix and a few
+others.  The Debian 9 version was old so before we switched, we needed
+to add some custom patterns for ssh.
 </BODY>
 </HTML>

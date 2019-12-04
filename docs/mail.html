@@ -16,25 +16,18 @@
 <p><b>ROLE</b> mail
 
 <p>The email configuration is handled by the "mail" role.  Postfix is
-used as the MTA and Dovecot for the LDA and IMAP server.  Rspamd is
-the only milter used.
+used as the MTA and Dovecot for the LDA and IMAP server.  Rspamd will
+be the only milter used.
 
-<p>All accounts are virtual mailboxes.  The machine only has system unix
-accounts and no mail is delivered to them.  The virtual user database
-holds the account details in a set of SQL tables.  Some background can
-be found at:
+<p>All accounts are virtual mailboxes.  The machine only has system
+unix accounts and no mail is delivered to them.  The virtual user
+database holds account details in a set of SQL tables.  Background on
+virtual users can be found
+at <a href="http://www.postfix.org/VIRTUAL_README.html">postfix.org</a>
 
-<blockquote>
-   <a href="http://www.postfix.org/VIRTUAL_README.html">http://www.postfix.org/VIRTUAL_README.html</a>
-</blockquote>
-
-
-<p>We use SQLite for the database because this is small, simple, and
-relatively static, but you can use MySQL, Maria, or Postgres if you
-prefer.  I've written the mailcfg perl utility to manage the database.
-It uses DBI and might just need minor changes to the connect statement
-and SQL for use with other RDBs.  The utility is in /etc/postfix, and
-is run as "mailcfg &lt;command&gt;".  The following commands are available:
+<p>I wrote the <b>/etc/postfix/mailcfg</b> utility to manage these
+tables.  Run it as "mailcfg &lt;command&gt;".  The following commands
+are available:
 
 <PRE class=code>
  help		Print this message
@@ -56,20 +49,29 @@ is run as "mailcfg &lt;command&gt;".  The following commands are available:
  disable &lt;email&gt;	Marks user as inactive
  enable &lt;email&gt;		Marks user as active
 </PRE>
- 
-<p>On Debian, smtpd normally runs chrooted to /var/spool/postfix, so
-the maildb.sqlite3 database is kept there so the postfix can
-authenticate against it.  If you also run dovecot chrooted, you may
-have to switch to mysql so that you can access via network port rather
-than file.
 
-<p>Mail is stored in maildir format and encrypted using EncFS.  The
-encrypted directory is /var/mail_crypt and mounted as cleartext in
-/var/mail_clear.  All mail is owned by the vmail user.
+<p>We use SQLite for the database because this is small, simple, and
+relatively static, but you can use MySQL, Maria, or Postgres if you
+prefer.  The <b>mailcfg</b> perl utility uses DBI and might just need
+a few minor changes to the connect statement and SQL for use with
+other RDBs.</p>
 
-<p>Postfix is not started automatically at boot because the encrypted
-spool must first be mounted manually.  Log in and run the "mailboot"
-script to decrypt the mail spool and start postfix.
+<p>The mail is stored in maildir format and encrypted using EncFS.
+The encrypted directory is <b>/var/mail_crypt</b> and mounted as
+cleartext in
+<b>/var/mail_clear</b>.  All mail is owned by the vmail user.
+
+<p>On Debian, smtpd runs chrooted to <b>/var/spool/postfix</b>, so we
+store maildb.sqlite3 encrypted like the mail in
+<b>/var/spool/postfix/etc/maildb_crypt</b> and <b>_clear</b> so that
+postfix can authenticate against it.  If you also run dovecot
+chrooted, you may have to switch to mysql so that you can access via
+network port rather than file.
+
+<p>On reboot, postfix does not start automatically because these
+encrypted directories must first be mounted.  Log in and run
+<b>/etc/postfix/mailboot</b> to enter the password, mount the
+cleartext directories, and start postfix.
 
 
 <h2>FUTURE WORK -- MILTERS NOT YET IMPLEMENTED</h2>

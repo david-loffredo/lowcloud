@@ -9,23 +9,27 @@
 <UL>
 <LI><A href=index.html>[home]</A>
 <p>
-<LI><A href=first>First Login</A>
+<LI><A href=first>First Login Playbook</A>
 <LI><A href=play>Run Playbook</A>
 <LI><A href=pkgs>Packages</A>
+<LI><A href=vars>Variables</A>
+<LI><A href=reboot>Rebooting</A>
 </UL>
 </div>
 
 <H1>Server Configuration</H1>
 
 <p>These are Ansible roles that I have built for my own use to run web
-service and email.  They assume Debian 10 but were begun on Debian 9.
-I did study sovereign, homebox, frjo's ansible setups and many other
-resources, but avoid cargo cult sysadmin.  I try to use the simplest
+service and email.  They assume Debian 10.  I try to use the simplest
 solutions wherever possible, such as SQLite rather than a full MySQL
-install for a half dozen virtual mailboxes.</p>
+install for a half dozen virtual mailboxes.
 
-<p>Common configurations including things like firewall, dns and
-ntp. I add this role to all my playbooks, hence the name.</p>
+<p>I began this project by studying sovereign, homebox, mail in a box,
+frjo's ansible setups and other resources.  It is easy to fall into
+the cargo cult sysadmin trap by just following recipes, so I tried to
+use them as inspiration, examine all of the design decisions, and then
+make my own conscious decisions, which I have documented here and in
+the YML files.</p>
 
 <p>TO DO LIST
 <UL>
@@ -41,7 +45,7 @@ easier expansion.
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=first></A>First Login</H2>
+<A NAME=first></A>First Login Playbook</H2>
 
 <p>The first thing you should do after provisioning any machine is run
 the first.yml playbook to lock down SSH.  This should be the only time
@@ -67,15 +71,27 @@ $ ssh-keygen -i -f yourputtypubkeyfile > openssh.key
 <H2 class=rule>
 <A NAME=play></A>Run Playbook</H2>
 
-<p>This runs the site playbook on all machines in the 'hosts'
-inventory file.  It runs as the deploy user and asks passwords for
-sudo on the deploy user and the vault password.  Both are the stpbuild
-passwords.  The <code>-K</code> flag is a shorthand
+<p>The <code>site.yml</code> playbook configures machines for the
+services described below.  Ansible playbooks are is meant to be
+idempotent, which means that they are supposed to leave a machine in a
+given state, no matter how many times you run it or what state it was
+in before.</p>
+
+<p>The command below runs the playbook on all machines in the 'hosts'
+inventory file.  It runs as the <b>deploy</b> user and asks passwords
+for sudo on the deploy user and the vault password.  Both are the
+stpbuild passwords.  The <code>-K</code> flag is a shorthand
 for <code>--ask-become-pass</code>
 
 <PRE class=code>
 $ ansible-playbook -K --ask-vault-pass -i hosts site.yml
 </PRE>
+
+<p>There is another <a href="snapshot.html">snapshot.yml</a> playbook
+that copies back certain data like the letsencrypt keys so that they
+can be transfered over when wiping or migrating a machine.  This
+playbook is run in the same way as <code>site.yml</code>.
+
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -83,11 +99,10 @@ $ ansible-playbook -K --ask-vault-pass -i hosts site.yml
 
 <ul>
 <li><a href="firewall.html">Firewall</a>
-<li><a href="dns.html">DNS Configuration</a>
 <li><a href="certbot.html">Certbot/LetsEncrypt</a>
 <li><a href="mail.html">Mail</a>
+<li><a href="dns.html">DNS Configuration</a>
 <p>
-<li><a href="snapshot.html">Snapshot</a> for migration
 </ul>
 
 <p>Debian uses <code>apt</code> as the package manager.  The
@@ -140,5 +155,16 @@ the following in the cleartext file.
   - email: "somebody@foobar.com"
     pw: "{{vault_mbox_someone_pw}}"
 </PRE>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=reboot></A>Rebooting</H2>
+
+<p>The machine should boot clean and everything will come up except
+mail.  Because the mail spool is encrypted, you must log in,
+run <b>/etc/postfix/mailboot</b> to enter the EncFS password.  This
+will mount the cleartext directories and start postfix.
+
+
 </BODY>
 </HTML>

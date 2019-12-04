@@ -17,25 +17,84 @@
 
 <p>We use certbot to acquire LetsEncrypt SSL certificates.  We
 generate one certificate per root domain.  Each certificate matches
-all of the aliases that we use for that domain (www., mail., etc).
-This should make it easier to move domains to separate machines if
-needed.  Now that we are managing our own DNS, we could use the DNS
-challenge and get a wildcard cert, but that is not really recommended
-unless you really are creating machines dynamically.</p>
+all of the aliases that we use for that domain (www., mail., etc),
+which should make it easier to move domains to separate machines if
+needed.  Since we manage our own DNS, we could use the DNS challenge
+and get a wildcard cert, but that is not really recommended unless you
+really are creating machines dynamically.</p>
 
-<p>The "certbot_certs" is a list of structs, one for each root domain,
-which themselves contains a list of all the machine names that cert
-should support.</p>
+<p>In the group_vars, "certbot_certs" is a list of structs, one for
+each root domain, with a list of all the machine names that cert
+should support.  It looks something like this.</p>
 
-<p>Default permissions for the letsencrypt directory are 755.  We
-switch it to 750 and make it part of the ssl-cert group.  Postfix and
-dovecot run as root, but if other apps need access, they can be added
-to the ssl-cert group.</p>
+<PRE class=code>
+web_main:
+  - name: "{{ domain }}"
+    aliases:
+      - www.{{ domain }}
+      - mail.{{ domain }}
+
+web_vhosts:
+  - name: foobar.com
+    aliases:
+      - www.foobar.com
+
+certbot_certs:
+  - domains: "{{ [ web_main.0.name ] + web_main.0.aliases }}"
+  - domains: "{{ [ web_vhosts.0.name ] + web_vhosts.0.aliases }}"
+</PRE>
+
+<p>The /etc/letsencrypt directory holds a history of all past keys
+under the <code>archive</code> directory and symlinks to the current
+one under the <code>live</code> directory.  These are mode 700 so only
+apps that run as root can see them.  This works for apache, postfix
+and dovecot, but if a non-root app needs access, you might want to
+create a ssl-cert group and change it to mode 750.</p>
+
+<p>Below is an example of certs for mydomain.net and foobar.com
+domains.  Note the symlinks in the live directory.  When archiving the
+letsencrypt directory, it is important to use a method that preserves
+these symlinks or else certbot may not renew properly.
+The <a href="snapshot.html">snapshot</a> playbook makes a compressed
+tar file of this directory when preserving the config.</p>
+
+<PRE class=code>
+root@localhost:/etc/letsencrypt# ls -l
+total 40
+drwxr-xr-x 3 root root 4096 Dec  2 23:08 accounts
+drwx------ 4 root root 4096 Dec  2 23:08 archive
+-rw-r--r-- 1 root root  121 May 26  2018 cli.ini
+drwxr-xr-x 2 root root 4096 Dec  2 23:08 csr
+drwx------ 2 root root 4096 Dec  2 23:08 keys
+drwx------ 4 root root 4096 Dec  2 23:08 live
+-rw-r--r-- 1 root root 1618 Dec  2 19:42 options-ssl-apache.conf
+drwxr-xr-x 2 root root 4096 Dec  2 23:08 renewal
+drwxr-xr-x 5 root root 4096 Dec  2 23:08 renewal-hooks
+-rwxr-xr-x 1 root root 1923 Dec  2 19:42 testcertnames
+
+root@localhost:/etc/letsencrypt# ls -l live/*
+live/mydomain.net:
+total 4
+lrwxrwxrwx 1 root root  37 Dec  2 19:42 cert.pem -> ../../archive/mydomain.net/cert1.pem
+lrwxrwxrwx 1 root root  38 Dec  2 19:42 chain.pem -> ../../archive/mydomain.net/chain1.pem
+lrwxrwxrwx 1 root root  42 Dec  2 19:42 fullchain.pem -> ../../archive/mydomain.net/fullchain1.pem
+lrwxrwxrwx 1 root root  40 Dec  2 19:42 privkey.pem -> ../../archive/mydomain.net/privkey1.pem
+-rw-r--r-- 1 root root 692 Dec  2 19:42 README
+
+live/foobar.com:
+total 4
+lrwxrwxrwx 1 root root  39 Dec  2 19:42 cert.pem -> ../../archive/foobar.com/cert1.pem
+lrwxrwxrwx 1 root root  40 Dec  2 19:42 chain.pem -> ../../archive/foobar.com/chain1.pem
+lrwxrwxrwx 1 root root  44 Dec  2 19:42 fullchain.pem -> ../../archive/foobar.com/fullchain1.pem
+lrwxrwxrwx 1 root root  42 Dec  2 19:42 privkey.pem -> ../../archive/foobar.com/privkey1.pem
+-rw-r--r-- 1 root root 692 Dec  2 19:42 README
+</PRE>
 
 <p>Certificate renewal is done using cron.  Services that depend on
-them are stopped and started by adding small shell scripts to the pre
-and post renewal directories.  Some can just be bounced by adding a
-reload or restart action to the post-renewal directory.</p>
+them are stopped and started by adding small shell scripts to
+the <code>pre</code> and <code>post</code> directories
+under <code>renewal-hooks</code>.  Some can just be bounced by adding
+a reload or restart action to the <code>post</code> directory.</p>
 
 </BODY>
 </HTML>

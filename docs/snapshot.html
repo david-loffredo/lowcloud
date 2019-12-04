@@ -11,7 +11,7 @@
 </UL>
 </div>
 
-<H1>Snapshot</H1>
+<H1>Snapshot Unique Config Files</H1>
 
 <p><b>ROLE</b> snapshot, snapshot.yml playbook
 
@@ -31,22 +31,38 @@ changed passwords that have accumulated over time.  It doesn't matter
 much if this is replaced in the second pass, but this way it is good
 right out of the box.</p>
 
-<p>The top level snapshot.yml playbook runs this role and populates
-the "backup" local directory with subdirectories for every hostname.
+<p>The <code>snapshot.yml</code> playbook populates the "snapshot"
+local directory with a subdirectory for each hostname containing
+individual files or tared directories that we want to carry over.  The
+various roles called by <code>site.yml</code> check whether this
+exists and copies the data if it is present.</p>
+
+<p>When using this, run snapshot.yml to create the snapshot directory,
+rebuild the machine, then run site.yml to initialize the new machine.
+After the machine is configured, remove the snapshot directory so that
+it does not go stale and inadvertantly overwrite good data later on.
 
 <PRE class=code>
+# make snapshot/machine.name directory
 $ ansible-playbook -K --ask-vault-pass -i hosts snapshot.yml
+
+# wipe/rebuild machine
+
+# initialize the new machine
+$ ansible-playbook --ask-pass --ask-vault-pass -i hosts first.yml
+$ ansible-playbook -K --ask-vault-pass -i hosts site.yml
+
+# delete snapshot/machine.name directory
 </PRE>
 
-<p><b>NOTE</b> - you generally want to get rid of the snapshot
-directory after you are done with it so that it does not go stale and
-inadvertantly overwrite good data.
+<p>We might also want to include the SSH host keys in the snapshot so
+that we don't trip up people with the host changed warning.  This is a
+bit of a chicken and egg thing though since first login will regen
+keys and you will have to clear known_hosts yourself, but might be
+worth it if a lot of other people are sshing into the machine for some
+reason.
 
-<p>We might also want to include the SSH keys in the snapshot so that
-we don't trip up people with the host changed warning.
-
-<p>
-/etc/ssh/ssh_host_ed25519_key'
+<p>/etc/ssh/ssh_host_ed25519_key'
 
 </BODY>
 </HTML>
