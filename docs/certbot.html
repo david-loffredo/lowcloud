@@ -28,20 +28,18 @@ each root domain, with a list of all the machine names that cert
 should support.  It looks something like this.</p>
 
 <PRE class=code>
-web_main:
+web_vhosts:
   - name: "{{ domain }}"
     aliases:
       - www.{{ domain }}
       - mail.{{ domain }}
-
-web_vhosts:
   - name: foobar.com
     aliases:
       - www.foobar.com
 
 certbot_certs:
-  - domains: "{{ [ web_main.0.name ] + web_main.0.aliases }}"
   - domains: "{{ [ web_vhosts.0.name ] + web_vhosts.0.aliases }}"
+  - domains: "{{ [ web_vhosts.1.name ] + web_vhosts.1.aliases }}"
 </PRE>
 
 <p>The /etc/letsencrypt directory holds a history of all past keys

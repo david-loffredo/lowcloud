@@ -92,20 +92,18 @@ snapshot_dir: "{{inventory_dir}}/snapshot/{{inventory_hostname}}"
 # contains name (ServerName required), aliases (list of ServerAlias
 # values), admin (ServerAdmin, defaults to webmaster@{{main.name}})
 # and root (DocumentRoot, defaults to /var/www/{{host}})
-web_main:
+web_vhosts:
   - name: "{{ domain }}"
     aliases:
       - www.{{ domain }}
       - mail.{{ domain }}
-
-web_vhosts:
   - name: machineplan.com
     aliases:
       - www.machineplan.com
 
 certbot_certs:
-  - domains: "{{ [ web_main.0.name ] + web_main.0.aliases }}"
   - domains: "{{ [ web_vhosts.0.name ] + web_vhosts.0.aliases }}"
+  - domains: "{{ [ web_vhosts.1.name ] + web_vhosts.1.aliases }}"
 
   
 # Mail domains and users.  Set into the virtual.sqlite database for

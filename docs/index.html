@@ -9,10 +9,10 @@
 <UL>
 <LI><A href=index.html>[home]</A>
 <p>
-<LI><A href=first>First Login Playbook</A>
-<LI><A href=play>Run Playbook</A>
 <LI><A href=pkgs>Packages</A>
 <LI><A href=vars>Variables</A>
+<LI><A href=first>First Login Playbook</A>
+<LI><A href=play>Site Setup Playbook</A>
 <LI><A href=reboot>Rebooting</A>
 </UL>
 </div>
@@ -45,60 +45,11 @@ easier expansion.
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=first></A>First Login Playbook</H2>
-
-<p>The first thing you should do after provisioning any machine is run
-the first.yml playbook to lock down SSH.  This should be the only time
-a password based login is used with the machine.  You need "sshpass"
-installed locally because the remote machine does not yet have any
-keys installed.  After this, remote password login is disabled and
-everything uses ssh keys.  It is also a good idea to change the root
-password manually because the original passed through the Linode UI.
-
-<PRE class=code>
-$ export ANSIBLE_HOST_KEY_CHECKING=False
-$ ansible-playbook --ask-pass --ask-vault-pass -i hosts first.yml
-</PRE>
-
-<p>The public key needs to be in single line openssh form; to convert
-a verbose key from putty, do:
-
-<PRE class=code>
-$ ssh-keygen -i -f yourputtypubkeyfile > openssh.key
-</PRE>
-
-<!-- ============================== -->
-<H2 class=rule>
-<A NAME=play></A>Run Playbook</H2>
-
-<p>The <code>site.yml</code> playbook configures machines for the
-services described below.  Ansible playbooks are is meant to be
-idempotent, which means that they are supposed to leave a machine in a
-given state, no matter how many times you run it or what state it was
-in before.</p>
-
-<p>The command below runs the playbook on all machines in the 'hosts'
-inventory file.  It runs as the <b>deploy</b> user and asks passwords
-for sudo on the deploy user and the vault password.  Both are the
-stpbuild passwords.  The <code>-K</code> flag is a shorthand
-for <code>--ask-become-pass</code>
-
-<PRE class=code>
-$ ansible-playbook -K --ask-vault-pass -i hosts site.yml
-</PRE>
-
-<p>There is another <a href="snapshot.html">snapshot.yml</a> playbook
-that copies back certain data like the letsencrypt keys so that they
-can be transfered over when wiping or migrating a machine.  This
-playbook is run in the same way as <code>site.yml</code>.
-
-
-<!-- ============================== -->
-<H2 class=rule>
 <A NAME=pkgs></A>Packages</H2>
 
 <ul>
 <li><a href="firewall.html">Firewall</a>
+<li><a href="apache.html">Web Server</a>
 <li><a href="certbot.html">Certbot/LetsEncrypt</a>
 <li><a href="mail.html">Mail</a>
 <li><a href="dns.html">DNS Configuration</a>
@@ -155,6 +106,57 @@ the following in the cleartext file.
   - email: "somebody@foobar.com"
     pw: "{{vault_mbox_someone_pw}}"
 </PRE>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=first></A>First Login Playbook</H2>
+
+<p>The first thing you should do after provisioning any machine is run
+the first.yml playbook to lock down SSH.  This should be the only time
+a password based login is used with the machine.  You need "sshpass"
+installed locally because the remote machine does not yet have any
+keys installed.  After this, remote password login is disabled and
+everything uses ssh keys.  It is also a good idea to change the root
+password manually because the original passed through the Linode UI.
+
+<PRE class=code>
+$ export ANSIBLE_HOST_KEY_CHECKING=False
+$ ansible-playbook --ask-pass --ask-vault-pass -i hosts first.yml
+</PRE>
+
+<p>The public key needs to be in single line openssh form; to convert
+a verbose key from putty, do:
+
+<PRE class=code>
+$ ssh-keygen -i -f yourputtypubkeyfile > openssh.key
+</PRE>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=play></A>Site Setup Playbook</H2>
+
+<p>The <code>site.yml</code> playbook configures machines for the
+services described below.  Ansible playbooks are is meant to be
+idempotent, which means that they are supposed to leave a machine in a
+given state, no matter how many times you run it or what state it was
+in before.</p>
+
+<p>The command below runs the playbook on all machines in the 'hosts'
+inventory file.  It runs as the <b>deploy</b> user and asks passwords
+for sudo on the deploy user and the vault password.  Both are the
+stpbuild passwords.  The <code>-K</code> flag is a shorthand
+for <code>--ask-become-pass</code>
+
+<PRE class=code>
+$ ansible-playbook -K --ask-vault-pass -i hosts site.yml
+</PRE>
+
+<p>There is another <a href="snapshot.html">snapshot.yml</a> playbook
+that copies back certain data like the letsencrypt keys so that they
+can be transfered over when wiping or migrating a machine.  This
+playbook is run in the same way as <code>site.yml</code>.
+
 
 <!-- ============================== -->
 <H2 class=rule>

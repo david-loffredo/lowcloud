@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>Mail</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
+
+<H1>Web Service</H1>
+ 
+<p><b>ROLE</b> apache
+
+<p>The web service configuration is handled by the "apache" role.
+Apache is used as the server and this role sets up SSL keys from Lets
+Encrypt using <a href="certbot.html">certbot</a>.  HTTP and HTTPS are
+configured on the standard ports.</p>
+
+<p>The role creates one or more vhosts, along with aliases for each.
+The document root for each vhost is at <b>/var/www/&lt;domain&gt;</b>.
+We initialize the root with an index.html if one is not present.  The
+files are currently owned by root, but we create a 'www-data' group
+for future use when others might be uploading content.</p>
+
+<p>In the group_vars, the <b>web_vhosts</b> variable is a list of
+structs, one for each root domain, with a main name and any aliases.
+It looks something like this.</p>
+
+<PRE class=code>
+web_vhosts:
+  - name: "{{ domain }}"
+    aliases:
+      - www.{{ domain }}
+      - mail.{{ domain }}
+
+  - name: foobar.com
+    aliases:
+      - www.foobar.com
+</PRE>
+
+</BODY>
+</HTML>
+

@@ -6,11 +6,9 @@
 # contains name (ServerName required), aliases (list of ServerAlias
 # values), admin (ServerAdmin, defaults to webmaster@{{main.name}})
 # and root (DocumentRoot, defaults to /var/www/{{host}})
-web_main:
+web_vhosts:
   - name: "{{ domain }}"
     aliases: [ "www.{{ domain }}" ] 
-
-web_vhosts:
 
 #========================================
 # Certbot Settings

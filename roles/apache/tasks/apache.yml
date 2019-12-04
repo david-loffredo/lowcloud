@@ -13,7 +13,6 @@
 - name: configurations present for each host
   include_tasks: apache_host.yml
   with_items:
-    - "{{ web_main }}"
     - "{{ web_vhosts }}"
   loop_control:
     loop_var: host
