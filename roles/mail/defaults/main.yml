@@ -1,0 +1,16 @@
+---
+#========================================
+# EncFS Settings
+#
+
+# mail spool
+mail_spool_crypt: /var/vmail_crypt
+mail_spool_clear: /var/vmail
+
+# mail database
+mail_db_crypt:  /var/spool/postfix/etc/maildb_crypt
+mail_db_clear:  /var/spool/postfix/etc/maildb
+
+# Private directory for configuration things
+private_dir_crypt:  /var/private_crypt
+private_dir_clear:  /var/private

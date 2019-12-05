@@ -1,0 +1,14 @@
+---
+- name: borgbackup packages are installed
+  apt:
+    name:
+      - borgbackup
+    state: present
+
+# Can backup directly to rsync.net with borg.
+# Can replicate to an S3 bucket with rclone but the borg folks do
+# not recommend this 
+# https://www.flyinggrizzly.net/2017/01/29/setting-up-borg/
+# borg init local repo
+
+# restic has native support for S3 buckets.  May want to use that instead

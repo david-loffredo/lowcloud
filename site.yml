@@ -8,6 +8,7 @@
     - { role: common, tags: common }
     - { role: apache, tags: apache }
     - { role: mail, tags: mail }
+    - { role: backup, tags: backup }
 
 
 ##- monitoring  # Monitoring role should be last. See roles/monitoring/README.md

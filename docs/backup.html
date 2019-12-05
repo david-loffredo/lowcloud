@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>Backup</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
+
+<H1>Backup</H1>
+
+<p><b>ROLE</b> backup
+
+<p>The host backup configuration is handled by the "backup" role.  We
+use <a href="https://www.borgbackup.org/">Borg</a> as the backup agent
+because it has a nice list of features like deduplication, encryption,
+and a good community.</p>
+
+<p>We will back up the list of config files covered by
+the <a href="snapshot.html">snapshot</a> playbook, plus the mail
+spool.  May or may not back up the document roots for the web sites.
+Is it worth it to back up logs?
+
+
+<p>For the backup location, we could do local disk or a remote ssh
+borg server like supplied
+by <a href="https://www.rsync.net/products/borg.html">rsync.net</a>.
+Direct to an S3 bucket is not currently supported by borg, but you
+could go to local disk and rclone sync as described in
+<a href="https://opensource.com/article/17/10/backing-your-machines-borg">this
+article</a>, but this still requires double local disk space. 
+
+</BODY>
+</HTML>
+

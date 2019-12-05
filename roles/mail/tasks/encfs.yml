@@ -9,7 +9,13 @@
     - "{{mail_spool_clear}}"
     - "{{mail_db_crypt}}"
     - "{{mail_db_clear}}"
-  
+    - "{{private_dir_crypt}}"
+    - "{{private_dir_clear}}"
+
+## ENCFS is deprecated so consider switching to per directory ext4
+## encryption with fscrypt.  Need to investigate how to best do this
+## though.  https://tlbdk.github.io/ubuntu/2018/10/22/fscrypt.html
+
 ##
 ## Mail Spool Directory
 ##
@@ -57,6 +63,33 @@
   file: state=directory path={{mail_db_clear}} mode=0755
 
 
+##
+## Private Configuration Directory
+##
+- name: encrypted private dir contents check
+  shell: ls {{private_dir_crypt}}/*
+  ignore_errors: True
+  changed_when: False  # never report as "changed"
+  register: encfs_private_check
+
+# Check for the presence of a flag file to see if the filesystem has
+# been initialized yet.  On first call, EncFS gathers info and inits
+# the filesystem.  The "p" is for paranoia mode.
+#
+- name: encrypted private dir empty, creating new
+  shell: printf "p\n{{ private_dir_pw }}" | encfs {{private_dir_crypt}} {{private_dir_clear}} --public --stdinpass && touch {{private_dir_clear}}/mounted.txt
+  when: encfs_private_check.rc > 0
+
+- name: encrypted private dir present, mounted if needed
+  shell: command="printf '{{ private_dir_pw }}' | encfs {{private_dir_crypt}} {{private_dir_clear}} --public --stdinpass" creates="{{private_dir_clear}}/mounted.txt"
+  when: encfs_private_check.rc == 0
+
+- name: cleartext private dir directory permissions
+  file: state=directory path={{private_dir_clear}} mode=0700
+
+
+
+  
 ##
 ## VMAIL user/group and permissions
 ##

@@ -53,6 +53,7 @@ easier expansion.
 <li><a href="certbot.html">Certbot/LetsEncrypt</a>
 <li><a href="mail.html">Mail</a>
 <li><a href="dns.html">DNS Configuration</a>
+<li><a href="backup.html">Backup</a>
 <p>
 </ul>
 
@@ -131,6 +132,18 @@ a verbose key from putty, do:
 <PRE class=code>
 $ ssh-keygen -i -f yourputtypubkeyfile > openssh.key
 </PRE>
+
+<p>When you rebuild a machine, the host key changes and SSH wigs out
+with many ominous messages about man in the middle attacks.  You can
+selectively make ssh forget the key for the name and IP using commands
+like below.
+
+<PRE class=code>
+$ ssh-keygen -f "/home/foo/.ssh/known_hosts" -R "example.com"
+$ ssh-keygen -f "/home/foo/.ssh/known_hosts" -R "11.22.33.44"
+</PRE>
+
+
 
 <!-- ============================== -->
 <H2 class=rule>

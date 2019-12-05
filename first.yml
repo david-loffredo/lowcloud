@@ -74,6 +74,6 @@
 
 
 
-
+# add line Admin-Email: {{admin_email}} to /etc/debconf.conf
     
     

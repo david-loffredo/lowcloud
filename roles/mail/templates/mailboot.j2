@@ -20,5 +20,10 @@ if [ ! -f {{ mail_db_clear }}/mounted.txt ]; then
    encfs {{ mail_db_crypt }} {{ mail_db_clear }} --public
 fi
 
+if [ ! -f {{ private_dir_clear }}/mounted.txt ]; then
+   echo "Mount private config directory"
+   encfs {{ private_dir_crypt }} {{ private_dir_clear }} --public
+fi
+
 /usr/sbin/service start postfix
 /usr/sbin/service start dovecot
