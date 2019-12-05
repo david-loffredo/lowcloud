@@ -33,13 +33,15 @@ the YML files.</p>
 
 <p>TO DO LIST
 <UL>
+<LI>Configure borg for backups, remote to rsync.net in append only
+mode.  Configure a Pi Zero as a trusted machine to prune nightly.  At
+some point consider using bacula + S3 to backup cloud and local
+machines.
+<LI>Enable IPv6 connect for mail to support non-wifi phones.
 <LI>Deploy DNS on live machine
 <LI>Configure DKIM and automate key rotation with postfix and DNS.
 <LI>Configure RSPAMD with postfix.
 <LI>Configure DMARC entry in the DNS.
-<LI>Configure borg for backups, possibly rsync to block storage on
-linode, might also move the mail spool to linode block storage for
-easier expansion.
 <LI>Cut over on actual sites.
 </UL>
 
