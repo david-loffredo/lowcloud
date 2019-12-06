@@ -4,6 +4,9 @@
   user: "{{ deploy_acct.name }}"
   become: True
   gather_facts: True
+  # force notified handlers to run even if there is was an error
+  # somewhere.  Avoids leaving the machine in a screwball state.
+  force_handlers: True      
   roles:
     - { role: common, tags: common }
     - { role: apache, tags: apache }

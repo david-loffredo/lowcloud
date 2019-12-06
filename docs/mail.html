@@ -57,13 +57,18 @@ a few minor changes to the connect statement and SQL for use with
 other RDBs.</p>
 
 <p>The mail is stored in maildir format and encrypted using EncFS.
-The encrypted directory is <b>/var/mail_crypt</b> and mounted as
-cleartext in
-<b>/var/mail_clear</b>.  All mail is owned by the vmail user.
+The encrypted directory is <b>/var/vmail_crypt</b> and mounted as
+cleartext in <b>/var/vmail</b>.  All mail is owned by the vmail user.
+Started having problems with "Error: Couldn't create mailbox list lock
+file_create_locked() failed ... Operation not permitted" This may be
+an interaction with EncFS and FUSE, but changing
+the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
+seemed to fix the issue.  Consider switching to ext4 encryption and
+fscrypt, which operates at a block level.
 
 <p>On Debian, smtpd runs chrooted to <b>/var/spool/postfix</b>, so we
 store maildb.sqlite3 encrypted like the mail in
-<b>/var/spool/postfix/etc/maildb_crypt</b> and <b>_clear</b> so that
+<b>/var/spool/postfix/etc/maildb_crypt</b> and <b>maildb</b> so that
 postfix can authenticate against it.  If you also run dovecot
 chrooted, you may have to switch to mysql so that you can access via
 network port rather than file.

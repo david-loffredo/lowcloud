@@ -34,6 +34,25 @@ could go to local disk and rclone sync as described in
 <a href="https://opensource.com/article/17/10/backing-your-machines-borg">this
 article</a>, but this still requires double local disk space. 
 
+
+<p>Unfortunately the init of the borg repo needs to be done manually,
+mostly because
+of <a href="https://github.com/borgbackup/borg/issues/271">intransigence
+on the part of the borg devs</a>.  So manually log into the client
+machine and run:
+
+<PRE class=code>
+$ borg init --encryption=repokey-blake2 /path/to/repo
+</PRE>
+
+
+
+Arriving here via google, looking to make my ansible playbook check if a repo exists when configuring a machine -- idempotency and all that good stuff.    Really don't want to manually ssh into a machine and diddle around for one thing when everything else is done via playbook.
+
+> Current behaviour of `borg init` is to exit with code 2 if repository does exist. 
+
+Thanks for that note.   If this is accurate, and init takes the password from the environment as do the other commands, then I can just run the init and check the exit code, so my problem seems to be solved.    Perhaps this issue can be closed by better documentation?
+
 </BODY>
 </HTML>
 

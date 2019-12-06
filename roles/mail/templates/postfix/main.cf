@@ -130,6 +130,11 @@ smtpd_recipient_restrictions =
   reject_non_fqdn_recipient,
   reject_unknown_recipient_domain
 
+#Some DNS BL's - high availability:
+#    reject_rbl_client zen.spamhaus.org,
+#    reject_rbl_client bl.spamcop.net,
+#    reject_rbl_client dul.dnsbl.sorbs.net,
+    
 # Relay control: local clients and authenticated clients may specify
 # any destination domain.
 smtpd_relay_restrictions =

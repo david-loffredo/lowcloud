@@ -1,5 +1,6 @@
 [DEFAULT]
 ignoreip  = 127.0.0.1 {{ ansible_default_ipv4.address }} {{ ' '.join(friendly_networks) }}
+findtime  = 2h
 bantime   = 24h
 destemail = {{ admin_email }}
 banaction = iptables-multiport

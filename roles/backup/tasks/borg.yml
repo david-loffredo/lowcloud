@@ -12,3 +12,8 @@
 # borg init local repo
 
 # restic has native support for S3 buckets.  May want to use that instead
+
+
+## Use borg info to test if repo exists??
+## Initialize the repo
+## $ borg init --encryption=repokey-blake2 /path/to/repo

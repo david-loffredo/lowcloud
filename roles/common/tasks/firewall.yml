@@ -6,6 +6,9 @@
       - fail2ban
     state: present
 
+# iproute2 has the new ss command
+# net-tools has the legacy commands including netstat
+    
 - debug:
     msg: OPEN PORTS {{ openports_list }}
       
