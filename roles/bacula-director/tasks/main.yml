@@ -1,0 +1,7 @@
+---
+---
+- name: bacula director packages are installed
+  apt:
+    name:
+      - bacula-director
+    state: present

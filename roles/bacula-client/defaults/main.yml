@@ -1,0 +1,117 @@
+---
+# variable defaults
+# starting point
+
+# Service name
+bacula_client_service: bacula-fd
+
+# Package to be installed (exact version can be specified here)
+bacula_client_pkg: bacula-client
+
+# Path the to the Client config file
+bacula_client_config_file_path: /etc/bacula/bacula-fd.conf
+
+
+# Values of the default FileDaemon options
+bacula_client_config_filedaemon_options_name: "{{ inventory_hostname }}-fd"
+bacula_client_config_filedaemon_options_fdport: 9102
+bacula_client_config_filedaemon_options_working_directory: /var/spool/bacula
+bacula_client_config_filedaemon_options_pid_directory: /var/run
+bacula_client_config_filedaemon_options_pid_max_jobs: 20
+
+# Default FileDaemon resource options for the first FileDaemon definition
+bacula_client_config_filedaemon_options__default:
+  - Name = {{ bacula_client_config_filedaemon_options_name }}
+  - FD Port = {{ bacula_client_config_filedaemon_options_fdport }}
+  - Working Directory = {{ bacula_client_config_filedaemon_options_working_directory }}
+  - Pid Directory = {{ bacula_client_config_filedaemon_options_pid_directory }}
+  - Maximum Concurrent Jobs = {{ bacula_client_config_filedaemon_options_pid_max_jobs }}
+
+# Custom FileDaemon resource options
+bacula_client_config_filedaemon_options__custom: []
+
+# Default FileDaemon resource options
+bacula_client_config_filedaemon:
+  - FileDaemon: "{{
+      bacula_client_config_filedaemon_options__default +
+      bacula_client_config_filedaemon_options__custom }}"
+
+
+# Default values of Director resource options
+bacula_client_config_director_options_name: bacula-dir
+bacula_client_config_director_options_password: "{{ bacula_director_config_director_options_password | default('bacula') }}"
+
+# Default Director resource options
+bacula_client_config_director_options__default:
+  - Name = {{ bacula_client_config_director_options_name }}
+  - Password = "{{ bacula_client_config_director_options_password }}"
+
+# Custom Director resource options
+bacula_client_config_director_options__custom: []
+
+# First Director resource
+bacula_client_config_director__default:
+  - Director: "{{
+      bacula_client_config_director_options__default +
+      bacula_client_config_director_options__custom }}"
+
+# Variable for additional Director resources (e.g. for monitor)
+bacula_client_config_director__custom: []
+
+# Final Director resource
+bacula_client_config_director: "{{
+  bacula_client_config_director__default +
+  bacula_client_config_director__custom }}"
+
+
+# Default values of Messages resource options
+bacula_client_config_messages_options_name: Standard
+bacula_client_config_messages_options_director_name: bacula-dir
+bacula_client_config_messages_options_director: "{{ bacula_client_config_messages_options_director_name }} = all, !skipped, !restored"
+
+# Default Messages resource options
+bacula_client_config_messages_options__default:
+  - Name = {{ bacula_client_config_messages_options_name }}
+  - Director = {{ bacula_client_config_messages_options_director }}
+
+# Custom Messages resource options
+bacula_client_config_messages_options__custom: []
+
+# First Messages resource
+bacula_client_config_messages__default:
+  - Messages: "{{
+      bacula_client_config_messages_options__default +
+      bacula_client_config_messages_options__custom }}"
+
+# Variable for additional Messages resources
+bacula_client_config_messages__custom: []
+
+# Final Messages resource
+bacula_client_config_messages: "{{
+  bacula_client_config_messages__default +
+  bacula_client_config_messages__custom }}"
+
+
+# Custom resources
+bacula_client_config_custom: []
+
+
+# Path to the sysconfig file
+bacula_client_sysconfig_file: /etc/sysconfig/bacula-fd
+
+# Default values of the default sysconfig options
+bacula_client_sysconfig_user: "root"
+bacula_client_sysconfig_group: "root"
+
+# Default sysconfig options
+bacula_client_sysconfig__default:
+  FD_USER: "{{ bacula_client_sysconfig_user }}"
+  FD_GROUP: "{{ bacula_client_sysconfig_group }}"
+
+# Custom sysconfig options
+bacula_client_sysconfig__custom: {}
+
+# Final sysconfig
+bacula_client_sysconfig: "{{
+  bacula_client_sysconfig__default.update(bacula_client_sysconfig__custom) }}{{
+  bacula_client_sysconfig__default }}"

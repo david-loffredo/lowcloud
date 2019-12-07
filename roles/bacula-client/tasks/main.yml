@@ -1,0 +1,46 @@
+---
+---
+- name: bacula client packages are installed
+  apt:
+    name:
+      - bacula-client
+    state: present
+
+# restatart
+
+- name: Configure Bacula Client service
+  template:
+    src: bacula-fd.conf.j2
+    dest: "{{ bacula_client_config_file_path }}"
+  notify:
+    - restart bacula client service
+  tags:
+    - bacula_client_config
+
+
+
+- name: Configure Bacula Client sysconfig
+  template:
+    src: bacula-fd.sysconfig.j2
+    dest: "{{ bacula_client_sysconfig_file }}"
+  notify:
+    - Restart Bacula Client service
+  when: ansible_os_family == "RedHat"
+  tags:
+    - bacula_client_config
+
+- name: Make sure the Bacula Client service is enabled
+  service:
+    name: "{{ bacula_client_service }}"
+    enabled: yes
+  tags:
+    - bacula_client_service
+
+- name: Make sure the Bacula Client service is running
+  service:
+    name: "{{ bacula_client_service }}"
+    state: started
+  register: bacula_client_service_started
+  tags:
+    - bacula_client_service
+    
