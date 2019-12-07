@@ -1,0 +1,33 @@
+#
+# Bacula File Daemon Configuration
+#
+Director {
+  Name = {{ bacula_client_director_name }}
+  Password = "{{ bacula_client_director_pw }}"
+}
+
+# Restricted Director, used by tray-monitor to get file daemon status
+#Director {
+#  Name = bacula-mon
+#  Password = "foobar"
+#  Monitor = yes
+#}
+
+
+#
+# "Global" File daemon configuration specifications
+#
+FileDaemon {
+  Name = {{ bacula_client_filedaemon_name }}
+  FD Port = {{ bacula_client_filedaemon_fdport }}
+  Working Directory = {{ bacula_client_filedaemon_workdir }}
+  Pid Directory = {{ bacula_client_filedaemon_piddir }}
+  Maximum Concurrent Jobs = {{ bacula_client_filedaemon_max_jobs }}
+}
+
+# Send all messages except skipped files back to Director
+Messages {
+  Name = Standard
+  director = {{ bacula_client_director_name }} = all, !skipped, !restored
+}
+

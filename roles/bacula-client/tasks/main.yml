@@ -1,46 +1,39 @@
 ---
----
 - name: bacula client packages are installed
   apt:
     name:
       - bacula-client
     state: present
 
-# restatart
-
-- name: Configure Bacula Client service
+- name: bacula password has real value
+  fail: msg="Set bacula_client_director_pw to a real value"
+  when: bacula_client_director_pw == "changeme"
+    
+- name: bacula client config file
   template:
     src: bacula-fd.conf.j2
-    dest: "{{ bacula_client_config_file_path }}"
+    dest: /etc/bacula/bacula-fd.conf
   notify:
-    - restart bacula client service
-  tags:
-    - bacula_client_config
+    - restart bacula client
+
+- name: bacula working directory present
+  file: state=directory path="{{ bacula_client_filedaemon_workdir }}"
+    owner=root group=bacula mode=0770
+
+## Since the client is in the cloud and our director will likely be
+## NATed and behind a firewall, we leave the Bacula ports blocked on
+## the client and have the director set up an ssh tunnel.  Set up a
+## restricted backup account with a separate key just to set up the
+## tunnel to port 9102.
+## 
 
 
+    
+# RedHat and Suse would also need stuff in sysconfig
 
-- name: Configure Bacula Client sysconfig
-  template:
-    src: bacula-fd.sysconfig.j2
-    dest: "{{ bacula_client_sysconfig_file }}"
-  notify:
-    - Restart Bacula Client service
-  when: ansible_os_family == "RedHat"
-  tags:
-    - bacula_client_config
+- name: bacula client service enabled
+  service: name=bacula-fd enabled=yes
 
-- name: Make sure the Bacula Client service is enabled
-  service:
-    name: "{{ bacula_client_service }}"
-    enabled: yes
-  tags:
-    - bacula_client_service
-
-- name: Make sure the Bacula Client service is running
-  service:
-    name: "{{ bacula_client_service }}"
-    state: started
-  register: bacula_client_service_started
-  tags:
-    - bacula_client_service
+- name: bacula client service started
+  service: name=bacula-fd state=started
     

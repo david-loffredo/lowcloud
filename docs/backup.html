@@ -13,12 +13,18 @@
 
 <H1>Backup</H1>
 
-<p><b>ROLE</b> backup
+<p><b>ROLE</b> bacula-client
 
-<p>The host backup configuration is handled by the "backup" role.  We
-use <a href="https://www.borgbackup.org/">Borg</a> as the backup agent
-because it has a nice list of features like deduplication, encryption,
-and a good community.</p>
+<p>We use <a href="https://www.bacula.org/">Bacula</a> to manage
+backups.  On the machine to be backed up, this is enabled by the
+"bacula-client" role.  The backups are then initiated by and stored on
+a separate director machine.</p>
+
+<p>Since the client is in the cloud and our director will likely be
+NATed and behind a firewall, we leave the Bacula ports blocked on the
+client and have the director set up an ssh tunnel.  We use a
+restricted backup account with a separate ssh key just to set up the
+tunnel to port 9102.</p>
 
 <p>We will back up the list of config files covered by
 the <a href="snapshot.html">snapshot</a> playbook, plus the mail
@@ -26,33 +32,34 @@ spool.  May or may not back up the document roots for the web sites.
 Is it worth it to back up logs?
 
 
-<p>For the backup location, we could do local disk or a remote ssh
-borg server like supplied
+<h2>Why I chose Bacula</h2>
+
+<p>When starting this process, I was originally planning to
+use <a href="https://www.borgbackup.org/">Borg</a> as the backup agent
+because it has a nice list of features like deduplication, encryption,
+and a good community.  Once I started considered <em>where</em> my
+backups would live, I changed my mind.
+
+<p>Borg can back up to local disk or over SSH to a server like
 by <a href="https://www.rsync.net/products/borg.html">rsync.net</a>.
-Direct to an S3 bucket is not currently supported by borg, but you
-could go to local disk and rclone sync as described in
-<a href="https://opensource.com/article/17/10/backing-your-machines-borg">this
-article</a>, but this still requires double local disk space. 
+Borg won't go to an S3 bucket, but a similar project called
+<a href="https://restic.net/">Restic</a> will.
 
+<p>These client-driven backups do a great job guarding against a disk
+crash or mistake, but offer no protection for a p0wned machine.  If
+the client can access past backups for pruning, etc, an attacker can
+mess with them too.  Borg has an append-only mode that is supposed to
+help with this, but all it does is queue deletions until a trusted
+machine tries to do something.  This takes automated pruning right off
+the table because you might not know the machine was compromised until
+too late.
 
-<p>Unfortunately the init of the borg repo needs to be done manually,
-mostly because
-of <a href="https://github.com/borgbackup/borg/issues/271">intransigence
-on the part of the borg devs</a>.  So manually log into the client
-machine and run:
-
-<PRE class=code>
-$ borg init --encryption=repokey-blake2 /path/to/repo
-</PRE>
-
-
-
-Arriving here via google, looking to make my ansible playbook check if a repo exists when configuring a machine -- idempotency and all that good stuff.    Really don't want to manually ssh into a machine and diddle around for one thing when everything else is done via playbook.
-
-> Current behaviour of `borg init` is to exit with code 2 if repository does exist. 
-
-Thanks for that note.   If this is accurate, and init takes the password from the environment as do the other commands, then I can just run the init and check the exit code, so my problem seems to be solved.    Perhaps this issue can be closed by better documentation?
-
+<p>So after considering all of these factors, I fell back to the
+gold-standard of Bacula, which covers oopsie and p0wnage, has a bunch
+of storage options, including tape, which none of the new kids even
+acknowedge the existance of.  It requires setting up more than one
+machine, but a $10 Rapsberry Pi Zero sitting on a shelf is more than
+adaquate for backing up a personal email/web server.
 </BODY>
 </HTML>
 

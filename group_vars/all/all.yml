@@ -159,11 +159,12 @@ mail_aliases:
 
 
 # Encrypt private data at rest with EncFS, and cleartext mountpoint
-# We use this for things like the borg backup encryption key. 
 private_dir_crypt:  /var/private_crypt
 private_dir_clear:  /var/private
 private_dir_pw:    "{{vault_mail_spool_pw}}"
 
+# Backups
+bacula_client_director_pw: "{{vault_bacula_pw}}"
 
 
 dns_ns:  

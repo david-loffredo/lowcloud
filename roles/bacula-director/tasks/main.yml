@@ -4,4 +4,8 @@
   apt:
     name:
       - bacula-director
+# okus one of       
+#      - bacula-director-pgsql
+#      - bacula-director-mysql
+#      - bacula-director-sqlite3
     state: present

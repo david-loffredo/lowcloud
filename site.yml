@@ -11,7 +11,7 @@
     - { role: common, tags: common }
     - { role: apache, tags: apache }
     - { role: mail, tags: mail }
-    - { role: backup, tags: backup }
+    - { role: bacula-client, tags: bacula-client }
 
 
 ##- monitoring  # Monitoring role should be last. See roles/monitoring/README.md
