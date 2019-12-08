@@ -17,7 +17,7 @@
     - restart bacula client
 
 - name: bacula working directory present
-  file: state=directory path="{{ bacula_client_filedaemon_workdir }}"
+  file: state=directory path="{{ bacula_client_workdir }}"
     owner=root group=bacula mode=0770
 
 ## Since the client is in the cloud and our director will likely be
@@ -39,6 +39,18 @@
     user: "{{ bacula_tunnel_acct.name }}"
     key:  "{{ bacula_tunnel_acct.sshkey }}"
 
+
+# This is symbolic name passed by the director to the client that
+# needs to resolve to the storage machine.  Since we are working over
+# a tunnel this must not resolve to anything real so we put an entry
+# in /etc/hosts to map it to 127.0.0.1
+- name: tunnel storage director resolves to loopback
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ bacula_tunnel_sd_addr }}$'
+    line: "127.0.0.1 {{ bacula_tunnel_sd_addr }}"
+    state: present
+  
     
 # RedHat and Suse would also need stuff in sysconfig
 

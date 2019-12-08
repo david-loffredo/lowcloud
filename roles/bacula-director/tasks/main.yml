@@ -1,11 +1,27 @@
 ---
----
-- name: bacula director packages are installed
-  apt:
-    name:
-      - bacula-director
-# okus one of       
-#      - bacula-director-pgsql
-#      - bacula-director-mysql
-#      - bacula-director-sqlite3
-    state: present
+- name: bacula director installed
+  package:  name=bacula-director state=present
+
+# install one database backend: mysql, pgsql or sqlite
+# include: mysql.yml
+# include: pgsql.yml
+# include: sqlite.yml
+  
+- name: bacula director config file
+  template:
+    src: bacula-dir.conf.j2
+    dest: /etc/bacula/bacula-dir.conf
+  notify:
+    - restart bacula director
+
+- name: bacula director working directory present
+  file: state=directory path="{{ bacula_director_workdir }}"
+    owner=root group=bacula mode=0770
+
+# RedHat and Suse would also need stuff in sysconfig
+
+- name: bacula director service enabled
+  service: name=bacula-dir enabled=yes
+
+- name: bacula director service started
+  service: name=bacula-dir state=started

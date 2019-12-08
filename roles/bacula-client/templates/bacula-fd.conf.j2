@@ -18,11 +18,11 @@ Director {
 # "Global" File daemon configuration specifications
 #
 FileDaemon {
-  Name = {{ bacula_client_filedaemon_name }}
-  FD Port = {{ bacula_client_filedaemon_fdport }}
-  Working Directory = {{ bacula_client_filedaemon_workdir }}
-  Pid Directory = {{ bacula_client_filedaemon_piddir }}
-  Maximum Concurrent Jobs = {{ bacula_client_filedaemon_max_jobs }}
+  Name = {{ bacula_client_name }}
+  FD Port = {{ bacula_client_fdport }}
+  Working Directory = {{ bacula_client_workdir }}
+  Pid Directory = {{ bacula_client_piddir }}
+  Maximum Concurrent Jobs = {{ bacula_client_max_jobs }}
 }
 
 # Send all messages except skipped files back to Director

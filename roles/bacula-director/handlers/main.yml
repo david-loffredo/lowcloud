@@ -1,0 +1,5 @@
+---
+# Defines handlers applicable across all machines in the infrastructure.
+
+- name: restart bacula director
+  service: name=bacula-dir state=restarted

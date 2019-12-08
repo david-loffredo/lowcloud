@@ -1,0 +1,118 @@
+#
+# Bacula Director Configuration
+#
+# @/path is used to include files
+
+
+Director {
+  Name = {{ bacula_director_name }}
+  DIR Port = {{ bacula_director_port }}
+  Query File = {{ bacula_director_query_file }}
+  Working Directory = {{ bacula_director_workdir }}
+  Pid Directory = {{ bacula_director_config_director_piddir }}
+  Maximum Concurrent Jobs = {{ bacula_director_max_jobs }}
+  Password = {{ bacula_director_password }}
+  Messages = Standard
+}
+
+Schedule {
+  Name = "MonthlyCycle"
+  Run = Level=Full Pool=Monthly 1st sun at 1:05
+  Run = Level=Differential 2nd-5th sun at 1:05
+  Run = Level=Incremental mon-sat at 1:05
+}
+
+Catalog {
+  Name = MyCatalog
+  dbname = bacula; user = bacula; password = ""
+}
+
+# STORAGE DAEMONS ------------------------------
+
+# This is symbolic name passed by the director to the client that
+# needs to resolve to the storage machine.  Since we are working over
+# a tunnel this must not resolve to anything real so we put an entry
+# in /etc/hosts to map it to 127.0.0.1
+Storage {
+  Name = File
+  Address = {{ bacula_tunnel_sd_addr }}
+  Password = "jMeWZvfikUHvt3kzKVVPpQ0ccmV6emPnF2cPYFdhLApQ"
+  Device = FileStorage
+  Media Type = File
+}
+# A DLT tape storage device
+# Storage {
+#   Name = DLTDrive
+#   Address = rufus
+#   Password = "jMeWZvfikUHvt3kzKVVPpQ0ccmV6emPnF2cPYFdhLApQ"
+#   Device = "HP DLT 80"      # same as Device in Storage daemon
+#   Media Type = DLT8000      # same as MediaType in Storage daemon
+# }
+
+# Default pool definition
+Pool {
+  Name = Default
+  Pool Type = Backup
+  Storage = File
+}
+
+# Reasonable message delivery -- send most everything to
+#   the email address and to the console
+Messages {
+  Name = Standard
+  mail = root@localhost = all, !skipped, !terminate
+  operator = root@localhost = mount
+  console = all, !skipped, !saved
+}
+
+# CLIENTS ========================================
+#
+Client {
+  Name = rufus-fd
+  Address = rufus
+  Catalog = MyCatalog
+  Password = "{{bacula_client_director_pw}}"
+  File Retention = 60d      # sixty day file retention
+  Job Retention = 1y        # 1 year Job retention
+  AutoPrune = yes           # Auto apply retention periods
+}
+
+# Define the backup Job
+Job {
+  Name = "NightlySave"
+  Type = Backup
+  Level = Incremental                 # default
+  Client=rufus-fd
+  FileSet="Full Set"
+  Schedule = "WeeklyCycle"
+  Messages = Standard
+  Pool = Default
+}
+Job {
+  Name = "Restore"
+  Type = Restore
+  Client=rufus-fd
+  FileSet="Full Set"
+  Where = /tmp/bacula-restores
+  Messages = Standard
+  Pool = Default
+}
+
+# List of files to be backed up
+FileSet {
+  Name = "Full Set"
+  Include {
+    Options {signature=SHA1}
+#
+#  Put your list of files here, one per line or include an
+#    external list with:
+#
+#    @file-name
+#
+#  Note: / backs up everything
+  File = /
+}
+  Exclude {}
+}
+
+

@@ -1,0 +1,11 @@
+---
+# The sqlite backend is deprecated but kept alive by a couple of
+# debian guys.  Might like to use for a Pi Zero but no setup docs
+# anymore.  Still have scripts in package.
+# /usr/share/bacula-director/create_sqlite3_database
+# /usr/share/bacula-director/drop_sqlite3_database
+# /usr/share/bacula-director/drop_sqlite3_tables
+# /usr/share/bacula-director/grant_sqlite3_privileges
+# /usr/share/bacula-director/make_sqlite3_tables
+# /usr/share/bacula-director/update_sqlite3_tables
+

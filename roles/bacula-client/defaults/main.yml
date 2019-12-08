@@ -1,19 +1,19 @@
 ---
-bacula_client_service: bacula-fd
 
-bacula_client_config_file_path: /etc/bacula/bacula-fd.conf
-
-# Values of the default FileDaemon options
-bacula_client_filedaemon_name: "{{ inventory_hostname }}-fd"
-bacula_client_filedaemon_fdport: 9102
-bacula_client_filedaemon_workdir: /var/spool/bacula
-bacula_client_filedaemon_piddir: /var/run
-bacula_client_filedaemon_max_jobs: 20
+bacula_client_name: "{{ inventory_hostname }}-fd"
+bacula_client_fdport: 9102
+bacula_client_workdir: /var/spool/bacula
+bacula_client_piddir: /var/run
+bacula_client_max_jobs: 20
 
 bacula_client_director_name: bacula-dir
 bacula_client_director_pw: changeme
 
-
+# This is symbolic name passed by the director to the client that
+# needs to resolve to the storage machine.  Since we are working over
+# a tunnel this must not resolve to anything real so we put an entry
+# in /etc/hosts to map it to 127.0.0.1
+bacula_tunnel_sd_addr: bacula-sd.local
 bacula_tunnel_acct:
   name: bacula-tun
   group: users
