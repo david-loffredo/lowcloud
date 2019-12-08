@@ -14,3 +14,17 @@ bacula_client_director_name: bacula-dir
 bacula_client_director_pw: changeme
 
 
+bacula_tunnel_acct:
+  name: bacula-tun
+  group: users
+  sshkey: "{{ vault_bacula_sshkey }}"
+  passwd: '*'
+
+
+# /etc/letsencrypt
+# /var/private
+# /var/spool/postfix/etc/maildb/maildb.sqlite3
+# /var/vmail
+# /var/www
+# --exclude /var/private/mounted.txt
+# --exclude /var/vmail/mounted.txt

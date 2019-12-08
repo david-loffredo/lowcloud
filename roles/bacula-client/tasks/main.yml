@@ -27,6 +27,17 @@
 ## tunnel to port 9102.
 ## 
 
+- name: bacula tunnel account
+  user:
+    name: "{{ bacula_tunnel_acct.name }}"
+    group: "{{ bacula_tunnel_acct.group }}"
+    state: present
+    password: "{{ bacula_tunnel_acct.passwd }}"
+      
+- name: accounts have authorized keys
+  authorized_key:
+    user: "{{ bacula_tunnel_acct.name }}"
+    key:  "{{ bacula_tunnel_acct.sshkey }}"
 
     
 # RedHat and Suse would also need stuff in sysconfig

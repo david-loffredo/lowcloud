@@ -24,7 +24,10 @@ a separate director machine.</p>
 NATed and behind a firewall, we leave the Bacula ports blocked on the
 client and have the director set up an ssh tunnel.  We use a
 restricted backup account with a separate ssh key just to set up the
-tunnel to port 9102.</p>
+tunnel to port 9102, as described in
+the <a href="https://wiki.bacula.org/doku.php?id=sshtunnel">Bacula
+wiki</a></p>
+
 
 <p>We will back up the list of config files covered by
 the <a href="snapshot.html">snapshot</a> playbook, plus the mail
