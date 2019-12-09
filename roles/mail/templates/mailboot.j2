@@ -25,5 +25,5 @@ if [ ! -f {{ private_dir_clear }}/mounted.txt ]; then
    encfs {{ private_dir_crypt }} {{ private_dir_clear }} --public
 fi
 
-/usr/sbin/service start postfix
-/usr/sbin/service start dovecot
+/usr/sbin/service postfix start
+/usr/sbin/service dovecot start
