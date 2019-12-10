@@ -9,17 +9,22 @@ Director {
   DIR Port = {{ bacula_director_port }}
   Query File = {{ bacula_director_query_file }}
   Working Directory = {{ bacula_director_workdir }}
-  Pid Directory = {{ bacula_director_config_director_piddir }}
+  Pid Directory = {{ bacula_director_piddir }}
   Maximum Concurrent Jobs = {{ bacula_director_max_jobs }}
-  Password = {{ bacula_director_password }}
+  Password = "{{ bacula_console_director_pw }}"
   Messages = Standard
 }
+
+# We use combine everything done on a particular day into one volume
+# and define monthly, weekly, and daily pools with appropriate
+# retention periods.  Some people do a pool per client, but I prefer
+# just one common set.
 
 Schedule {
   Name = "MonthlyCycle"
   Run = Level=Full Pool=Monthly 1st sun at 1:05
-  Run = Level=Differential 2nd-5th sun at 1:05
-  Run = Level=Incremental mon-sat at 1:05
+  Run = Level=Differential Pool=Weekly 2nd-5th sun at 1:05
+  Run = Level=Incremental Pool=Daily mon-sat at 1:05
 }
 
 Catalog {
@@ -36,24 +41,9 @@ Catalog {
 Storage {
   Name = File
   Address = {{ bacula_tunnel_sd_addr }}
-  Password = "jMeWZvfikUHvt3kzKVVPpQ0ccmV6emPnF2cPYFdhLApQ"
+  Password = "{{ bacula_storage_director_pw }}"
   Device = FileStorage
   Media Type = File
-}
-# A DLT tape storage device
-# Storage {
-#   Name = DLTDrive
-#   Address = rufus
-#   Password = "jMeWZvfikUHvt3kzKVVPpQ0ccmV6emPnF2cPYFdhLApQ"
-#   Device = "HP DLT 80"      # same as Device in Storage daemon
-#   Media Type = DLT8000      # same as MediaType in Storage daemon
-# }
-
-# Default pool definition
-Pool {
-  Name = Default
-  Pool Type = Backup
-  Storage = File
 }
 
 # Reasonable message delivery -- send most everything to
@@ -65,34 +55,83 @@ Messages {
   console = all, !skipped, !saved
 }
 
-# CLIENTS ========================================
-#
-Client {
-  Name = rufus-fd
-  Address = rufus
-  Catalog = MyCatalog
-  Password = "{{bacula_client_director_pw}}"
-  File Retention = 60d      # sixty day file retention
-  Job Retention = 1y        # 1 year Job retention
-  AutoPrune = yes           # Auto apply retention periods
+# Default pool definition
+# We may want to switch to VirtualFull and just always do incrementals
+# or differentials, since that may be more network efficient.
+Pool {
+  Name = Default
+  Pool Type = Backup
+  Storage = File
 }
 
-# Define the backup Job
-Job {
-  Name = "NightlySave"
-  Type = Backup
-  Level = Incremental                 # default
-  Client=rufus-fd
-  FileSet="Full Set"
-  Schedule = "WeeklyCycle"
-  Messages = Standard
-  Pool = Default
+Pool {
+  Name = Monthly
+  Pool Type = Backup
+  Recycle = yes # automatically recycle Volumes
+  AutoPrune = yes # Prune expired volumes
+  Volume Retention = 6 months
+  Label Format = Monthly-
+  Volume Use Duration = 14 days
 }
+
+Pool {
+  Name = Weekly
+  Pool Type = Backup
+  Recycle = yes
+  AutoPrune = yes
+  Volume Retention = 40 days
+  Label Format = Weekly-
+  Volume Use Duration = 6 days
+}
+
+Pool {
+  Name = Daily
+  Pool Type = Backup
+  Recycle = yes # automatically recycle Volumes
+  AutoPrune = yes # Prune expired volumes
+  Volume Retention = 10 days
+  Label Format = Daily-
+  Volume Use Duration = 23h
+}
+
+
+# CLIENTS ========================================
+#
+
+
+Client {
+  Name={{bacula_client_name}}
+  Password = "{{ bacula_client_director_pw }}"
+  Address=localhost
+  FDPort=9112	# Client connected using an ssh tunnel
+  Catalog = MyCatalog
+}
+
+# Look at the Reschedule Interval to keep trying a job until it
+# succeeds, like pinging a laptop until it shows up or bumblebee until
+# it is turned on.
+
 Job {
-  Name = "Restore"
+  Name = "{{bacula_client_name}}"
+  Type = Backup
+  Client = {{bacula_client_name}}
+  FileSet="CloudMail"
+  Schedule = "MonthlyCycle"
+  Storage = File
+  Messages = Standard
+  Max Full Interval = 1 month     # upgrade to full when older than a month
+  Pool = Default
+  Priority = 10
+  Write Bootstrap = "/home/backup/bacula/wdir/%c.bsr"
+#  Run Before Job = 
+#  Run After Job = 
+}
+
+Job {
+  Name = "Restore-{{bacula_client_host}}"
   Type = Restore
-  Client=rufus-fd
-  FileSet="Full Set"
+  Client={{bacula_client_name}}
+  FileSet="CloudMail"
   Where = /tmp/bacula-restores
   Messages = Standard
   Pool = Default
@@ -100,19 +139,19 @@ Job {
 
 # List of files to be backed up
 FileSet {
-  Name = "Full Set"
+  Name = "CloudMail"
   Include {
+    File = /etc/letsencrypt
+    File = /var/private
+    File = /var/spool/postfix/etc/maildb/maildb.sqlite3
+    File = /var/vmail
+    File = /var/www
     Options {signature=SHA1}
-#
-#  Put your list of files here, one per line or include an
-#    external list with:
-#
-#    @file-name
-#
-#  Note: / backs up everything
-  File = /
-}
-  Exclude {}
+  }
+  Exclude {
+    File = /var/private/mounted.txt
+    File = /var/vmail/mounted.txt
+  }
 }
 
 

@@ -1,11 +1,17 @@
 ---
 # Initial config of a server to lock down ssh.
 
+# Rather than set a hosts: all and limit, instead substitute a
+# specific host address via the target variable and --extra-vars:
+# ansible-playbook first.yml --extra-vars "target=imac-2.local"
+
 - name: First setup of new server
-  hosts: all
+  hosts: '{{ target }}'
   gather_facts: no
   remote_user: root
   port: 22
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
   tasks:
     # do this first to minimize the number of log entries in
     # a different time zone
@@ -47,7 +53,7 @@
         password: "{{ deploy_acct.passwd }}"
       
     - name: accounts have authorized keys
-      authorized_key: user="{{ item.name }}" key="{{ item.sshkey }}"
+      authorized_key: user="{{ item.name }}" key="{{ item.sshpub }}"
       with_items:
         - "{{ root_acct }}"
         - "{{ deploy_acct }}"

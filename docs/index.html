@@ -20,9 +20,10 @@
 <H1>Server Configuration</H1>
 
 <p>These are Ansible roles that I have built for my own use to run web
-service and email.  They assume Debian 10.  I try to use the simplest
-solutions wherever possible, such as SQLite rather than a full MySQL
-install for a half dozen virtual mailboxes.
+service and email, and to do regular backups.  They assume Debian 10.
+I use the simplest solutions that I can find, both for minimal machine
+requirements and minimal attack surface.  For example, SQLite rather
+than a full MySQL install for a half dozen virtual mailboxes.
 
 <p>I began this project by studying sovereign, homebox, mail in a box,
 frjo's ansible setups and other resources.  It is easy to fall into
@@ -33,16 +34,15 @@ the YML files.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Configure borg for backups, remote to rsync.net in append only
-mode.  Configure a Pi Zero as a trusted machine to prune nightly.  At
-some point consider using bacula + S3 to backup cloud and local
-machines.
-<LI>Enable IPv6 connect for mail to support non-wifi phones.
+<LI>Client configured for bacula, configure director.  Try using a
+local NATed machine (Pi Zero) as the director
+<LI>Set the hostname
+<LI>Configure RSPAMD with postfix.
 <LI>Deploy DNS on live machine
 <LI>Configure DKIM and automate key rotation with postfix and DNS.
-<LI>Configure RSPAMD with postfix.
 <LI>Configure DMARC entry in the DNS.
 <LI>Cut over on actual sites.
+<LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, locking you out.
 </UL>
 
 <!-- ============================== -->
@@ -115,28 +115,30 @@ the following in the cleartext file.
 <H2 class=rule>
 <A NAME=first></A>First Login Playbook</H2>
 
-<p>The first thing you should do after provisioning any machine is run
-the first.yml playbook to lock down SSH.  This should be the only time
-a password based login is used with the machine.  You need "sshpass"
+<p>The first thing to do after provisioning a machine is run the
+first.yml playbook to lock down SSH.  This should be the only time a
+password based login is used with the machine.  You need "sshpass"
 installed locally because the remote machine does not yet have any
 keys installed.  After this, remote password login is disabled and
 everything uses ssh keys.  It is also a good idea to change the root
 password manually because the original passed through the Linode UI.
+The lowercase <code>-k</code> flag is a shorthand
+for <code>--ask-pass</code>
 
 <PRE class=code>
-$ export ANSIBLE_HOST_KEY_CHECKING=False
-$ ansible-playbook --ask-pass --ask-vault-pass -i hosts first.yml
+$ ansible-playbook -k --ask-vault-pass -i hosts first.yml --extra-vars "target=guardian"
 </PRE>
 
-<p>The public key needs to be in single line openssh form; to convert
-a verbose key from putty, do:
+<p>The public key needs to be in openssh form; to convert keys from
+putty, install the putty-utils package and do:
 
 <PRE class=code>
-$ ssh-keygen -i -f yourputtypubkeyfile > openssh.key
+$ puttygen foobar.ppk -O public-openssh -o foobar.pub
+$ puttygen foobar.ppk -O private-openssh -o foobar.key
 </PRE>
 
-<p>When you rebuild a machine, the host key changes and SSH wigs out
-with many ominous messages about man in the middle attacks.  You can
+<p>When you rebuild a machine, the host key changes and SSH freaks out
+with ominous messages about man in the middle attacks.  You can
 selectively make ssh forget the key for the name and IP using commands
 like below.
 
@@ -160,7 +162,7 @@ in before.</p>
 <p>The command below runs the playbook on all machines in the 'hosts'
 inventory file.  It runs as the <b>deploy</b> user and asks passwords
 for sudo on the deploy user and the vault password.  Both are the
-stpbuild passwords.  The <code>-K</code> flag is a shorthand
+stpbuild passwords.  The uppercase <code>-K</code> flag is a shorthand
 for <code>--ask-become-pass</code>
 
 <PRE class=code>

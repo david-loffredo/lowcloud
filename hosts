@@ -1,4 +1,13 @@
-# hosts in the dave group  use vars defined in `group_vars/dave`
-# put your host's IP address or domain name below
-[dave]
+# The host will be 'inventory_hostname' and 'ansible_host' can be set
+# to an IP address as in the example below if the host does not show
+# up in DNS yet.
+#
+# myname	ansible_host=1.2.3.4
+#
+
+[cloud]
 davecloud.net
+
+[backup-server]
+guardian
+

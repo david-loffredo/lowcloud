@@ -16,6 +16,7 @@ mode 	  = aggressive
 enabled   = true
 banaction = iptables-allports
 
+{% if 'cloud' in group_names %}
 [dovecot]
 enabled = true
 
@@ -30,3 +31,4 @@ enabled = true
 
 [apache-overflows]
 enabled = true
+{% endif %}

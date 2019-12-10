@@ -11,8 +11,7 @@ pkg_cache_life: 3600
 #
 domain: davecloud.net
     
-# Common credentials for root and deploy accounts.  Create crypted
-# passwords with "mkpasswd --method=sha-512"
+# Common credentials for root and deploy accounts.
 #
 # This file defines all of the variables, including "vault_" stubs for
 # sensitive ones like passwords.  The vault.yml file is encrypted and
@@ -24,12 +23,13 @@ domain: davecloud.net
 #
 root_acct:
   name: root 
-  sshkey: "{{ vault_root_sshkey }}"
+  sshpub: "{{ vault_root_sshpub }}"
 
 deploy_acct:
   name: deploy
   group: users
-  sshkey: "{{ vault_deploy_sshkey }}"
+  sshpub: "{{ vault_deploy_sshpub }}"
+  sshkeypath: "{{ vault_deploy_sshkeypath }}"
   passwd: "{{ vault_deploy_passwd }}"
 
 main_user_shell: "/bin/bash"

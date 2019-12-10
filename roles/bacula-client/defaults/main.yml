@@ -1,6 +1,7 @@
 ---
+bacula_client_host: "{{ inventory_hostname }}"
 
-bacula_client_name: "{{ inventory_hostname }}-fd"
+bacula_client_name: "{{ bacula_client_host }}-fd"
 bacula_client_fdport: 9102
 bacula_client_workdir: /var/spool/bacula
 bacula_client_piddir: /var/run
@@ -20,11 +21,3 @@ bacula_tunnel_acct:
   sshkey: "{{ vault_bacula_sshkey }}"
   passwd: '*'
 
-
-# /etc/letsencrypt
-# /var/private
-# /var/spool/postfix/etc/maildb/maildb.sqlite3
-# /var/vmail
-# /var/www
-# --exclude /var/private/mounted.txt
-# --exclude /var/vmail/mounted.txt
