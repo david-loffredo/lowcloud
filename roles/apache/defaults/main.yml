@@ -18,13 +18,16 @@ certbot_script: certbot
 certbot_admin_email: "{{ admin_email }}"
 
 certbot_test_util: /etc/letsencrypt/testcertnames
-certbot_certs: []
-# - email: janedoe@example.com
-#   domains:
-#     - example1.com
-#     - example2.com
-# - domains:
-#     - example3.com
+
+# Use jinja2 to build list of name+aliases for each host
+# domains: "{{ [ web_vhosts.[i].name ] + web_vhosts.[i].aliases }}"
+certbot_certs: >-
+  {%- set ns = namespace(ids=[]) -%}
+  {%- for i in web_vhosts -%}
+  {{- ns.ids.append({ 'domains': [ i.name ] + i.aliases }) -}}
+  {%- endfor -%}
+  {{- ns.ids -}}
+  
 certbot_create_command: >-
   {{ certbot_script }} certonly --standalone --noninteractive --agree-tos
   --email {{ cert_item.email | default(certbot_admin_email) }}

@@ -101,11 +101,7 @@ web_vhosts:
     aliases:
       - www.machineplan.com
 
-certbot_certs:
-  - domains: "{{ [ web_vhosts.0.name ] + web_vhosts.0.aliases }}"
-  - domains: "{{ [ web_vhosts.1.name ] + web_vhosts.1.aliases }}"
 
-    
 # Mail domains and users.  Set into the virtual.sqlite database for
 # use with postfix, dovecot, and roundcube.
 

@@ -1,0 +1,57 @@
+
+# CLOUD CLIENT: {{ host }} ========================================
+#
+Client {
+  Name = {{host}}-fd
+  Password = "{{ item.value.bacula_client_director_pw }}"
+  Address=localhost
+  FDPort=9112	# Client connected using an ssh tunnel
+  Catalog = MyCatalog
+}
+
+# Look at the Reschedule Interval to keep trying a job until it
+# succeeds, like pinging a laptop until it shows up or bumblebee until
+# it is turned on.
+
+Job {
+  Name = {{host}}-fd
+  Type = Backup
+  Client = {{bacula_client_name}}
+  FileSet="CloudMail"
+  Schedule = "MonthlyCycle"
+  Storage = File
+  Messages = Standard
+  Max Full Interval = 1 month     # upgrade to full when older than a month
+  Pool = Default
+  Priority = 10
+  Write Bootstrap = "/home/backup/bacula/wdir/%c.bsr"
+#  Run Before Job = 
+#  Run After Job = 
+}
+
+Job {
+  Name = "Restore-{{host}}"
+  Type = Restore
+  Client = {{host}}-fd
+  FileSet="CloudMail"
+  Where = /tmp/bacula-restores
+  Messages = Standard
+  Pool = Default
+}
+
+# List of files to be backed up
+FileSet {
+  Name = "CloudMail"
+  Include {
+    File = /etc/letsencrypt
+    File = /var/private
+    File = /var/spool/postfix/etc/maildb/maildb.sqlite3
+    File = /var/vmail
+    File = /var/www
+    Options {signature=SHA1}
+  }
+  Exclude {
+    File = /var/private/mounted.txt
+    File = /var/vmail/mounted.txt
+  }
+}

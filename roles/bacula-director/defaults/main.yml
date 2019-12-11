@@ -4,10 +4,6 @@
 bacula_console_director_pw: changeme
 bacula_storage_director_pw: changeme
 
-bacula_client_host:
-bacula_client_name: "{{bacula_client_host}}-fd"
-bacula_client_director_pw: changeme
-
 bacula_director_name: bacula-dir
 bacula_director_port: 9101
 bacula_director_query_file: /usr/libexec/bacula/query.sql
