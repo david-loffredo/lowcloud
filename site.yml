@@ -3,9 +3,6 @@
 - hosts: cloud
   remote_user: "{{ deploy_acct.name }}"
   become: True
-  gather_facts: True
-  # force notified handlers to run even if there is was an error
-  # somewhere.  Avoids leaving the machine in a screwball state.
   force_handlers: True      
   vars:
     ansible_ssh_private_key_file: "{{ deploy_acct.sshkeypath }}"
@@ -18,7 +15,6 @@
 - hosts: backup-server
   remote_user: "{{ deploy_acct.name }}"
   become: True
-  gather_facts: True
   force_handlers: True      
   vars:
     openports_list: "{{ sshports }}"

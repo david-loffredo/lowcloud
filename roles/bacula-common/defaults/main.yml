@@ -1,0 +1,98 @@
+---
+# Bacula defaults 
+
+# The client role needs information from 'hostvars' for all of the
+# directors, and the director role needs information from 'hostvars'
+# for all of the clients.
+#
+# Bacula has many knobs and we want to provide reasonable defaults for
+# the clients and directors.  Unfortunately, the 'defaults' for a role
+# are not put into hostvars, only things in group_vars or host_vars.
+# So we put defaults into group_vars/all/defaults.yml and then combine
+# them with local settings in group_vars/all/all.yml or more specific
+# groups/hosts.
+#
+# Since we look for these values in hostvars for other machines than
+# what we are running our task on, we use a separate bacula_default
+# prefix to so that we get the actual default when a hosts value is
+# not set rather than the local, possibly overridden, value on the
+# host we are running the task on.
+#
+
+##
+## DEFAULTS ACROSS ALL HOSTVARs -- These are used by tasks or
+## templates running on one host that need to provide default values
+## for things that may exist on other hosts.   It would also work to set
+##
+bacula_default_client_backup: True
+# bacula_default_client_name: A DEFAULT ONLY GOOD FOR ONE CLIENT
+#       USE "{{ inventory_hostname_short }}-fd"
+# bacula_default_client_host: NO DEFAULT POSSIBLE, DEPENDS ON HOSTVARs
+#       USE "{{ inventory_hostname }}"
+
+bacula_default_client_director_pw: changeme
+bacula_default_client_fdport: 9102
+bacula_default_client_workdir: /var/spool/bacula
+bacula_default_client_piddir: /var/run
+bacula_default_client_max_jobs: 20
+bacula_default_client_tunnel: True      # The director set up an ssh tunnel
+  
+bacula_default_tunnel_acct_name: bacula-tun
+bacula_default_tunnel_acct_group: users
+bacula_default_tunnel_acct_sshkey: 
+bacula_default_tunnel_acct_passwd: '*'
+
+# bacula_default_director_name: A DEFAULT ONLY GOOD IF ONE DIRECTOR
+#       USE "{{ inventory_hostname_short }}-dir"
+bacula_default_director_port: 9101
+bacula_default_director_query_file: /usr/libexec/bacula/query.sql
+bacula_default_director_workdir: /var/spool/bacula
+bacula_default_director_piddir: /var/run
+bacula_default_director_max_jobs: 1
+
+# This is symbolic name passed by the director to the client that
+# needs to resolve to the storage machine.  When we are working over
+# a tunnel this must not resolve to anything real so we put an entry
+# in /etc/hosts to map it to 127.0.0.1
+bacula_default_storage_host: bacula-sd.local
+bacula_default_storage_director_pw: changeme
+
+bacula_default_console_director_pw: changeme
+
+
+
+##
+## DEFAULT FOR CURRENT HOSTVAR - These are what you should override
+## with local settings in your groups_var or hosts_var.
+##
+bacula_client_backup:           "{{ bacula_default_client_backup }}"
+bacula_client_name:             "{{ inventory_hostname_short }}-fd"
+bacula_client_host:             "{{ inventory_hostname }}"
+bacula_client_director_pw:      "{{ bacula_default_client_director_pw }}"
+bacula_client_fdport:           "{{ bacula_default_client_fdport }}"
+bacula_client_workdir:          "{{ bacula_default_client_workdir }}"
+bacula_client_piddir:           "{{ bacula_default_client_piddir }}"
+bacula_client_max_jobs:         "{{ bacula_default_client_max_jobs }}"
+bacula_client_tunnel:           "{{ bacula_default_client_tunnel }}"
+  
+bacula_tunnel_acct_name:        "{{ bacula_default_tunnel_acct_name }}"
+bacula_tunnel_acct_group:       "{{ bacula_default_tunnel_acct_group }}"
+bacula_tunnel_acct_sshkey:      "{{ bacula_default_tunnel_acct_sshkey }}"
+bacula_tunnel_acct_passwd:      "{{ bacula_default_tunnel_acct_passwd }}"
+
+bacula_director_name:           "{{ inventory_hostname_short }}-dir"
+bacula_director_port:           "{{ bacula_default_director_port }}"
+bacula_director_query_file:     "{{ bacula_default_director_query_file }}"
+bacula_director_workdir:        "{{ bacula_default_director_workdir }}"
+bacula_director_piddir:         "{{ bacula_default_director_piddir }}"
+bacula_director_max_jobs:       "{{ bacula_default_director_max_jobs }}"
+
+# This is symbolic name passed by the director to the client that
+# needs to resolve to the storage machine.  When we are working over
+# a tunnel this must not resolve to anything real so we put an entry
+# in /etc/hosts to map it to 127.0.0.1
+bacula_storage_host:            "{{ bacula_default_storage_host }}"
+bacula_storage_director_pw:     "{{ bacula_default_storage_director_pw }}"
+
+bacula_console_director_pw:     "{{ bacula_default_console_director_pw }}"
+

@@ -26,31 +26,48 @@
 ## restricted backup account with a separate key just to set up the
 ## tunnel to port 9102.
 ## 
-
-- name: bacula tunnel account
+- name: bacula tunnel account present
   user:
-    name: "{{ bacula_tunnel_acct.name }}"
-    group: "{{ bacula_tunnel_acct.group }}"
+    name: "{{ bacula_tunnel_acct_name }}"
+    group: "{{ bacula_tunnel_acct_group }}"
     state: present
-    password: "{{ bacula_tunnel_acct.passwd }}"
+    password: "{{ bacula_tunnel_acct_passwd }}"
       
-- name: accounts have authorized keys
+- name: bacula tunnel has authorized keys
   authorized_key:
-    user: "{{ bacula_tunnel_acct.name }}"
-    key:  "{{ bacula_tunnel_acct.sshkey }}"
-
+    user: "{{ bacula_tunnel_acct_name }}"
+    key:  "{{ bacula_tunnel_acct_sshkey }}"
 
 # This is symbolic name passed by the director to the client that
 # needs to resolve to the storage machine.  Since we are working over
 # a tunnel this must not resolve to anything real so we put an entry
 # in /etc/hosts to map it to 127.0.0.1
-- name: tunnel storage director resolves to loopback
+#
+# NOTE - Looking at other hostvars, so use the backula_default_*
+# variables if something is missing.  See bacula_common for more
+# discussion.
+#
+# This list could be functionally built but the jinja version in
+# ansible does not support the default= argument to map yet.  Just
+# build the list procedurally.
+#
+# with_items: "{{ groups['backup-server'] | map('extract', hostvars) |
+#   map(attribute='storage_host', default=dft_var) | unique | list }}"
+# 
+- name: tunneled storage director resolves to loopback
   lineinfile:
     dest: /etc/hosts
-    regexp: '.*{{ bacula_tunnel_sd_addr }}$'
-    line: "127.0.0.1 {{ bacula_tunnel_sd_addr }}"
+    regexp: '.*{{ item }}$'
+    line: "127.0.0.1 {{ item }}"
     state: present
-  
+  with_items: >-
+    {%- set ns = namespace(sds=[]) -%}
+    {%- for i in groups['backup-server'] -%}
+    {{- ns.sds.append( hostvars[i].bacula_storage_host |
+        default(bacula_default_storage_host) )  -}}
+    {%- endfor -%}
+    {{- ns.sds | unique -}}
+        
     
 # RedHat and Suse would also need stuff in sysconfig
 

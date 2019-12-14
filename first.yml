@@ -12,6 +12,7 @@
   port: 22
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+    ansible_ssh_private_key_file:  # hide deploy acct in groups_var
   tasks:
     # do this first to minimize the number of log entries in
     # a different time zone

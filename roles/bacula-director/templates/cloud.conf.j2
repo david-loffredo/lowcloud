@@ -1,9 +1,12 @@
-
-# CLOUD CLIENT: {{ host }} ========================================
+{# figure out he defaults in one place to make the body clearer -#}
+{%- set fd = hostvars[item] -%}
+{%- set fd_name = fd.bacula_client_name | default(fd.inventory_hostname_short + '-fd') -%}
+{%- set fd_pw = fd.bacula_client_director_pw | default(bacula_client_default_director_pw) -%}
+# CLOUD CLIENT: {{ fd.inventory_hostname_short }} ========================================
 #
 Client {
-  Name = {{host}}-fd
-  Password = "{{ item.value.bacula_client_director_pw }}"
+  Name = {{ fd_name }}
+  Password = "{{ fd_pw }}"
   Address=localhost
   FDPort=9112	# Client connected using an ssh tunnel
   Catalog = MyCatalog
@@ -14,9 +17,9 @@ Client {
 # it is turned on.
 
 Job {
-  Name = {{host}}-fd
+  Name = {{ fd_name }}
   Type = Backup
-  Client = {{bacula_client_name}}
+  Client = {{ fd_name }}
   FileSet="CloudMail"
   Schedule = "MonthlyCycle"
   Storage = File
@@ -30,9 +33,9 @@ Job {
 }
 
 Job {
-  Name = "Restore-{{host}}"
+  Name = "Restore-{{fd.inventory_hostname_short}}"
   Type = Restore
-  Client = {{host}}-fd
+  Client = {{ fd_name }}
   FileSet="CloudMail"
   Where = /tmp/bacula-restores
   Messages = Standard

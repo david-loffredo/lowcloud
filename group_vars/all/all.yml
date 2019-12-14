@@ -1,4 +1,8 @@
 ---
+# We do everything via the deploy_acct, may also set ansible_become=true
+#ansible_ssh_user:               "{{ deploy_acct.name }}"
+#ansible_ssh_private_key_file:   "{{ deploy_acct.sshkeypath }}"
+
 # An hour is good enough for packages where we want the latest 
 pkg_cache_life: 3600
 
@@ -159,10 +163,14 @@ private_dir_crypt:  /var/private_crypt
 private_dir_clear:  /var/private
 private_dir_pw:    "{{vault_mail_spool_pw}}"
 
-# Backups
-bacula_client_director_pw: "{{vault_bacula_pw}}"
 
+# Bacula
+bacula_client_director_pw: "{{ vault_bacula_client_pw }}"
+bacula_storage_director_pw: "{{ vault_bacula_storage_pw }}"
+bacula_console_director_pw: "{{ vault_bacula_console_pw }}"
+bacula_tunnel_acct_sshkey: "{{ vault_bacula_sshpub }}"
 
+  
 dns_ns:  
   master: "ns1.{{ domain }}"
   email: "root.{{ domain }}"

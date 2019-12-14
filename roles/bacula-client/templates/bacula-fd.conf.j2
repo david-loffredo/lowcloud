@@ -1,10 +1,12 @@
 #
 # Bacula File Daemon Configuration
 #
+{% for dir in groups['backup-server'] %}
 Director {
-  Name = {{ bacula_client_director_name }}
+  Name = {{ hostvars[dir].bacula_director_name | default(dir + '-dir') }}
   Password = "{{ bacula_client_director_pw }}"
 }
+{% endfor %}
 
 # Restricted Director, used by tray-monitor to get file daemon status
 #Director {
@@ -12,7 +14,6 @@ Director {
 #  Password = "foobar"
 #  Monitor = yes
 #}
-
 
 #
 # "Global" File daemon configuration specifications
@@ -25,9 +26,11 @@ FileDaemon {
   Maximum Concurrent Jobs = {{ bacula_client_max_jobs }}
 }
 
-# Send all messages except skipped files back to Director
+# All messages except skipped files back to primary director
+{% for dir in ([groups['backup-server'].0]) %}
 Messages {
   Name = Standard
-  director = {{ bacula_client_director_name }} = all, !skipped, !restored
+  director = {{ hostvars[dir].bacula_director_name | default(dir + '-dir') }} = all, !skipped, !restored
 }
+{% endfor %}
 

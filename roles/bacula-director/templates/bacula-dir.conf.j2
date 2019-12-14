@@ -40,7 +40,7 @@ Catalog {
 # in /etc/hosts to map it to 127.0.0.1
 Storage {
   Name = File
-  Address = {{ bacula_tunnel_sd_addr }}
+  Address = {{ bacula_storage_host }}
   Password = "{{ bacula_storage_director_pw }}"
   Device = FileStorage
   Media Type = File
