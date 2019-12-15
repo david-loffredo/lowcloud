@@ -48,32 +48,18 @@ timezone: 'US/Eastern'
 #========================================
 # Network and Firewall settings
 #
-#    IMAP | Port 993 (Secure Transport   — SSL function enabled)
-#    POP3 | Port 995 (Secure Transport   — SSL function enabled)
-#    IMAP | Port 143 (Insecure Transport — No SSL function enabled)
-#    POP3 | Port 110 (Insecure Transport — No SSL function enabled)
+# Appropriate ports will be opened for named services (mail=submission
+# and imaps, apache=http/https, etc).  SSH is always open.  Any extra
+# ports go in the lists below.  Fail2ban also checks the services list
+# to see what jails to use.
+#
+firewall_services: [ 'mail', 'web' ]
+#firewall_opentcp: [any extra ports]
+#firewall_openudp: [any extra ports]
 
-#    SMTP | Port 587 (Insecure Transport, but can be upgraded to a secure connection using STARTTLS)
-#    SMTP | Port 465 (Secure Transport — SSL function enabled)
-#    SMTP | Port 25 (Outdated and not recommended. username/password authentication MUST be enabled if using this port.)
+# fail2ban will ignore these networks
+# firewall_friendly_networks:
 
-#openports_list: "{{ sshports + webports + mailports + dnsports }}"
-openports_list: "{{ sshports + webports + mailports }}"
-
-#openports_udp_list: "{{ dnsports }}"
-
-sshports: [22]
-webports: [80, 443]
-mailports: [25, 465, 587, 993]
-dnsports: [53]
-
-
-# blocked if defined
-#blacklist_ip_list:
-friendly_networks:
-  - ""
-
-# ntp_servers:
 
 #========================================
 # Snapshot/Backup Settings

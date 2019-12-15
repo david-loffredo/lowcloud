@@ -44,11 +44,9 @@
 -A INPUT -i {{ ansible_default_ipv6.interface }} -p icmpv6 --icmpv6-type time-exceeded -m limit --limit 1/second -j ACCEPT
 
 # Allow needed services from anywhere
--A INPUT -i {{ ansible_default_ipv6.interface }} -p tcp -m multiport --dport {{ openports_list|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv6.interface }} -p tcp -m multiport --dport {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
 
-{% if openports_udp_list is defined %}
-{% for openports_udp in openports_udp_list %}
--A INPUT -i {{ ansible_default_ipv6.interface }} -p udp --dport {{ openports_udp }} -m conntrack --ctstate NEW -j ACCEPT
+{% for udp in firewall_ports_udp %}
+-A INPUT -i {{ ansible_default_ipv6.interface }} -p udp --dport {{ udp }} -m conntrack --ctstate NEW -j ACCEPT
 {% endfor %}
-{% endif %}
 COMMIT

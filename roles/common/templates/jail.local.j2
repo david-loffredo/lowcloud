@@ -1,5 +1,5 @@
 [DEFAULT]
-ignoreip  = 127.0.0.1 {{ ansible_default_ipv4.address }} {{ ' '.join(friendly_networks) }}
+ignoreip  = 127.0.0.1 {{ ansible_default_ipv4.address }} {{ friendly_networks|join(' ') }}
 findtime  = 2h
 bantime   = 24h
 destemail = {{ admin_email }}
@@ -16,7 +16,7 @@ mode 	  = aggressive
 enabled   = true
 banaction = iptables-allports
 
-{% if 'cloud' in group_names %}
+{% if 'mail' in firewall_services %}
 [dovecot]
 enabled = true
 
@@ -25,7 +25,9 @@ enabled  = true
 
 [postfix-sasl]
 enabled  = true
+{% endif %}
 
+{% if 'web' in firewall_services %}
 [apache-auth]
 enabled = true
 

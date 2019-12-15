@@ -1,38 +1,36 @@
 ---
 - name: network filtering packages are installed 
-  apt:
+  package:
+    state: present
     name:
       - iptables-persistent
       - fail2ban
-    state: present
 
+- debug:
+    msg:
+      - OPEN TCP PORTS {{ firewall_ports_tcp }}
+      - OPEN UDP PORTS {{ firewall_ports_udp }}
+      
 # iproute2 has the new ss command
 # net-tools has the legacy commands including netstat
-    
-- debug:
-    msg: OPEN PORTS {{ openports_list }}
       
 - name: iptables v4 configured
   template:
-    src: iptables/{{ item }}.j2
-    dest: /etc/iptables/{{ item }}
+    src: testrules.v4.j2
+    dest: /etc/iptables/testrules.v4
     owner: root
     group: root
     mode: 0644
-  with_items:
-    - testrules.v4
   register: iptablesconf4
   when: ansible_default_ipv4.interface is defined
 
 - name: iptables v6 configured
   template:
-    src: iptables/{{ item }}.j2
-    dest: /etc/iptables/{{ item }}
+    src: testrules.v6.j2
+    dest: /etc/iptables/testrules.v6
     owner: root
     group: root
     mode: 0644
-  with_items:
-    - testrules.v6
   register: iptablesconf6
   when: ansible_default_ipv6.interface is defined
 
@@ -60,7 +58,7 @@
 # 
 - name: fail2ban jails configured
   template:
-    src: fail2ban/jail.local.j2
+    src: jail.local.j2
     dest: /etc/fail2ban/jail.local
     owner: root
     group: root

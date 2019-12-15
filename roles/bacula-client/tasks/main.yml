@@ -1,9 +1,9 @@
 ---
 - name: bacula client packages are installed
-  apt:
+  package:
+    state: present
     name:
       - bacula-client
-    state: present
 
 - name: bacula password has real value
   fail: msg="Set bacula_client_director_pw to a real value"

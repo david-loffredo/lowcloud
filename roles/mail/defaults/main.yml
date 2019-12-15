@@ -1,16 +1,17 @@
 ---
-#========================================
-# EncFS Settings
-#
+# Networks with relaxed checking, ignored by fail2ban, allowed to
+# relay mail, etc
+friendly_networks: []
 
-# mail spool
+# EncFS - mail spool
 mail_spool_crypt: /var/vmail_crypt
 mail_spool_clear: /var/vmail
 
-# mail database
+# EncFS - mail database
 mail_db_crypt:  /var/spool/postfix/etc/maildb_crypt
 mail_db_clear:  /var/spool/postfix/etc/maildb
 
-# Private directory for configuration things
+# EncFS - private dir for configs
 private_dir_crypt:  /var/private_crypt
 private_dir_clear:  /var/private
+

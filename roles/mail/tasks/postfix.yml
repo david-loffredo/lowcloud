@@ -6,17 +6,18 @@
 # need minor changes to the connect statement and SQL for use with
 # other RDBs.
 - name: postfix and related packages present
-  apt:
+  package:
+    state: present
     name:
       - postfix
       - postfix-sqlite
       - libdbi-perl
       - libdbd-sqlite3-perl
-    state: present
 
 #      - postfix-pcre
 #      - postgrey
 #      - python-psycopg2
+
 
 # Do not start postfix at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  This should run

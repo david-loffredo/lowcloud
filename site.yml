@@ -1,5 +1,8 @@
 ---
 # All tasks are run as the deploy user, which can sudo when needed.
+
+# The firewall task is run last so that all of the services can
+# declare the various ports that they need.
 - hosts: cloud
   remote_user: "{{ deploy_acct.name }}"
   become: True
@@ -17,8 +20,9 @@
   become: True
   force_handlers: True      
   vars:
-    openports_list: "{{ sshports }}"
     ansible_ssh_private_key_file: "{{ deploy_acct.sshkeypath }}"
+    firewall_services: []
   roles:
     - { role: common, tags: common }
     - { role: bacula-director, tags: bacula-director }
+    

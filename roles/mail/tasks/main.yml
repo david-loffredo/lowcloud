@@ -1,10 +1,10 @@
 ---
-- include: encfs.yml
-- include: postfix.yml
-- include: dovecot.yml
+- import_tasks: encfs.yml
+- import_tasks: postfix.yml
+- import_tasks: dovecot.yml
 
 
-# - include: rspamd.yml
-# - include: checkrbl.yml
-# - include: z-push.yml
-# - include: autoconfig.yml
+# - import_tasks: rspamd.yml
+# - import_tasks: checkrbl.yml
+# - import_tasks: z-push.yml
+# - import_tasks: autoconfig.yml

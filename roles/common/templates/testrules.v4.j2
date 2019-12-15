@@ -8,11 +8,11 @@
 -P FORWARD DROP
 -P OUTPUT DROP
 
-{% if blacklist_ip_list is defined %}
+{% if firewall_blacklist_ips|length > 0 %}
 # Blacklist
 -N BLACKLIST
-{% for blacklist_ip in blacklist_ip_list %}
--A BLACKLIST -s {{ blacklist_ip }} -j DROP
+{% for ip in firewall_blacklist_ips %}
+-A BLACKLIST -s {{ ip }} -j DROP
 {% endfor %}
 -A INPUT -j BLACKLIST
 {% endif %}
@@ -54,11 +54,9 @@
 -A INPUT -i {{ ansible_default_ipv4.interface }} -p icmp --icmp-type time-exceeded -m limit --limit 1/second -j ACCEPT
 
 # Allow needed services from anywhere
--A INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m multiport --dport {{ openports_list|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
+-A INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m multiport --dport {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
 
-{% if openports_udp_list is defined %}
-{% for openports_udp in openports_udp_list %}
--A INPUT -i {{ ansible_default_ipv4.interface }} -p udp --dport {{ openports_udp }} -m conntrack --ctstate NEW -j ACCEPT
+{% for udp in firewall_ports_udp %}
+-A INPUT -i {{ ansible_default_ipv4.interface }} -p udp --dport {{ udp }} -m conntrack --ctstate NEW -j ACCEPT
 {% endfor %}
-{% endif %}
 COMMIT

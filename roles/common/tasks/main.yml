@@ -4,20 +4,18 @@
 #     update_cache: yes
 #     cache_valid_time: "{{ pkg_cache_life }}"
 
-- include: firewall.yml
-- include: ntp.yml
-- include: editor.yml
-
+- import_tasks: firewall.yml
+  tags: firewall
+- import_tasks: ntp.yml
+- import_tasks: editor.yml
 
 ## send email when changes available
-# - include: apticron.yml
+# - import_tasks: apticron.yml
 
 # test but probably not what we want
-# - include: debsums.yml
+# - import_tasks: debsums.yml
 
-# - include: disk-check.yml
-# - include: htop.yml
-# - include: needrestart.yml
-# - include: dnsmasq.yml
-# #- include: sqlite.yml
-# - include: misc.yml
+# - import_tasks: disk-check.yml
+# - import_tasks: htop.yml
+# - import_tasks: needrestart.yml
+# - import_tasks: dnsmasq.yml

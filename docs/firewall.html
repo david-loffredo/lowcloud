@@ -13,16 +13,11 @@
 
 <H1>Firewall</H1>
 
-<p><b>ROLE</b> common, iptable.yml
+<p><b>ROLE</b> common, firewall.yml
 
-<p>This uses raw iptables.  Some people install the ufw front end,
-which makes it easier to block everything and open up a few ports.
-Since we might eventually geoblock china, russia, etc. we stick to raw
-iptables so that we can use includes and ipset.  We use
-iptables-persistent to reload our config on boot.
-
-<p>The playbook writes our IPv4 and IPv6 rules to the following,
-
+<p>This uses raw iptables and uses iptables-persistent to reload our
+config on boot.  The playbook writes our IPv4 and IPv6 rules to the
+following,
 <PRE>
     /etc/iptables/testrules.v4
     /etc/iptables/testrules.v6
@@ -33,10 +28,40 @@ corresponding rules.v* files, which are what is loaded on boot.  To
 change rules, edit etc/iptables/testrules.v* in the templates dir and
 rerun the playbook.
 
+<p>Open ports for new services by setting 'firewall_services'.  This
+is checked by the iptables and fail2ban tasks.  It recongizes ssh,
+mail, web, and dns, but you can add your own names to this list.  For
+each element, we add &lt;name&gt;_opentcp and &lt;name&gt;_openudp, if
+they exist, to the open ports.  Define &lt;name&gt;_opentcp/udp as a
+list of ports.
+<PRE class=code>
+firewall_services: [ 'ssh' ]
+
+# will append ports from the mnemonic list of services but can be
+# initialized with extra ports.
+firewall_opentcp: []
+firewall_openudp: []
+  
+# blocked if defined
+firewall_blacklist_ips: []
+</PRE>
+
+<p>Some people install the ufw front end, which makes it easier to
+block everything and open up a few ports.  It seemed that UFW took
+over everything, which makes it difficult to do other iptables stuff
+like ipsets to geoblock china, russia, etc.  However, a closer read of
+the docs shows that it just manages iptables-save files that are in
+etc, so we could use it and add whatever we want.  Look at the
+following two files.
+
+<p>/etc/ufw/after.init: initialization customization script run after ufw is initialized (ufw 0.34 and later)
+<p>/etc/ufw/before.init: initialization customization script run before ufw is initialized (ufw 0.34 and later) 
+
 <p>We run fail2ban to scan the logs for repeated intrusion attempts
 and temporarily ban IPs.  Debian 10 has a fairly updated package so we
 use it stock and enable checks for sshd, dovecot, postfix and a few
-others.  The Debian 9 version was old so before we switched, we needed
-to add some custom patterns for ssh.
+others depending on what services are present.  The Debian 9 version
+was old so before we switched, we needed to add some custom patterns
+for ssh.
 </BODY>
 </HTML>

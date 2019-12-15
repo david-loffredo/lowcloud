@@ -1,6 +1,9 @@
 ---
 - name: bacula director installed
-  package:  name=bacula-director state=present
+  package:
+    state: present
+    name:
+      - bacula-director
 
 # install one database backend: mysql, pgsql or sqlite
 # include: mysql.yml

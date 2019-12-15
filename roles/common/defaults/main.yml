@@ -9,15 +9,6 @@ admin_email: "root@{{ domain }}"
 timezone: 'Etc/UTC'
 
 #========================================
-# Network and Firewall settings
-#
-openports_list: 
-  - 22
-# blocked if defined
-#blacklist_ip_list:
-friendly_networks:
-  - ""
-
 # NTP - use nearby ntp servers by default
 #
 # can alternatively use servers tailored to the server location
@@ -33,8 +24,84 @@ ntp_servers:
   - 3.pool.ntp.org
   
 
-# let's encrypt
-letsencrypt_server: "https://acme-v01.api.letsencrypt.org/directory"
-acme_certs_dir: /etc/ssl/letsencrypt
 
+#========================================
+# Network and Firewall settings
+#
+# Playbooks should set the firewall services list to the mnemonic list
+# of services that the iptables should allow, like [ 'mail', 'web' ]
+# List any extra ports that should be open in firewall_opentcp/udp.
+# SSH is always open.  If you are going to run non-standard ports,
+# override fooports, like sshports=[2222]
+#
+# I originally made each role auto-append ports to the opentcp/udp
+# lists via set_fact, and then running the firewall role last.  It
+# works, but does not open ports in time for things that need access
+# while the play is running, like certbot.  So now we declare up
+# front.
+
+# List of services.  This is checked by the iptables and fail2ban
+# tasks.  You can add your own names to this list.  For each element,
+# we add <name>_opentcp and <name>_openudp, if they exist, to the open
+# ports.  Define <name>_opentcp/udp as a list of ports.
+firewall_services: [ 'ssh' ]
+
+# will append ports from the mnemonic list of services but can be
+# initialized with extra ports.
+firewall_opentcp: []
+firewall_openudp: []
+  
+# blocked if defined
+firewall_blacklist_ips: []
+
+# Networks with relaxed checking, ignored by fail2ban, allowed to
+# relay mail, etc
+friendly_networks: []
+
+# SSH Ports - Usually 22, but some people change to 2222 or whatnot to
+# avoid the endless log spam from the constant bot attempts.
+ssh_opentcp: [22]
+
+# Web Ports - HTTP and HTTPS
+web_opentcp: [80, 443]
+
+# Mail Ports - Just submission and imaps, no plain imap or pop3
+#
+#    IMAP | Port 993 (Secure Transport   — SSL function enabled)
+#    POP3 | Port 995 (Secure Transport   — SSL function enabled)
+#    IMAP | Port 143 (Insecure Transport — No SSL function enabled)
+#    POP3 | Port 110 (Insecure Transport — No SSL function enabled)
+
+#    SMTP | Port 587 (Insecure Transport, but can be upgraded to a
+#               secure connection using STARTTLS)
+#    SMTP | Port 465 (Secure Transport — SSL function enabled)
+#    SMTP | Port 25 (Outdated and not recommended. username/password
+#               authentication MUST be enabled if using this port.)
+#
+mail_opentcp: [25, 465, 587, 993]
+
+# DNS - UDP port 53
+dns_openudp: [53]
+
+
+
+# Construct the list of open TCP and UDP ports from the known services
+# and any extra ports.  A group or host var could override this, but
+# you should really just play with firewall_services and add some new
+# <serv>_opentcp and <serv>_openudp lists to describe the ports for
+# that service.  
+#
+firewall_ports_tcp: >-
+  {%- set ns = namespace(ports=(firewall_opentcp + ssh_opentcp)) -%}
+  {%- for i in firewall_services -%}
+  {{- ns.ports.extend( lookup('vars', i + '_opentcp', default=[]) ) -}}
+  {%- endfor -%}
+  {{- ns.ports | sort | unique -}}
+
+firewall_ports_udp: >-
+  {%- set ns = namespace(ports=(firewall_openudp)) -%}
+  {%- for i in firewall_services -%}
+  {{- ns.ports.extend( lookup('vars', i + '_openudp', default=[]) ) -}}
+  {%- endfor -%}
+  {{- ns.ports | sort | unique -}}
   

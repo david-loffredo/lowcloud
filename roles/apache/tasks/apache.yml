@@ -1,9 +1,9 @@
 ---
 - name: apache packages are installed
-  apt:
+  package:
+    state: present
     name:
       - apache2
-    state: present
 
 # Should already be present on Debian.  Use for the web management
 # user accounts for each website.

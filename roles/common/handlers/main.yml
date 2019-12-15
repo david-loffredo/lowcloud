@@ -1,9 +1,4 @@
 ---
-# Defines handlers applicable across all machines in the infrastructure.
-
-- name: restart dnsmasq
-  service: name=dnsmasq state=restarted
-
 - name: restart fail2ban
   service: name=fail2ban state=restarted
 
