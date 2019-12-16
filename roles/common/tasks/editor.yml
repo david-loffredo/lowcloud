@@ -3,12 +3,12 @@
 # doing a server machine.  Also include some other emacs modes that we
 # may want.
 - name: text editors (emacs/vim) installed
-  apt:
+  package:
+    state: present
     name:
       - emacs-nox
       - yaml-mode
       - vim-nox
-    state: present
 
 - name: default .emacs file installed for all users
   copy:

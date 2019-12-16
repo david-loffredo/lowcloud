@@ -4,7 +4,9 @@
     name: "{{ timezone }}"
 
 - name: ntp packages are installed
-  apt: name=ntp state=present
+  package:
+    state: present
+    name: ntp
 
 - name: ntp configured
   template:

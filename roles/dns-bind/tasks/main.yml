@@ -8,11 +8,11 @@
     state: directory
 
 - name: bind package present
-  apt:
+  package:
+    state: present
     name:
       - bind9
       - dnsutils
-    state: present
 
 # no longer relevant on buster    
 # When IPv6 is used, bind9 should be taken from backports

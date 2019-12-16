@@ -1,6 +1,6 @@
 ---    
 - name: EncFS present
-  apt: name=encfs state=present
+  package: name=encfs state=present
 
 - name: encrypted and cleartext directories present
   file: state=directory path={{item}}

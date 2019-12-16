@@ -1,3 +1,9 @@
 ---
 # All defaults are found in bacula-common, so they can be used by both
 # bacula-client and bacula-director.
+
+# List of clients this director should use.  Mostly this is just the
+# cloud group, but we may add some PCs later.  If we ever have more
+# than one director, they will probably have different clients.
+#
+bacula_clients: "{{ groups['cloud'] }}"

@@ -1,11 +1,11 @@
 ---
 - name: mysql packages installed
   package:
+    state: present
     name:
       - bacula-director-mysql
       - MySQL-python
       - mysql
-    state: present
 
 - name: Create MySQL DB
   mysql_db:

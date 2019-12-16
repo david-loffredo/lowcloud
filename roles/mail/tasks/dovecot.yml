@@ -3,13 +3,13 @@
 # dovecot-pop3 package, because we will only use IMAP.
 
 - name: dovecot and related packages present
-  apt:
+  package:
+    state: present
     name:
       - dovecot-core
       - dovecot-imapd
       - dovecot-lmtpd
       - dovecot-sqlite
-    state: present
 
 # Do not start dovecot at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  

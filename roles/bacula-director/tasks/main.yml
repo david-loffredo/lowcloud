@@ -19,14 +19,28 @@
 
 - name: cloud client configurations present
   template:
-    src: cloud.conf.j2
-    dest: /etc/bacula/{{hostvars[item].inventory_hostname_short}}.conf
-  with_items: "{{ groups['cloud'] }}"
+    src: client.conf.j2
+    dest: /etc/bacula/{{hostvars[item].inventory_hostname_short}}-job.conf
+  with_items: "{{ bacula_clients }}"
   
 - name: bacula director working directory present
   file: state=directory path="{{ bacula_director_workdir }}"
     owner=root group=bacula mode=0770
 
+
+
+## Get the storage director working
+- name: bacula director config file
+  template:
+    src: bacula-sd.conf.j2
+    dest: /etc/bacula/bacula-sd.conf
+  notify:
+    - restart bacula director
+
+
+## Console?
+
+    
 # RedHat and Suse would also need stuff in sysconfig
 
 - name: bacula director service enabled

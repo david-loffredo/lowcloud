@@ -1,11 +1,11 @@
 ---
 - name: postgresql packages installed
   package:
+    state: present
     name:
       - bacula-director-pgsql
       - python-psycopg2
       - postgresql
-    state: present
 
 # /usr/share/bacula-director/create_postgresql_database
 # /usr/share/bacula-director/drop_postgresql_database

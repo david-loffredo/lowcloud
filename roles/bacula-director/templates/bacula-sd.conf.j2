@@ -1,0 +1,54 @@
+#
+# Bacula Storage Daemon Configuration
+#
+# The storage director name does not seem to be used anywhere, just
+# the host machine and port.
+Storage {
+  Name = {{ bacula_storage_name }}
+  SDPort = {{ bacula_storage_port }}
+  Working Directory = {{ bacula_storage_workdir }}
+  Pid Directory = {{ bacula_storage_piddir }}
+  Maximum Concurrent Jobs = {{ bacula_storage_max_jobs }}
+}
+
+# Directors permitted to contact the storage daemon
+#
+Director {
+  Name = {{ bacula_director_name }}
+  Password = "{{ bacula_storage_director_pw }}"
+}
+
+#
+# Restricted Director, used by tray-monitor to get the
+#   status of the storage daemon
+#
+# Director {
+#   Name = anvil-mon
+#   Password = "ES9RLJiAxZyGQ+ddqzsrVo7KEjX4uwAfJkpnzGwW0LWt"
+#   Monitor = yes
+# }
+
+#
+# Devices supported by this Storage daemon
+# To connect, the Director's bacula-dir.conf must have the
+#  same Name and MediaType. 
+#
+Device {
+  Name = FileStorage
+  Media Type = File
+  Archive Device = {{ bacula_storage_datadir }}
+  LabelMedia = yes;                   # lets Bacula label unlabeled media
+  Random Access = Yes;
+  AutomaticMount = yes;               # when device opened, read it
+  RemovableMedia = no;
+  AlwaysOpen = no;
+}
+
+# 
+# Send all messages to the Director, 
+# mount messages also are sent to the email address
+#
+Messages {
+  Name = Standard
+  director = {{ bacula_director_name }} = all
+}

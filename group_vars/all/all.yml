@@ -155,8 +155,9 @@ bacula_client_director_pw: "{{ vault_bacula_client_pw }}"
 bacula_storage_director_pw: "{{ vault_bacula_storage_pw }}"
 bacula_console_director_pw: "{{ vault_bacula_console_pw }}"
 bacula_tunnel_acct_sshkey: "{{ vault_bacula_sshpub }}"
+# bacula_clients defaults to cloud group, set if extra machines
 
-  
+
 dns_ns:  
   master: "ns1.{{ domain }}"
   email: "root.{{ domain }}"

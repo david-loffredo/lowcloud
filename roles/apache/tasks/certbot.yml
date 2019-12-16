@@ -8,11 +8,11 @@
 #
 
 - name: certbot packages are installed
-  apt:
+  package:
+    state: present
     name:
       - certbot
       - python-certbot-apache
-    state: present
 
 
 # Restore snapshot from existing machine if needed

@@ -1,9 +1,6 @@
 #
 # Bacula Director Configuration
 #
-# @/path is used to include files
-
-
 Director {
   Name = {{ bacula_director_name }}
   DIR Port = {{ bacula_director_port }}
@@ -94,64 +91,8 @@ Pool {
   Volume Use Duration = 23h
 }
 
-
-# CLIENTS ========================================
+# CLIENT JOBS ========================================
 #
-
-
-Client {
-  Name={{bacula_client_name}}
-  Password = "{{ bacula_client_director_pw }}"
-  Address=localhost
-  FDPort=9112	# Client connected using an ssh tunnel
-  Catalog = MyCatalog
-}
-
-# Look at the Reschedule Interval to keep trying a job until it
-# succeeds, like pinging a laptop until it shows up or bumblebee until
-# it is turned on.
-
-Job {
-  Name = "{{bacula_client_name}}"
-  Type = Backup
-  Client = {{bacula_client_name}}
-  FileSet="CloudMail"
-  Schedule = "MonthlyCycle"
-  Storage = File
-  Messages = Standard
-  Max Full Interval = 1 month     # upgrade to full when older than a month
-  Pool = Default
-  Priority = 10
-  Write Bootstrap = "/home/backup/bacula/wdir/%c.bsr"
-#  Run Before Job = 
-#  Run After Job = 
-}
-
-Job {
-  Name = "Restore-{{bacula_client_host}}"
-  Type = Restore
-  Client={{bacula_client_name}}
-  FileSet="CloudMail"
-  Where = /tmp/bacula-restores
-  Messages = Standard
-  Pool = Default
-}
-
-# List of files to be backed up
-FileSet {
-  Name = "CloudMail"
-  Include {
-    File = /etc/letsencrypt
-    File = /var/private
-    File = /var/spool/postfix/etc/maildb/maildb.sqlite3
-    File = /var/vmail
-    File = /var/www
-    Options {signature=SHA1}
-  }
-  Exclude {
-    File = /var/private/mounted.txt
-    File = /var/vmail/mounted.txt
-  }
-}
-
-
+{% for i in bacula_clients %}
+@/etc/bacula/{{hostvars[i].inventory_hostname_short}}-job.conf
+{% endfor %}

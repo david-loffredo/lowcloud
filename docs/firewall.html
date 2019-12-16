@@ -55,7 +55,14 @@ etc, so we could use it and add whatever we want.  Look at the
 following two files.
 
 <p>/etc/ufw/after.init: initialization customization script run after ufw is initialized (ufw 0.34 and later)
-<p>/etc/ufw/before.init: initialization customization script run before ufw is initialized (ufw 0.34 and later) 
+<p>/etc/ufw/before.init: initialization customization script run before ufw is initialized (ufw 0.34 and later)
+
+<p>You still have to be careful with UFW though.  It remembers the
+state, so idempotency is sketchy.  If you have a dozen ports open and
+then remove a bunch from your variables, your task will set the
+remaining ones, but the originals will remain open until you do an
+explicit ufw reset and then rerun the task.  Our current iptables task
+is totally idempotent.
 
 <p>We run fail2ban to scan the logs for repeated intrusion attempts
 and temporarily ban IPs.  Debian 10 has a fairly updated package so we
