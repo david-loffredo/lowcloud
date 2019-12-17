@@ -8,7 +8,7 @@ Director {
   Working Directory = {{ bacula_director_workdir }}
   Pid Directory = {{ bacula_director_piddir }}
   Maximum Concurrent Jobs = {{ bacula_director_max_jobs }}
-  Password = "{{ bacula_console_director_pw }}"
+  Password = "{{ bacula_console_pw }}"
   Messages = Standard
 }
 
@@ -38,7 +38,7 @@ Catalog {
 Storage {
   Name = File
   Address = {{ bacula_storage_host }}
-  Password = "{{ bacula_storage_director_pw }}"
+  Password = "{{ bacula_storage_pw }}"
   Device = FileStorage
   Media Type = File
 }

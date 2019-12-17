@@ -4,7 +4,7 @@
 {% for dir in groups['backup-server'] %}
 Director {
   Name = {{ hostvars[dir].bacula_director_name | default(dir + '-dir') }}
-  Password = "{{ bacula_client_director_pw }}"
+  Password = "{{ bacula_client_pw }}"
 }
 {% endfor %}
 

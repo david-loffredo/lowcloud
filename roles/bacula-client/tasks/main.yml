@@ -6,8 +6,8 @@
       - bacula-client
 
 - name: bacula password has real value
-  fail: msg="Set bacula_client_director_pw to a real value"
-  when: bacula_client_director_pw == "changeme"
+  fail: msg="Set bacula_client_pw to a real value"
+  when: bacula_client_pw == "changeme"
     
 - name: bacula client config file
   template:
@@ -28,15 +28,15 @@
 ## 
 - name: bacula tunnel account present
   user:
-    name: "{{ bacula_tunnel_acct_name }}"
-    group: "{{ bacula_tunnel_acct_group }}"
+    name: "{{ bacula_tunnel_acct }}"
+    group: "{{ bacula_tunnel_group }}"
     state: present
-    password: "{{ bacula_tunnel_acct_passwd }}"
+    password: "{{ bacula_tunnel_passwd }}"
       
 - name: bacula tunnel has authorized keys
   authorized_key:
-    user: "{{ bacula_tunnel_acct_name }}"
-    key:  "{{ bacula_tunnel_acct_sshkey }}"
+    user: "{{ bacula_tunnel_acct }}"
+    key:  "{{ bacula_tunnel_sshpub }}"
 
 # This is symbolic name passed by the director to the client that
 # needs to resolve to the storage machine.  Since we are working over

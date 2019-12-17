@@ -1,14 +1,23 @@
 {# figure out he defaults in one place to make the body clearer -#}
 {%- set fd = hostvars[item] -%}
 {%- set fd_name = fd.bacula_client_name | default(fd.inventory_hostname_short + '-fd') -%}
-{%- set fd_pw = fd.bacula_client_director_pw | default(bacula_client_default_director_pw) -%}
+{%- set fd_host = fd.bacula_client_host | default(fd.inventory_hostname) -%}
+{%- set fd_pw = fd.bacula_client_pw | default(bacula_default_client_pw) -%}
+{%- set fd_fdport = fd.bacula_client_fdport | default(bacula_default_client_fdport) -%}
+{%- set fd_tunnel = fd.bacula_client_tunnel | default(bacula_default_client_tunnel) -%}
+{%- set fd_tunnel_fdport = fd.bacula_tunnel_fdport | default(bacula_default_tunnel_fdport) -%}
 # CLOUD CLIENT: {{ fd.inventory_hostname_short }} ========================================
 #
 Client {
   Name = {{ fd_name }}
   Password = "{{ fd_pw }}"
+{% if fd_tunnel %}
   Address=localhost
-  FDPort=9112	# Client connected using an ssh tunnel
+  FDPort={{fd_tunnel_fdport}}
+{% else %}
+  Address={{fd_host}}
+  FDPort={{fd_fdport}}
+{% endif %}
   Catalog = MyCatalog
 }
 
@@ -27,9 +36,11 @@ Job {
   Max Full Interval = 1 month     # upgrade to full when older than a month
   Pool = Default
   Priority = 10
-  Write Bootstrap = "/home/backup/bacula/wdir/%c.bsr"
-#  Run Before Job = 
+#  Write Bootstrap = "/home/backup/bacula/wdir/%c.bsr"
+{% if fd_tunnel %}
+  Run Before Job = "/etc/bacula/sshbacula {{fd_host}}"
 #  Run After Job = 
+{% endif %}
 }
 
 Job {

@@ -7,6 +7,13 @@
     name:
       - bacula-server
 
+- name: bacula storage password has real value
+  fail: msg="Set bacula_storage_pw to a real value"
+  when: bacula_storage_pw == "changeme"
+
+- name: bacula console password has real value
+  fail: msg="Set bacula_console_pw to a real value"
+  when: bacula_console_pw == "changeme"
       
 # install one database backend: mysql, pgsql or sqlite
 # include: mysql.yml
@@ -30,6 +37,9 @@
     src: client.conf.j2
     dest: /etc/bacula/{{hostvars[item].inventory_hostname_short}}-job.conf
   with_items: "{{ bacula_clients }}"
+
+## bacula_tunnel_fdport for the director side of the fd connection.
+## Need to pass it into the script.
   
 - name: bacula director working directory present
   file: state=directory path="{{ bacula_director_workdir }}"
