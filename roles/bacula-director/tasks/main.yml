@@ -1,15 +1,23 @@
 ---
+# The bacula-server package brings in bacula-director, bacula-sd, and
+# bacula-bscan
 - name: bacula director installed
   package:
     state: present
     name:
-      - bacula-director
+      - bacula-server
 
+      
 # install one database backend: mysql, pgsql or sqlite
 # include: mysql.yml
 # include: pgsql.yml
 # include: sqlite.yml
-  
+
+# bacula-storage-mysql
+# bacula-storage-postgresql
+# Package bacula-tray-monitor
+
+
 - name: bacula director config file
   template:
     src: bacula-dir.conf.j2
@@ -30,21 +38,28 @@
 
 
 ## Get the storage director working
-- name: bacula director config file
+- name: bacula storage daemon config file
   template:
     src: bacula-sd.conf.j2
     dest: /etc/bacula/bacula-sd.conf
   notify:
-    - restart bacula director
+    - restart bacula storage daemon
+
+- name: bacula storage working directories present
+  file: state=directory path="{{ item }}"
+    owner=root group=bacula mode=0770
+  with_items:
+    - "{{ bacula_storage_workdir }}"
+    - "{{ bacula_storage_datadir }}"
 
 
 ## Console?
-
     
 # RedHat and Suse would also need stuff in sysconfig
 
-- name: bacula director service enabled
-  service: name=bacula-dir enabled=yes
-
-- name: bacula director service started
-  service: name=bacula-dir state=started
+- name: bacula services enabled and running
+  service: name={{item}} enabled=yes state=started
+  with_items:
+    - bacula-dir
+    - bacula-sd
+  

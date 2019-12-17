@@ -1,8 +1,10 @@
 #
 # Bacula Storage Daemon Configuration
 #
-# The storage director name does not seem to be used anywhere, just
-# the host machine and port.
+
+#------------------------------
+# STORAGE - The storage director name does not seem to be used
+# anywhere, just the host machine and port.
 Storage {
   Name = {{ bacula_storage_name }}
   SDPort = {{ bacula_storage_port }}
@@ -11,7 +13,8 @@ Storage {
   Maximum Concurrent Jobs = {{ bacula_storage_max_jobs }}
 }
 
-# Directors permitted to contact the storage daemon
+#------------------------------
+# DIRECTOR - Directors permitted to contact the storage daemon
 #
 Director {
   Name = {{ bacula_director_name }}
@@ -28,10 +31,9 @@ Director {
 #   Monitor = yes
 # }
 
-#
-# Devices supported by this Storage daemon
-# To connect, the Director's bacula-dir.conf must have the
-#  same Name and MediaType. 
+#------------------------------
+# DEVICE - Devices supported by this Storage daemon To connect, the
+# Director's bacula-dir.conf must have the same Name and MediaType.
 #
 Device {
   Name = FileStorage
@@ -44,9 +46,9 @@ Device {
   AlwaysOpen = no;
 }
 
-# 
-# Send all messages to the Director, 
-# mount messages also are sent to the email address
+#------------------------------
+# MESSAGES - Send all messages to the Director, mount messages also
+# are sent to the email address
 #
 Messages {
   Name = Standard

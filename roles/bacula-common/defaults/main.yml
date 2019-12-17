@@ -85,30 +85,6 @@ bacula_tunnel_acct_group:       "{{ bacula_default_tunnel_acct_group }}"
 bacula_tunnel_acct_sshkey:      "{{ bacula_default_tunnel_acct_sshkey }}"
 bacula_tunnel_acct_passwd:      "{{ bacula_default_tunnel_acct_passwd }}"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 bacula_director_name:           "{{ inventory_hostname_short }}-dir"
 bacula_director_port:           "{{ bacula_default_director_port }}"
 bacula_director_query_file:     "{{ bacula_default_director_query_file }}"
@@ -120,7 +96,7 @@ bacula_director_max_jobs:       "{{ bacula_default_director_max_jobs }}"
 # needs to resolve to the storage machine.  When we are working over
 # a tunnel this must not resolve to anything real so we put an entry
 # in /etc/hosts to map it to 127.0.0.1
-bacula_storage_name:           "{{ inventory_hostname_short }}-sd"
+bacula_storage_name:            "{{ inventory_hostname_short }}-sd"
 bacula_storage_host:            "{{ bacula_default_storage_host }}"
 bacula_storage_port:            "{{ bacula_default_storage_port }}"
 bacula_storage_workdir:         "{{ bacula_default_storage_workdir }}"

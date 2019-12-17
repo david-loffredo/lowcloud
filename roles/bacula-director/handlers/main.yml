@@ -3,3 +3,7 @@
 
 - name: restart bacula director
   service: name=bacula-dir state=restarted
+
+- name: restart bacula storage daemon
+  service: name=bacula-sd state=restarted
+  
