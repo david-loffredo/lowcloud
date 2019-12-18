@@ -37,17 +37,9 @@
     src: client.conf.j2
     dest: /etc/bacula/{{hostvars[item].inventory_hostname_short}}-job.conf
   with_items: "{{ bacula_clients }}"
+  notify:
+    - restart bacula director
 
-## bacula_tunnel_fdport for the director side of the fd connection.
-## Need to pass it into the script.
-  
-- name: bacula director working directory present
-  file: state=directory path="{{ bacula_director_workdir }}"
-    owner=root group=bacula mode=0770
-
-
-
-## Get the storage director working
 - name: bacula storage daemon config file
   template:
     src: bacula-sd.conf.j2
@@ -55,12 +47,22 @@
   notify:
     - restart bacula storage daemon
 
-- name: bacula storage working directories present
+- name: bacula server working directories present
   file: state=directory path="{{ item }}"
     owner=root group=bacula mode=0770
   with_items:
+    - "{{ bacula_director_workdir }}"
     - "{{ bacula_storage_workdir }}"
     - "{{ bacula_storage_datadir }}"
+
+- name: local storage director resolves to loopback
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: "127.0.0.1 {{ item }}"
+    state: present
+  with_items: 
+    - "{{ bacula_storage_host }}"
 
 
 ## Console?

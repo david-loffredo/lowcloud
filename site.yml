@@ -1,8 +1,9 @@
 ---
 # All tasks are run as the deploy user, which can sudo when needed.
 
-# The firewall task is run last so that all of the services can
-# declare the various ports that they need.
+# DNS needs to be up first so that certbot can find us to issue a
+# cert.  This probably means a two phase thing - common firewall and
+# dns, wait for propogation, and then the rest.   
 - hosts: cloud
   remote_user: "{{ deploy_acct.name }}"
   become: True

@@ -1,39 +1,62 @@
 #!/bin/bash
-# Establishes a self-killing SSH tunnel to the
-# given SSH server, and forwards the correct
-# ports for bacula usage.
+# Establishes a self-killing SSH tunnel to the given SSH server, and
+# forwards the correct ports for bacula usage.
 
-# Bacula-dir runs as user bacula, but with root's
-# environment. We need to trick it into running
-# actually looking for the .ssh directory in
+error_exit()
+{
+    echo "$1" 1>&2
+    exit 1
+}
+
+# Bacula-dir runs as user bacula, but with root's environment. We need
+# to trick it into running actually looking for the .ssh directory in
 # the right place.
 USER=bacula
 HOME=$(grep "^$USER:" /etc/passwd | cut -d : -f 6)
 CLIENT=$1
+KEYFILE=$2
+FDPORT=${3:-9112}
+
 LOCAL=$(hostname -f)
 SSH=/usr/bin/ssh
 
-echo "Starting SSH-tunnel to $CLIENT..."
+[ -f $KEYFILE ] || error_exit 'could not find ssh keyfile'
+    
+echo "Starting SSH-tunnel to $CLIENT with port $FDPORT"
+
 # -f means: go into background
 # -C means: use compression
 # -2 means: only use SSH2
-# -R 9101:$LOCAL:9101 means: when client connects to remote port 9101 (bacula-dir), it will be
-#    forwarded to this machine.
-# -R 9103:$LOCAL:9103 means: when client connects to remote port 9101 (bacula-sd), it will be
-#    forwarded to this machine.
-# -L 9112:localhost:9102 means: when bacula-dir connects to port 9112 (instead of the normal 9102),
-#    it will be forwarded to the client's FD. The client will think the connection was to port
+
+# -R 9101:$LOCAL:9101 when client connects to remote port 9101
+#    (bacula-dir), it will be forwarded to this machine.
+
+# -R 9103:$LOCAL:9103 when client connects to remote port 9101
+#    (bacula-sd), it will be forwarded to this machine.
+
+# -L 9112:localhost:9102 when bacula-dir connects to port 9112
+#    (instead of the normal 9102), it will be forwarded to the
+#    client's FD. The client will think the connection was to port
 #    9102 as usual
-# sleep 60 is a simple command that will execute on the server and does nothing for 60 seconds,
-# then it exits. This keeps ssh running for 60 seconds. Once we connect to the FD, that
-# connection will keep ssh running even beyond the 60 seconds.
-# Using this approach, we do not need to tear down the tunnel later, it disconnects itself
+
+# sleep 60 is a simple command that will execute on the server and
+# does nothing for 60 seconds, then it exits. This keeps ssh running
+# for 60 seconds. Once we connect to the FD, that connection will keep
+# ssh running even beyond the 60 seconds.  Using this approach, we do
+# not need to tear down the tunnel later, it disconnects itself
 # automagically.
-# It is important to redirect stdout and stderr, or else bacula will not realize that the
-# script has terminated.
-$SSH -fC2 -R 9101:$LOCAL:9101 \
+
+# It is important to redirect stdout and stderr, or else bacula will
+# not realize that the script has terminated.
+
+# Use accept new to let it accept the host key first time, but fail if
+# it has suddenly changed.
+
+$SSH -fC2  -oStrictHostKeyChecking=accept-new \
+     -R 9101:$LOCAL:9101 \
      -R 9103:$LOCAL:9103 \
-     -L 9112:localhost:9102 \
-     $CLIENT sleep 60 >/dev/null 2>/dev/null
+     -L $FDPORT:localhost:9102 \
+     -i $KEYFILE \
+     $CLIENT sleep 20 >/dev/null 2>/dev/null
 # give ssh a little time to establish the connection.
 sleep 10
