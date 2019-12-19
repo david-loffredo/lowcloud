@@ -5,14 +5,16 @@
     name:
       - iptables-persistent
       - fail2ban
+      - net-tools
+
+# iproute2 has the new ss command
+# net-tools has the legacy commands including netstat
+      
 
 - debug:
     msg:
       - OPEN TCP PORTS {{ firewall_ports_tcp }}
       - OPEN UDP PORTS {{ firewall_ports_udp }}
-      
-# iproute2 has the new ss command
-# net-tools has the legacy commands including netstat
       
 - name: iptables v4 configured
   template:

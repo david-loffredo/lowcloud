@@ -20,7 +20,10 @@ Director {
 #
 FileDaemon {
   Name = {{ bacula_client_name }}
-  FD Port = {{ bacula_client_fdport }}
+{% if bacula_client_tunnel %}
+  FDAddress=127.0.0.1
+{% endif %}
+  FDPort = {{ bacula_client_fdport }}
   Working Directory = {{ bacula_client_workdir }}
   Pid Directory = {{ bacula_client_piddir }}
   Maximum Concurrent Jobs = {{ bacula_client_max_jobs }}
