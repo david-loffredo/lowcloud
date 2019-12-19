@@ -6,6 +6,7 @@
     state: present
     name:
       - bacula-server
+      - bacula-console
 
 - name: bacula storage password has real value
   fail: msg="Set bacula_storage_pw to a real value"
@@ -24,29 +25,6 @@
 # bacula-storage-postgresql
 # Package bacula-tray-monitor
 
-
-- name: bacula director config file
-  template:
-    src: bacula-dir.conf.j2
-    dest: /etc/bacula/bacula-dir.conf
-  notify:
-    - restart bacula director
-
-- name: cloud client configurations present
-  template:
-    src: client.conf.j2
-    dest: /etc/bacula/{{hostvars[item].inventory_hostname_short}}-job.conf
-  with_items: "{{ bacula_clients }}"
-  notify:
-    - restart bacula director
-
-- name: bacula storage daemon config file
-  template:
-    src: bacula-sd.conf.j2
-    dest: /etc/bacula/bacula-sd.conf
-  notify:
-    - restart bacula storage daemon
-
 - name: bacula server working directories present
   file: state=directory path="{{ item }}"
     owner=root group=bacula mode=0770
@@ -54,6 +32,30 @@
     - "{{ bacula_director_workdir }}"
     - "{{ bacula_storage_workdir }}"
     - "{{ bacula_storage_datadir }}"
+    - /etc/bacula/tunnel
+
+- name: bacula config files present
+  template: src={{item}}.j2
+    dest=/etc/bacula/{{item}}
+    owner=root group=bacula mode=0640
+  with_items:
+    - bacula-dir.conf
+    - bacula-sd.conf
+    - bconsole.conf
+  notify:
+    - restart bacula director
+    - restart bacula storage daemon
+
+- name: cloud client configurations present
+  template:
+    src: client.conf.j2
+    dest: /etc/bacula/{{hostvars[item].inventory_hostname_short}}-job.conf
+    owner: root
+    group: bacula
+    mode: 0640
+  with_items: "{{ bacula_clients }}"
+  notify:
+    - restart bacula director
 
 - name: local storage director resolves to loopback
   lineinfile:
@@ -63,6 +65,28 @@
     state: present
   with_items: 
     - "{{ bacula_storage_host }}"
+
+# Tunnel Things ---------------------------------------
+- name: bacula tunnel script present
+  template: src=sshbacula
+    dest=/etc/bacula/sshbacula
+    owner=root group=bacula mode=0750
+
+- name: bacula tunnel keys for all clients
+  copy: src={{item.src}}
+    dest=/etc/bacula/tunnel/{{item.dst}}
+    owner=root group=bacula mode=0640
+  with_items: >-
+    {%- set ns = namespace(keys=[]) -%}
+    {%- for i in bacula_clients -%}
+    {{- ns.keys.append( {
+      "src": hostvars[i].bacula_tunnel_sshkeypath |
+      default(bacula_default_tunnel_sshkeypath),
+      "dst": hostvars[i].bacula_tunnel_sshkeyname |
+      default(bacula_default_tunnel_sshkeyname) } ) -}}
+    {%- endfor -%}
+    {{- ns.keys | unique -}}
+
 
 
 ## Console?

@@ -1,0 +1,12 @@
+#
+# Bacula Console Configuration File
+#
+
+Director {
+  Name = {{ bacula_director_name }}
+  DIRPort = {{ bacula_director_port }}
+  address = localhost
+  Password = "{{ bacula_console_pw }}"
+}
+
+

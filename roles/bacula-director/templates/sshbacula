@@ -1,7 +1,17 @@
 #!/bin/bash
 # Establishes a self-killing SSH tunnel to the given SSH server, and
 # forwards the correct ports for bacula usage.
-
+#
+# Usage: sshbacula host@client [keyfile] [port]
+#
+# If a keyfile is not provided, it uses /etc/bacula/tunnel/tunnel.key
+# If a port is not provided, it uses 9112
+#
+# Originally from https://wiki.bacula.org/doku.php?id=sshtunnel
+# Modified by Dave to not need a .ssh config and to pass the key and
+# port so we can support multiple tunnels.  Use 'accept-new' for key
+# checks so no longer need to manually accept the first connection.
+#
 error_exit()
 {
     echo "$1" 1>&2
@@ -14,13 +24,13 @@ error_exit()
 USER=bacula
 HOME=$(grep "^$USER:" /etc/passwd | cut -d : -f 6)
 CLIENT=$1
-KEYFILE=$2
+KEYFILE=${2:-/etc/bacula/tunnel/tunnel.key}
 FDPORT=${3:-9112}
 
 LOCAL=$(hostname -f)
 SSH=/usr/bin/ssh
 
-[ -f $KEYFILE ] || error_exit 'could not find ssh keyfile'
+[ -f $KEYFILE ] || error_exit "Could not find SSH keyfile $KEYFILE"
     
 echo "Starting SSH-tunnel to $CLIENT with port $FDPORT"
 
