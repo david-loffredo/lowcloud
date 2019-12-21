@@ -7,3 +7,15 @@
 # than one director, they will probably have different clients.
 #
 bacula_clients: "{{ groups['cloud'] }}"
+
+# Select database backend: mysql, pgsql or sqlite3.  Mysql and
+# Postgress need a password but Sqlite does not.
+bacula_db: sqlite3
+bacula_db_pw: changeme
+
+bacula_db_pkg:
+  mysql: bacula-director-mysql
+  pgsql: bacula-director-pgsql
+  sqlite3: bacula-director-sqlite3
+
+  

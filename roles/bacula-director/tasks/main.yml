@@ -1,13 +1,5 @@
 ---
-# The bacula-server package brings in bacula-director, bacula-sd, and
-# bacula-bscan
-- name: bacula director installed
-  package:
-    state: present
-    name:
-      - bacula-server
-      - bacula-console
-
+# Bacula director config
 - name: bacula storage password has real value
   fail: msg="Set bacula_storage_pw to a real value"
   when: bacula_storage_pw == "changeme"
@@ -15,15 +7,44 @@
 - name: bacula console password has real value
   fail: msg="Set bacula_console_pw to a real value"
   when: bacula_console_pw == "changeme"
-      
-# install one database backend: mysql, pgsql or sqlite
-# include: mysql.yml
-# include: pgsql.yml
-# include: sqlite.yml
 
-# bacula-storage-mysql
-# bacula-storage-postgresql
-# Package bacula-tray-monitor
+# Install the database back end that we will use with bacula.  There
+# are three options: postgres, mysql, and sqlite, although sqlite has
+# been deprecated.   We do this before we install the director.
+#
+# If we just install the db package blind, debconf and dbconfig-common
+# will generate a random DB password.  I don't know how to grep around
+# and get that back to populate the Catalog{} entry. so set an
+# explicit password.
+#
+# Unlike other debconf prompts, you cannot pre-seed responses for
+# dbconfig-common prompts using debconf-set-selections or the ansible
+# debconf module. Instead, you must create a configuration file in
+# /etc/dbconfig-common.
+
+# The bacula-server package brings in bacula-director, bacula-sd, and
+# bacula-bscan
+- name: bacula database config directory present
+  file: state=directory path="{{ item }}"
+    owner=root group=root mode=0755
+  with_items:
+    - /etc/dbconfig-common
+
+# changing this after the fact might require dpkg-reconfigure 
+- name: bacula database config installed
+  template: src={{item}}.conf.j2
+    dest=/etc/dbconfig-common/{{item}}.conf
+    owner=root group=root mode=0600
+  with_items:
+    - "{{bacula_db_pkg[bacula_db]}}"
+
+- name: bacula director packages installed
+  package:
+    state: present
+    name:
+      - "{{bacula_db_pkg[bacula_db]}}"
+      - bacula-server
+      - bacula-console      
 
 - name: bacula server working directories present
   file: state=directory path="{{ item }}"
@@ -34,6 +55,7 @@
     - "{{ bacula_storage_datadir }}"
     - /etc/bacula/tunnel
 
+    
 # Configs for director, storage daemon, and console
 - name: bacula config files present
   template: src={{item}}.j2
@@ -98,4 +120,6 @@
   with_items:
     - bacula-dir
     - bacula-sd
+
+
   

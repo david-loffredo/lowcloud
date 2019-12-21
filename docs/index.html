@@ -36,6 +36,8 @@ the YML files.</p>
 <UL>
 <LI>Client configured for bacula, configure director.  Try using a
 local NATed machine (Pi Zero) as the director
+<LI>Configure exim to send authenticated system mail from clients so
+that they can be behind a NATed firewall.
 <LI>Set the hostname
 <LI>Configure RSPAMD with postfix.
 <LI>Deploy DNS on live machine
@@ -45,6 +47,8 @@ local NATed machine (Pi Zero) as the director
 <LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, locking you out.
 <LI>Look at apticron or unattended-upgrades for keeping patched.
 </UL>
+
+<p>Can run dpkg-reconfigure on packages
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -129,6 +133,9 @@ for <code>--ask-pass</code>
 <PRE class=code>
 $ ansible-playbook -k --ask-vault-pass -i hosts first.yml --extra-vars "target=guardian"
 </PRE>
+<p><b>UPDATE</b> now we are preinstalling a public key for  needs to be in openssh form; to convert keys from
+putty, install the putty-utils package and do:
+
 
 <p>The public key needs to be in openssh form; to convert keys from
 putty, install the putty-utils package and do:
