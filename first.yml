@@ -1,86 +1,23 @@
 ---
 # Initial config of a server to lock down ssh.
 
-# Rather than set a hosts: all and limit, instead substitute a
-# specific host address via the target variable and --extra-vars:
-# ansible-playbook first.yml --extra-vars "target=imac-2.local"
+# Initial config of a server to lock down ssh.
+# LIMIT THE PLAY to the just the machine that you want set up.
+# ansible-playbook site.yml --limit foobar --tags first
 
 - name: First setup of new server
-  hosts: '{{ target }}'
+  hosts: all
+#  hosts: '{{ target }}'
   gather_facts: no
   remote_user: root
   port: 22
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
-    ansible_ssh_private_key_file:  # hide deploy acct in groups_var
-  tasks:
-    # do this first to minimize the number of log entries in
-    # a different time zone
-    - name: timezone set to {{ timezone }}
-      timezone:
-        name: "{{ timezone }}"
-        
-    - name: update the package list
-      apt:
-        update_cache: yes
-        cache_valid_time: "{{ pkg_cache_life }}"
-
-    # upgrade yes/safe will not remove or install new pkgs, just
-    # get the latest versions of everything.
-    - name: upgrade a server with apt
-      apt: upgrade=dist
-
-    - name: common groups present
-      group: name="{{ item }}" state=present
-      with_items:
-        - users
-        - wheel
-
-    - name: wheel group allowed to sudo
-      lineinfile:
-        dest: /etc/sudoers
-        state: present
-        regexp: '^%wheel'
-        line: '%wheel ALL=(ALL) ALL'
-        validate: 'visudo -cf %s'
-
-    - name: deploy account with wheel group present
-      user:
-        name: "{{ deploy_acct.name }}"
-        group: "{{ deploy_acct.group }}"
-        groups: wheel
-        append: yes
-        state: present
-        password: "{{ deploy_acct.passwd }}"
-      
-    - name: accounts have authorized keys
-      authorized_key: user="{{ item.name }}" key="{{ item.sshpub }}"
-      with_items:
-        - "{{ root_acct }}"
-        - "{{ deploy_acct }}"
-      
-    - name: ssh password authentication off
-      lineinfile:
-        dest: /etc/ssh/sshd_config
-        line: 'PasswordAuthentication no'
-        insertafter: EOF
-        state: present
-
-    - name: modern host key present
-      lineinfile:
-        dest: /etc/ssh/sshd_config
-        line: 'HostKey /etc/ssh/ssh_host_ed25519_key'
-        insertafter: EOF
-        state: present
-
-    - name: missing host keys generated
-      command: ssh-keygen -A
-
-    - name: restart ssh
-      service: name=ssh state=restarted
+    ansible_ssh_private_key_file: "{{ root_acct.sshkeypath }}"
+  roles:
+    - first
 
 
-
-# add line Admin-Email: {{admin_email}} to /etc/debconf.conf
-    
-    
+# Rather than set a hosts: all and limit, instead substitute a
+# specific host address via the target variable and --extra-vars:
+# ansible-playbook first.yml --extra-vars "target=imac-2.local"

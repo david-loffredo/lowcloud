@@ -28,6 +28,7 @@ domain: davecloud.net
 root_acct:
   name: root 
   sshpub: "{{ vault_root_sshpub }}"
+  sshkeypath: "{{ vault_root_sshkeypath }}"
 
 deploy_acct:
   name: deploy

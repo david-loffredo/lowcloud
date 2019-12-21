@@ -8,7 +8,7 @@
 {%- set fd_tunacct = fd.bacula_tunnel_acct | default(bacula_default_tunnel_acct) -%}
 {%- set fd_tunkey = fd.bacula_tunnel_sshkeyname | default(bacula_default_tunnel_sshkeyname) -%}
 {%- set fd_tunnel = fd.bacula_client_tunnel | default(bacula_default_client_tunnel) -%}
-{%- set fd_tunnel_args = fd_tunacct+'@'+fd_host+' /etc/bacula/tunnel/'+fd_tunkey+' '+fd_tunport -%}
+{%- set fd_tunnel_args = fd_tunacct+'@'+fd_host+' /etc/bacula/tunnel/'+fd_tunkey+' '+(fd_tunport|string) -%}
 
 # CLOUD CLIENT: {{ fd.inventory_hostname_short }} ========================================
 #

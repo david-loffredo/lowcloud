@@ -17,16 +17,10 @@
 
 TODO:
 
-Make sure can work without manually mount and label volumes in the
-storage.
-
- QUERY file
- *query
-Using Catalog "MyCatalog"
+Defaults to postgres -- try to get sqlite running.
 Could not open /usr/libexec/bacula/query.sql: ERR=No such file or directory
 
-Look at SD Calls Client = yes/no in the director -> Client{} block.
-It might simplify the loopback SD config in our current tunnel approach.
+Make the files configurable
 
 <p>We use <a href="https://www.bacula.org/">Bacula</a> to manage
 backups.  On the machine to be backed up, this is enabled by the
@@ -37,11 +31,13 @@ role.</p>
 <p>Since the client is in the cloud and our director will likely be
 NATed and behind a firewall, we leave the Bacula ports blocked on the
 client.  When it is time for a backup, connection is initiated by the
-director, which set up an ssh tunnel to the right port.  We use a
+director, which set up an ssh tunnel to the right ports.  We use a
 restricted backup account with a separate ssh key just to set up the
 tunnel, as described in
 the <a href="https://wiki.bacula.org/doku.php?id=sshtunnel">Bacula
-wiki</a></p>
+wiki</a>.  We can back up a mix of many machines, some needing a
+tunnel (like a cloud machine) and some that can directly connect (like
+a local PC).</p>
 
 <p>We will back up the list of config files covered by
 the <a href="snapshot.html">snapshot</a> playbook, plus the mail

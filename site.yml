@@ -27,3 +27,8 @@
     - { role: common, tags: common }
     - { role: bacula-director, tags: bacula-director }
     
+
+
+
+    
+    
