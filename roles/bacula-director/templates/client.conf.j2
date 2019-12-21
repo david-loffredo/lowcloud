@@ -4,8 +4,12 @@
 {%- set fd_host = fd.bacula_client_host | default(fd.inventory_hostname) -%}
 {%- set fd_pw = fd.bacula_client_pw | default(bacula_default_client_pw) -%}
 {%- set fd_fdport = fd.bacula_client_fdport | default(bacula_default_client_fdport) -%}
+{%- set fd_tunport = fd.bacula_tunnel_fdport | default(bacula_default_tunnel_fdport) -%}
+{%- set fd_tunacct = fd.bacula_tunnel_acct | default(bacula_default_tunnel_acct) -%}
+{%- set fd_tunkey = fd.bacula_tunnel_sshkeyname | default(bacula_default_tunnel_sshkeyname) -%}
 {%- set fd_tunnel = fd.bacula_client_tunnel | default(bacula_default_client_tunnel) -%}
-{%- set fd_tunnel_fdport = fd.bacula_tunnel_fdport | default(bacula_default_tunnel_fdport) -%}
+{%- set fd_tunnel_args = fd_tunacct+'@'+fd_host+' /etc/bacula/tunnel/'+fd_tunkey+' '+fd_tunport -%}
+
 # CLOUD CLIENT: {{ fd.inventory_hostname_short }} ========================================
 #
 Client {
@@ -13,7 +17,7 @@ Client {
   Password = "{{ fd_pw }}"
 {% if fd_tunnel %}
   Address=localhost
-  FDPort={{fd_tunnel_fdport}}
+  FDPort={{fd_tunport}}
 {% else %}
   Address={{fd_host}}
   FDPort={{fd_fdport}}
@@ -26,7 +30,7 @@ Client {
 # it is turned on.
 
 Job {
-  Name = {{ fd_name }}
+  Name = "{{fd.inventory_hostname_short}}"
   Type = Backup
   Client = {{ fd_name }}
   FileSet="CloudMail"
@@ -34,23 +38,27 @@ Job {
   Storage = File
   Messages = Standard
   Max Full Interval = 1 month     # upgrade to full when older than a month
-  Pool = Default
+  Pool = Monthly
   Priority = 10
 #  Write Bootstrap = "/home/backup/bacula/wdir/%c.bsr"
 {% if fd_tunnel %}
-  Run Before Job = "/etc/bacula/sshbacula {{fd_host}}"
-#  Run After Job = 
+  Run Before Job = "/etc/bacula/ssh-tunnel.sh {{fd_tunnel_args}}"
+#  Run After Job = tunnel auto closes
 {% endif %}
 }
 
 Job {
-  Name = "Restore-{{fd.inventory_hostname_short}}"
+  Name = "restore-{{fd.inventory_hostname_short}}"
   Type = Restore
   Client = {{ fd_name }}
   FileSet="CloudMail"
   Where = /tmp/bacula-restores
   Messages = Standard
   Pool = Default
+{% if fd_tunnel %}
+  Run Before Job = "/etc/bacula/ssh-tunnel.sh {{fd_tunnel_args}}"
+#  Run After Job = tunnel auto closes
+{% endif %}
 }
 
 # List of files to be backed up

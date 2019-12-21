@@ -18,11 +18,6 @@ error_exit()
     exit 1
 }
 
-# Bacula-dir runs as user bacula, but with root's environment. We need
-# to trick it into running actually looking for the .ssh directory in
-# the right place.
-USER=bacula
-HOME=$(grep "^$USER:" /etc/passwd | cut -d : -f 6)
 CLIENT=$1
 KEYFILE=${2:-/etc/bacula/tunnel/tunnel.key}
 FDPORT=${3:-9112}
@@ -61,8 +56,7 @@ echo "Starting SSH-tunnel to $CLIENT with port $FDPORT"
 
 # Use accept new to let it accept the host key first time, but fail if
 # it has suddenly changed.
-
-$SSH -fC2  -oStrictHostKeyChecking=accept-new \
+$SSH -fC2 -oStrictHostKeyChecking=accept-new \
      -R 9101:$LOCAL:9101 \
      -R 9103:$LOCAL:9103 \
      -L $FDPORT:localhost:9102 \

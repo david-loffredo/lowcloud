@@ -15,6 +15,19 @@
 
 <p><b>ROLE</b> bacula-client, bacula-director
 
+TODO:
+
+Make sure can work without manually mount and label volumes in the
+storage.
+
+ QUERY file
+ *query
+Using Catalog "MyCatalog"
+Could not open /usr/libexec/bacula/query.sql: ERR=No such file or directory
+
+Look at SD Calls Client = yes/no in the director -> Client{} block.
+It might simplify the loopback SD config in our current tunnel approach.
+
 <p>We use <a href="https://www.bacula.org/">Bacula</a> to manage
 backups.  On the machine to be backed up, this is enabled by the
 "bacula-client" role.  Backups are initiated by and stored on a

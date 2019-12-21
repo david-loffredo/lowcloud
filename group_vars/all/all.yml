@@ -57,6 +57,8 @@ firewall_services: [ 'mail', 'web' ]
 #firewall_opentcp: [any extra ports]
 #firewall_openudp: [any extra ports]
 
+#firewall_opentcp: [9101, 9102, 9103]
+
 # fail2ban will ignore these networks
 # firewall_friendly_networks:
 
@@ -157,6 +159,8 @@ bacula_console_pw: "{{ vault_bacula_console_pw }}"
 bacula_tunnel_sshpub: "{{ vault_bacula_tunnel_sshpub }}"
 bacula_tunnel_sshkeypath: "{{ vault_bacula_tunnel_sshkeypath }}"
 # bacula_clients defaults to cloud group, set if extra machines
+
+#bacula_client_tunnel: no
 
 
 dns_ns:  

@@ -34,6 +34,7 @@
     - "{{ bacula_storage_datadir }}"
     - /etc/bacula/tunnel
 
+# Configs for director, storage daemon, and console
 - name: bacula config files present
   template: src={{item}}.j2
     dest=/etc/bacula/{{item}}
@@ -57,20 +58,12 @@
   notify:
     - restart bacula director
 
-- name: local storage director resolves to loopback
-  lineinfile:
-    dest: /etc/hosts
-    regexp: '.*{{ item }}$'
-    line: "127.0.0.1 {{ item }}"
-    state: present
-  with_items: 
-    - "{{ bacula_storage_host }}"
-
-# Tunnel Things ---------------------------------------
+# SSH Tunnel Things ---------------------------------------
 - name: bacula tunnel script present
-  template: src=sshbacula
-    dest=/etc/bacula/sshbacula
+  template: src={{item}} dest=/etc/bacula/{{item}}
     owner=root group=bacula mode=0750
+  with_items:
+    - ssh-tunnel.sh
 
 - name: bacula tunnel keys for all clients
   copy: src={{item.src}}
@@ -87,10 +80,17 @@
     {%- endfor -%}
     {{- ns.keys | unique -}}
 
+# Storage director is on the same machine, but we want to give it a
+# distinct name for use when tunneling.
+- name: local storage director resolves to loopback
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: "127.0.0.1 {{ item }}"
+    state: present
+  with_items: 
+    - "{{ bacula_storage_host }}"
 
-
-## Console?
-    
 # RedHat and Suse would also need stuff in sysconfig
 
 - name: bacula services enabled and running
