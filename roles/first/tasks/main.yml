@@ -57,13 +57,19 @@
     line: 'HostKey /etc/ssh/ssh_host_ed25519_key'
     insertafter: EOF
     state: present
+  notify:
+    - restart ssh
+    - flush local known_hosts
 
 - name: missing host keys generated
   command: ssh-keygen -A
+  args:
+    creates: /etc/ssh/ssh_host_ed25519_key
+  notify:
+    - restart ssh
+    - flush local known_hosts
 
-- name: restart ssh
-  service: name=ssh state=restarted
 
-# ssh-keygen -f "/home/loffredo/.ssh/known_hosts" -R "{{ansible ip num}}"
 
 # add line Admin-Email: {{admin_email}} to /etc/debconf.conf
+    

@@ -154,6 +154,8 @@ private_dir_pw:    "{{vault_mail_spool_pw}}"
 
 
 # Bacula
+bacula_db: sqlite3
+
 bacula_client_pw: "{{ vault_bacula_client_pw }}"
 bacula_storage_pw: "{{ vault_bacula_storage_pw }}"
 bacula_console_pw: "{{ vault_bacula_console_pw }}"

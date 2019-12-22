@@ -7,7 +7,6 @@
 
 - name: First setup of new server
   hosts: all
-#  hosts: '{{ target }}'
   gather_facts: no
   remote_user: root
   port: 22
@@ -16,8 +15,3 @@
     ansible_ssh_private_key_file: "{{ root_acct.sshkeypath }}"
   roles:
     - first
-
-
-# Rather than set a hosts: all and limit, instead substitute a
-# specific host address via the target variable and --extra-vars:
-# ansible-playbook first.yml --extra-vars "target=imac-2.local"

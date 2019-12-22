@@ -34,8 +34,7 @@ the YML files.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Client configured for bacula, configure director.  Try using a
-local NATed machine (Pi Zero) as the director
+<LI>Try using a Pi Zero as the bacula director
 <LI>Configure exim to send authenticated system mail from clients so
 that they can be behind a NATed firewall.
 <LI>Set the hostname
@@ -121,18 +120,23 @@ the following in the cleartext file.
 <A NAME=first></A>First Login Playbook</H2>
 
 <p>The first thing to do after provisioning a machine is run the
-first.yml playbook to lock down SSH.  This should be the only time a
-password based login is used with the machine.  You need "sshpass"
-installed locally because the remote machine does not yet have any
-keys installed.  After this, remote password login is disabled and
-everything uses ssh keys.  It is also a good idea to change the root
-password manually because the original passed through the Linode UI.
-The lowercase <code>-k</code> flag is a shorthand
+playbook with the 'first' tag to lock down SSH.  This should be the
+only time a password based login is used with the machine.  You need
+"sshpass" installed locally because the remote machine does not yet
+have any keys installed.  After this, remote password login is
+disabled and everything uses ssh keys.  It is also a good idea to
+change the root password manually because the original passed through
+the Linode UI.  The lowercase <code>-k</code> flag is a shorthand
 for <code>--ask-pass</code>
 
 <PRE class=code>
 $ ansible-playbook -k --ask-vault-pass -i hosts first.yml --extra-vars "target=guardian"
 </PRE>
+
+<PRE class=code>
+$ ansible-playbook --ask-vault-pass -i hosts site.yml --limit my-new-machine --tags first
+</PRE>
+
 <p><b>UPDATE</b> now we are preinstalling a public key for  needs to be in openssh form; to convert keys from
 putty, install the putty-utils package and do:
 

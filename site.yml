@@ -1,4 +1,20 @@
 ---
+# Initial config of a server to lock down ssh.
+# LIMIT THE PLAY to the just the machine that you want set up.
+# ansible-playbook site.yml --limit foobar --tags first
+
+- name: first setup of new server
+  hosts: all
+  gather_facts: no
+  remote_user: root
+  port: 22
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+    ansible_ssh_private_key_file: "{{ root_acct.sshkeypath }}"
+  roles:
+    - first
+  tags: [ 'never', 'first' ]
+
 # All tasks are run as the deploy user, which can sudo when needed.
 
 # DNS needs to be up first so that certbot can find us to issue a
@@ -9,6 +25,7 @@
   become: True
   force_handlers: True      
   vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
     ansible_ssh_private_key_file: "{{ deploy_acct.sshkeypath }}"
   roles:
     - { role: common, tags: common }
@@ -21,6 +38,7 @@
   become: True
   force_handlers: True      
   vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
     ansible_ssh_private_key_file: "{{ deploy_acct.sshkeypath }}"
     firewall_services: []
   roles:

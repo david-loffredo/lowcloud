@@ -10,7 +10,9 @@ bacula_clients: "{{ groups['cloud'] }}"
 
 # Select database backend: mysql, pgsql or sqlite3.  Mysql and
 # Postgress need a password but Sqlite does not.
-bacula_db: sqlite3
+#bacula_db: sqlite3
+#bacula_db: mysql
+bacula_db: pgsql
 bacula_db_pw: changeme
 
 bacula_db_pkg:
