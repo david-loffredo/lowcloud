@@ -19,24 +19,28 @@
 
 <H1>Server Configuration</H1>
 
-<p>These are Ansible roles that I have built for my own use to run web
-service and email, and to do regular backups.  They assume Debian 10.
-I use the simplest solutions that I can find, both for minimal machine
-requirements and minimal attack surface.  For example, SQLite rather
-than a full MySQL install for a half dozen virtual mailboxes.
+<p>These Ansible roles that I wrote to set up web service, email, and
+regular backups.  They assume Debian 10.  I use the simplest solutions
+that I can find, both for minimal machine requirements and minimal
+attack surface.  For example, SQLite rather than a full MySQL install
+for a half dozen virtual mailboxes.  This total setup will run
+comfortably on a $5/mo cloud machine for the mail server and a
+Raspberry Pi Zero on your bookshelf as the Bacula server.
 
 <p>I began this project by studying sovereign, homebox, mail in a box,
-frjo's ansible setups and other resources.  It is easy to fall into
-the cargo cult sysadmin trap by just following recipes, so I tried to
-use them as inspiration, examine all of the design decisions, and then
-make my own conscious decisions, which I have documented here and in
-the YML files.</p>
+frjo's ansible setups and a variety of other resources.  It is easy to
+fall into the cargo cult sysadmin trap by just following recipes, so I
+tried to use them as inspiration, examine all of the design decisions,
+and then make my own conscious decisions, which I have documented here
+and in the YML files.  I was also forced to develop a much deeper
+understanding of Ansible, particularly for configuring the network of
+machines and services required for Bacula to operate properly.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Try using a Pi Zero as the bacula director
-<LI>Configure exim to send authenticated system mail from clients so
-that they can be behind a NATed firewall.
+<LI>Configure exim or bsmtp to send authenticated system mail from
+clients so that we can get status reports from behind a NATed
+firewall.
 <LI>Set the hostname
 <LI>Configure RSPAMD with postfix.
 <LI>Deploy DNS on live machine

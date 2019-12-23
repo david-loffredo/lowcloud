@@ -155,11 +155,12 @@ private_dir_pw:    "{{vault_mail_spool_pw}}"
 
 # Bacula
 bacula_db: sqlite3
+#bacula_db_pw:           "{{ vault_bacula_db_pw }}"
 
-bacula_client_pw: "{{ vault_bacula_client_pw }}"
-bacula_storage_pw: "{{ vault_bacula_storage_pw }}"
-bacula_console_pw: "{{ vault_bacula_console_pw }}"
-bacula_tunnel_sshpub: "{{ vault_bacula_tunnel_sshpub }}"
+bacula_client_pw:       "{{ vault_bacula_client_pw }}"
+bacula_storage_pw:      "{{ vault_bacula_storage_pw }}"
+bacula_console_pw:      "{{ vault_bacula_console_pw }}"
+bacula_tunnel_sshpub:   "{{ vault_bacula_tunnel_sshpub }}"
 bacula_tunnel_sshkeypath: "{{ vault_bacula_tunnel_sshkeypath }}"
 # bacula_clients defaults to cloud group, set if extra machines
 
