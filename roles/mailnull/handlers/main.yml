@@ -1,0 +1,6 @@
+---
+# Defines handlers applicable across all machines in the infrastructure.
+
+- name: restart postfix
+  service: name=postfix state=restarted
+

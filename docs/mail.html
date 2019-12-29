@@ -11,9 +11,9 @@
 </UL>
 </div>
 
-<H1>Mail</H1>
+<H1>Mail Server</H1>
 
-<p><b>ROLE</b> mail
+<p><b>ROLE</b> mailhost
 
 <p>The email configuration is handled by the "mail" role.  Postfix is
 used as the MTA and Dovecot for the LDA and IMAP server.  Rspamd will
@@ -122,6 +122,36 @@ your server that fails authentication (although by configuring
 `p=none`, any such email should not be rejected by the other
 server).
 
+
+
+
+
+<H1>System Mail from Client Machines</H1>
+<p><b>ROLE</b> mailnull
+
+<p>The mail server is configured to always accept mail from the local
+host, specific whitelisted IP addresses, and from authorized clients
+(user agents like Thunderbird or phones).  Everything else is
+subjected to the full battery of tests.</p>
+
+<p>Historically, you whitelist the local network block so that other
+machines at your site can submit mail from system things like cron
+jobs.  The machines on site are configured to relay all mail through
+the main mailserver.  This can also work if your machines are spread
+among the cloud, as long as they have fixed IP addresses known ahead
+of time.</p>
+
+<p>In the case of machines behind an ISP with changable IPs, or for
+machines come or go with an unpredictable IP, we need a different
+approach.  Those machines still relay all mail, but when they connect,
+they authorize with a special "daemon" account, so they can be treated
+like a normal user agent.  The mail server only accepts mail for local
+addresses from this "daemon" account, so it can't send spam if a
+client machine gets p0wned.
+
+<p>The default MTA for Debian is exim4, and it can be set it up in
+this way, but we already use postfix on the server, so I just stick
+with that.</p>
 
 </BODY>
 </HTML>

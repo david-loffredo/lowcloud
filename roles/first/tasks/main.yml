@@ -72,4 +72,6 @@
 
 
 # add line Admin-Email: {{admin_email}} to /etc/debconf.conf
-    
+
+# lineinfile for /etc/nssswitch.conf
+#sudoers:        files

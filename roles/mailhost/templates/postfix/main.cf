@@ -63,8 +63,8 @@ local_recipient_maps = $virtual_mailbox_maps
 #   may be many more mail agents out there that have not yet updated.
 #   consider adding !TLSv1 at some point.  As of mid 2019, the postfix
 #   default is still !SSLv2,!SSLv3.
-smtp_tls_protocols =  !SSLv2,!SSLv3
-smtp_tls_mandatory_protocols=  !SSLv2,!SSLv3
+smtp_tls_protocols =  !TLSv1 !SSLv2,!SSLv3
+smtp_tls_mandatory_protocols=  !TLSv1 !SSLv2,!SSLv3
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 # http://www.postfix.org/FORWARD_SECRECY_README.html
 smtp_tls_ciphers = medium
@@ -72,8 +72,8 @@ smtp_tls_loglevel = 2
 smtp_tls_note_starttls_offer = yes
 smtp_tls_security_level = may
 
-smtpd_tls_protocols = !SSLv2,!SSLv3
-smtpd_tls_mandatory_protocols= !SSLv2,!SSLv3
+smtpd_tls_protocols = !TLSv1 !SSLv2,!SSLv3
+smtpd_tls_mandatory_protocols= !TLSv1 !SSLv2,!SSLv3
 smtpd_use_tls=yes
 smtpd_tls_cert_file=/etc/letsencrypt/live/{{ domain }}/fullchain.pem
 smtpd_tls_key_file= /etc/letsencrypt/live/{{ domain }}/privkey.pem
@@ -81,6 +81,9 @@ smtpd_tls_auth_only = yes
 smtpd_tls_received_header = yes
 smtpd_tls_security_level = may
 #smtpd_tls_dh1024_param_file = /etc/ssl/private/dhparam2048.pem
+
+# enhanced logging for debugging
+#smtpd_tls_loglevel = 2
 
 # this was in the default install
 smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
@@ -138,12 +141,17 @@ smtpd_recipient_restrictions =
 # Relay control: local clients and authenticated clients may specify
 # any destination domain.
 smtpd_relay_restrictions =
-  permit_mynetworks,
   permit_sasl_authenticated,
+  permit_mynetworks,
   reject_unauth_destination
 
-smtpd_helo_restrictions = permit_mynetworks, reject_invalid_helo_hostname
-smtpd_sender_restrictions = reject_unknown_address
+smtpd_helo_restrictions =
+  permit_mynetworks,
+  reject_invalid_helo_hostname
+
+smtpd_sender_restrictions =
+  permit_sasl_authenticated,
+  reject_unknown_address
 
 
 # Deny any useful feedback to abusing systems by changing all errors

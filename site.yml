@@ -14,7 +14,7 @@
   roles:
     - { role: common, tags: common }
     - { role: apache, tags: apache }
-    - { role: mail, tags: mail }
+    - { role: mailhost, tags: mail }
     - { role: bacula-client, tags: bacula-client }
  
 - hosts: backup-server
@@ -27,6 +27,7 @@
     firewall_services: []
   roles:
     - { role: common, tags: common }
+    - { role: mailnull, tags: mail }
     - { role: bacula-director, tags: bacula-director }
     
 

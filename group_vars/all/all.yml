@@ -128,6 +128,8 @@ mail_domains:
 mail_users:
   - email: "{{ admin_email }}"
     pw: "{{vault_mbox_admin_pw}}"
+  - email: "relay@{{ domain }}"
+    pw: "{{vault_mail_relay_pw}}"
   - email: "dave@{{ domain }}"
     pw: "{{vault_mbox_dave_pw}}"
   - email: "somebody@machineplan.com"

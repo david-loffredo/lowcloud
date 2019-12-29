@@ -1,0 +1,47 @@
+---
+# Set up machine as a null client to forward all mail to a central
+# host.  Use postfix and authenticate with a special account that is
+# restricted to only sending to the local domain.
+#
+# The default MTA for Debian is exim4, and I have also set it up in
+# this way, but already using postfix on the server, so just sticking
+# with that.
+
+- name: postfix packages present
+  package:
+    state: present
+    name:
+      - libsasl2-modules
+      - postfix
+
+- name: mail config present
+  template: src=main.cf.j2 dest="{{mail_cfg_dir}}/main.cf"
+    owner=root group=root mode=0644
+  notify: restart postfix
+
+
+# The sasl_passwd file gives the daemon account that we use to
+# authenticate for relaying mail.  Make readable only by root for
+# security.  Must be compiled into a hash db. Postmap should create
+# the db file with the same permissions as original, but verify.
+#  
+- name: sasl_passwd present
+  template: src=sasl_passwd.j2 dest="{{mail_cfg_dir}}/sasl_passwd"
+    owner=root group=root mode=0600
+  register: postfix_sasl_passwd_result
+  notify: restart postfix
+
+- name: sasl_passwd db compiled
+  shell: postmap {{mail_cfg_dir}}/sasl_passwd
+  notify: restart postfix
+  when: postfix_sasl_passwd_result is changed
+
+- name: sasl_passwd db perms correct
+  file: dest="{{mail_cfg_dir}}/sasl_passwd.db"
+    owner=root group=root mode=0600
+  notify: restart postfix
+  
+- name: postfix started
+  service: name=postfix state=started enabled=yes
+
+  
