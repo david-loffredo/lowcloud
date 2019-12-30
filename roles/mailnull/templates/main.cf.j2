@@ -48,6 +48,12 @@ mydestination =
 # we do not do anything with + delimiters
 recipient_delimiter =
 
+# Strip any local hostname from the from address.  In particular the
+# mailutils mail client throws that in.  Sendmail is better behaved.
+masquerade_domains = $mydomain
+masquerade_classes = envelope_recipient, envelope_sender,
+        header_sender, header_recipient
+	
 mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 inet_interfaces = loopback-only
 inet_protocols = all
