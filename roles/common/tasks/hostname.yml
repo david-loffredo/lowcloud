@@ -1,0 +1,41 @@
+---
+- name: hostname set to inventory name
+  hostname:
+    name: "{{ hostname }}"
+  when: hostname is defined
+  register: hostcmd_state
+
+- name: gathered facts match hostname fqdn
+  action: setup
+  when: ansible_hostname != hostname_fqdn
+
+- name: /etc/hosts has ipv4 fqdn
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^{{ hostname_ipv4 }}"
+    line: "{{ hostname_ipv4 }} {{ hostname_fqdn }} {{ hostname }}"
+    state: present
+  when: hostname_ipv4 is defined
+  register: hostsv4_state
+
+- name: /etc/hosts has ipv6 fqdn
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^{{ hostname_ipv6 }}"
+    line: "{{ hostname_ipv6 }} {{ hostname_fqdn }} {{ hostname }}"
+    state: present
+  when: hostname_ipv6 is defined
+  register: hostsv6_state
+
+
+# Rather than use a handler, bounce this using register vars.  When
+# the host changes we might get a security warning email every task,
+# so we don't want to wait to the very end of the play.  We could do
+# meta: flush_handlers, but that will run them all right now.
+#
+- name: restart systemd-logind
+  service: name=systemd-logind state=restarted
+  when: hostcmd_state is changed or
+        hostsv4_state is changed or
+        hostsv6_state is changed
+        

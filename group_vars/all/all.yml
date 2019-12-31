@@ -46,6 +46,11 @@ admin_email: "admin@{{ domain }}"
 # timezone, 'Etc/UTC' is another choice
 timezone: 'US/Eastern'
 
+# Can set LANG and LANGUAGE separately, roll your own if you want
+# something finer grained.
+#host_locale:    en_US.UTF-8
+#host_language:  en_US.UTF-8
+
 #========================================
 # Network and Firewall settings
 #

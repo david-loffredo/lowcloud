@@ -4,8 +4,9 @@
 #     update_cache: yes
 #     cache_valid_time: "{{ pkg_cache_life }}"
 
-- import_tasks: firewall.yml
-  tags: firewall
+- { import_tasks: hostname.yml,         tags: hostname }
+- { import_tasks: locale.yml,           tags: locale }
+- { import_tasks: firewall.yml,         tags: firewall }
 - import_tasks: ntp.yml
 - import_tasks: editor.yml
 

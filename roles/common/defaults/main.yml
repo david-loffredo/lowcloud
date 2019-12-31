@@ -8,6 +8,16 @@ admin_email: "root@{{ domain }}"
 # timezone, 'Etc/UTC' is another choice
 timezone: 'Etc/UTC'
 
+hostname:       "{{ inventory_hostname_short }}"
+hostname_fqdn:  "{{ inventory_hostname }}"
+hostname_ipv4:  "{{ ansible_default_ipv4.address }}"
+hostname_ipv6:  "{{ ansible_default_ipv6.address }}"
+
+# Can set LANG and LANGUAGE separately, roll your own if you want
+# something finer grained.
+host_locale:    en_US.UTF-8
+host_language:  "{{ host_locale }}"
+  
 #========================================
 # NTP - use nearby ntp servers by default
 #

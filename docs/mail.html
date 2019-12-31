@@ -144,10 +144,11 @@ of time.</p>
 <p>In the case of machines behind an ISP with changable IPs, or for
 machines come or go with an unpredictable IP, we need a different
 approach.  Those machines still relay all mail, but when they connect,
-they authorize with a special "daemon" account, so they can be treated
-like a normal user agent.  The mail server only accepts mail for local
-addresses from this "daemon" account, so it can't send spam if a
-client machine gets p0wned.
+they authorize with a special "relay" account, so they can be treated
+like a normal user agent.  We would like to configure the mail server
+to only accept mail for local addresses when authenticated with this
+account, but postfix only restricts based on the FROM, not the AUTH
+(you can force the two to match, but that does not help us much)
 
 <p>The default MTA for Debian is exim4, and it can be set it up in
 this way, but we already use postfix on the server, so I just stick

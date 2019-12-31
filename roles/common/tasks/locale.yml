@@ -1,0 +1,38 @@
+---
+# Locale to desired settings -- Most machines use LANG="en_US.UTF-8"
+# but Raspberry Pi's default to the UK english setting.  Whatever you
+# use should be consistent across machines.
+
+- name: locale is present
+  locale_gen: name={{item}}  state=present
+  with_items: "{{ [ host_locale, host_language ] | unique }}"
+
+- name: current locale and language configuration
+  command: localectl status
+  register: locale_status
+  changed_when: false
+
+- name: current locale analysis
+  set_fact:
+    calc_lang: "{{ locale_status.stdout | regex_search('LANG=([^\n]+)', '\\1') | first }}"
+
+- name: current language analysis
+  set_fact:
+    calc_language: "{{ locale_status.stdout | regex_search('LANGUAGE=([^\n]+)', '\\1') | default([calc_lang], true) | first }}"
+
+# On Debian 10, localectl seems to set LANGUAGE in /etc/default/locale
+# but once there, does not change it again.  The update-locale tool
+# will comment out LANGUAGE if you unset it, but if you set it again,
+# it just changes the commented line, which does nobody any good.  So
+# generate the file ourselves and call localectl set-locale to change
+# the running environment.  Don't know if these tools work any better
+# on the other distros, but they seem to use /etc/locale.conf
+#
+- name: locale as '{{ host_locale }}' and language as '{{ host_language }}'
+  command: localectl set-locale LANG={{ host_locale }} LANGUAGE={{ host_language }}
+  changed_when: calc_lang != host_locale or calc_language != host_language
+
+- name: /etc/default/locale contains proper defaults  
+  template: src=locale.j2 dest=/etc/default/locale
+    owner=root group=root mode=0644
+  
