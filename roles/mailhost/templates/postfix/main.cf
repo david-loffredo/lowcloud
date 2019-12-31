@@ -66,21 +66,36 @@ local_recipient_maps = $virtual_mailbox_maps
 smtp_tls_protocols =  !TLSv1 !SSLv2,!SSLv3
 smtp_tls_mandatory_protocols=  !TLSv1 !SSLv2,!SSLv3
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+
 # http://www.postfix.org/FORWARD_SECRECY_README.html
-smtp_tls_ciphers = medium
-smtp_tls_loglevel = 2
 smtp_tls_note_starttls_offer = yes
 smtp_tls_security_level = may
 
-smtpd_tls_protocols = !TLSv1 !SSLv2,!SSLv3
-smtpd_tls_mandatory_protocols= !TLSv1 !SSLv2,!SSLv3
+
 smtpd_use_tls=yes
 smtpd_tls_cert_file=/etc/letsencrypt/live/{{ domain }}/fullchain.pem
 smtpd_tls_key_file= /etc/letsencrypt/live/{{ domain }}/privkey.pem
 smtpd_tls_auth_only = yes
 smtpd_tls_received_header = yes
 smtpd_tls_security_level = may
-#smtpd_tls_dh1024_param_file = /etc/ssl/private/dhparam2048.pem
+
+smtpd_tls_protocols = !TLSv1 !SSLv2,!SSLv3
+smtpd_tls_exclude_ciphers = aNULL
+smtpd_tls_mandatory_protocols= !TLSv1 !SSLv2,!SSLv3
+smtpd_tls_mandatory_exclude_ciphers = aNULL
+
+# let server pick cipher to prevent client lowball
+tls_preempt_cipherlist      = yes
+smtpd_tls_mandatory_ciphers = high
+smtpd_tls_ciphers           = medium
+smtp_tls_mandatory_ciphers  = $smtpd_tls_mandatory_ciphers
+smtp_tls_ciphers            = $smtpd_tls_ciphers
+lmtp_tls_mandatory_ciphers  = $smtpd_tls_mandatory_ciphers
+lmtp_tls_ciphers            = $smtpd_tls_ciphers
+
+# People can abuse this to DOS.  Option available with Postfix 3.4 and
+# OpenSSL 1.1.1, which is shipping in Debian 10
+tls_ssl_options = NO_RENEGOTIATION
 
 # enhanced logging for debugging
 #smtpd_tls_loglevel = 2
@@ -151,8 +166,8 @@ smtpd_helo_restrictions =
 
 smtpd_sender_restrictions =
   permit_sasl_authenticated,
-  reject_unknown_address
-
+  reject_unknown_reverse_client_hostname
+#  reject_unknown_address
 
 # Deny any useful feedback to abusing systems by changing all errors
 # to 554: Transaction Failed
