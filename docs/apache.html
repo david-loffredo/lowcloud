@@ -42,6 +42,10 @@ web_vhosts:
       - www.foobar.com
 </PRE>
 
+
+<P>The default Apache config enables gzip compression, and it is not
+recommended to turn it off.  If your website uses cookies, strongly
+advise using the SameSite flag to mitigate BREACH (CVE-2013-3587)
+
 </BODY>
 </HTML>
-

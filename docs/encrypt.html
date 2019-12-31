@@ -1,17 +1,43 @@
 <!DOCTYPE html>
 <HTML>
 <HEAD>
-   <TITLE>Certbot</TITLE>
+   <TITLE>Encryption</TITLE>
    <link rel="stylesheet" type="text/css" href="style.css">
 </HEAD>
 <BODY>
 <div class=toc>
 <UL>
 <LI><A href=index.html>[home]</A>
+<p>
+<LI><A href="encrypt">Encryption</A>
+<LI><A href="certbot">Certbot / LetsEncrypt</A>
+</UL>
 </UL>
 </div>
 
-<H1>Certbot</H1>
+<H1><A NAME=encrypt></A>Encryption</H1>
+
+<p>We set up communication encryption for mail (STARTTLS and IMAPS)
+and web (HTTPS) to
+protect <a href="https://en.wikipedia.org/wiki/Data_in_transit">data
+in transit</a>.  We identify ourselves for these connections using
+certificates issued by <a href="#certbot">LetsEncrypt</a>.  We use
+encrypted directories for sensitive data like the mail spool to
+protect the
+<a href="https://en.wikipedia.org/wiki/Data_at_rest">data at rest</a>.
+</p>
+
+<p>Keeping the communication secure is an ongoing effort, as various
+protocols are strengthened and deprecated in response to ever more
+clever attacks.  Tools
+like <a href="https://testssl.sh/">testssl.sh</a> and sites like
+<a href="https://www.immuniweb.com/">immuniweb.com</a> are useful for
+periodically scanning for new vulnerabilities.
+
+
+<!-- ============================== -->
+<H1 class=rule>
+<A NAME=certbot></A>Certbot / LetsEncrypt</H1>
 
 <p><b>ROLE</b> apache, certbot.yml
 
@@ -23,23 +49,22 @@ needed.  Since we manage our own DNS, we could use the DNS challenge
 and get a wildcard cert, but that is not really recommended unless you
 really are creating machines dynamically.</p>
 
-<p>In the group_vars, "certbot_certs" is a list of structs, one for
-each root domain, with a list of all the machine names that cert
-should support.  It looks something like this.</p>
+<p>We generate a cert for each web_vhost in the group_vars, and make
+it also support each of the "aliases" names for that host.  So in the
+example below, we would have two certs.  The first is
+for <b>example.com</b> and also supports <b>www.example.com</b>
+and <b>mail.example.com</b>.  The second is for <b>foobar.com</b> and
+also supports <b>www.foobar.com</b></p>
 
 <PRE class=code>
 web_vhosts:
-  - name: "{{ domain }}"
+  - name: "example.com"
     aliases:
-      - www.{{ domain }}
-      - mail.{{ domain }}
+      - www.example.com
+      - mail.example.com
   - name: foobar.com
     aliases:
       - www.foobar.com
-
-certbot_certs:
-  - domains: "{{ [ web_vhosts.0.name ] + web_vhosts.0.aliases }}"
-  - domains: "{{ [ web_vhosts.1.name ] + web_vhosts.1.aliases }}"
 </PRE>
 
 <p>The /etc/letsencrypt directory holds a history of all past keys
@@ -93,6 +118,8 @@ them are stopped and started by adding small shell scripts to
 the <code>pre</code> and <code>post</code> directories
 under <code>renewal-hooks</code>.  Some can just be bounced by adding
 a reload or restart action to the <code>post</code> directory.</p>
+
+
 
 </BODY>
 </HTML>
