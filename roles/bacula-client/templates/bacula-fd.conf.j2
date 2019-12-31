@@ -1,9 +1,11 @@
 #
 # Bacula File Daemon Configuration
 #
-{% for dir in groups['backup-server'] %}
+{% for i in groups['backup-server'] %}
+{%- set dir = hostvars[i] -%}
+{%- set dir_name = dir.bacula_director_name | default(dir.inventory_hostname_short + '-dir') -%}
 Director {
-  Name = {{ hostvars[dir].bacula_director_name | default(dir + '-dir') }}
+  Name = {{ dir_name }}
   Password = "{{ bacula_client_pw }}"
 }
 {% endfor %}
@@ -30,10 +32,12 @@ FileDaemon {
 }
 
 # All messages except skipped files back to primary director
-{% for dir in ([groups['backup-server'].0]) %}
+{% for i in ([groups['backup-server'].0]) %}
+{%- set dir = hostvars[i] -%}
+{%- set dir_name = dir.bacula_director_name | default(dir.inventory_hostname_short + '-dir') -%}
 Messages {
   Name = Standard
-  director = {{ hostvars[dir].bacula_director_name | default(dir + '-dir') }} = all, !skipped, !restored
+  director = {{ dir_name }} = all, !skipped, !restored
 }
 {% endfor %}
 

@@ -38,7 +38,8 @@ machines and services required for Bacula to operate properly.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Nullclient masqarade a .local domain to the main domain?
+<LI>Strip extra headers on outgoing mail
+<LI>Fix null com
 <LI>Configure RSPAMD with postfix.
 <LI>Deploy DNS on live machine
 <LI>Configure DKIM and automate key rotation with postfix and DNS.
@@ -46,6 +47,10 @@ machines and services required for Bacula to operate properly.</p>
 <LI>Cut over on actual sites.
 <LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, locking you out.
 <LI>Look at apticron or unattended-upgrades for keeping patched.
+<LI>Nullclient masqarade a .local domain to the main domain?
+<LI>Null client with cert based auth
+<LI>Ipset with a variety of Class As to block port 22 and quiet down
+the logs.
 </UL>
 
 <p>Can run dpkg-reconfigure on packages
