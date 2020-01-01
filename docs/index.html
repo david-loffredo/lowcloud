@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <HTML>
 <HEAD>
-   <TITLE>Server Configuration</TITLE>
+   <TITLE>DaveCloud Server Configuration</TITLE>
    <link rel="stylesheet" type="text/css" href="style.css">
 </HEAD>
 <BODY>
@@ -9,36 +9,30 @@
 <UL>
 <LI><A href=index.html>[home]</A>
 <p>
-<LI><A href=pkgs>Packages</A>
-<LI><A href=vars>Variables</A>
-<LI><A href=first>First Login Playbook</A>
-<LI><A href=play>Site Setup Playbook</A>
-<LI><A href=reboot>Rebooting</A>
+<li><a href="#pkgs">Packages</a>
+<li><a href="#hosts">Hosts</a>
+<li><a href="#vars">Variables</a>
+<li><a href="#first">First Login Playbook</a>
+<li><a href="#play">Site Setup Playbook</a>
+<li><a href="#reboot">Rebooting</a>
 </UL>
 </div>
 
 <H1>Server Configuration</H1>
 
-<p>These Ansible roles that I wrote to set up web service, email, and
-regular backups.  They assume Debian 10.  I use the simplest solutions
-that I can find, both for minimal machine requirements and minimal
-attack surface.  For example, SQLite rather than a full MySQL install
-for a half dozen virtual mailboxes.  This total setup will run
-comfortably on a $5/mo cloud machine for the mail server and a
-Raspberry Pi Zero on your bookshelf as the Bacula server.
+<p>These Ansible roles set up web service, email, and regular backups.
+It doesn't include a lot of extra packages and tries to be minimize both
+machine requirements and attack surface.  For example, SQLite rather
+than a full MySQL install for a half dozen virtual mailboxes.</p>
 
-<p>I began this project by studying sovereign, homebox, mail in a box,
-frjo's ansible setups and a variety of other resources.  It is easy to
-fall into the cargo cult sysadmin trap by just following recipes, so I
-tried to use them as inspiration, examine all of the design decisions,
-and then make my own conscious decisions, which I have documented here
-and in the YML files.  I was also forced to develop a much deeper
-understanding of Ansible, particularly for configuring the network of
-machines and services required for Bacula to operate properly.</p>
+<p>Typically, mail and web are on a machine in the cloud (AWS, Linode,
+DigitalOcean, etc.) while backups are run by a machine that you have
+physical control over (old PC or Raspberry Pi in your basement).  I
+have run the total setup with a $5/mo cloud machine for mail/web and a
+Raspberry Pi Zero as the Bacula director.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Tighten SSL params on dovecot too.
 <LI>Configure RSPAMD with postfix.
 <LI>Deploy DNS on live machine
 <LI>Configure DKIM and automate key rotation with postfix and DNS.
@@ -59,6 +53,12 @@ the logs.
 <H2 class=rule>
 <A NAME=pkgs></A>Packages</H2>
 
+<p>These playbooks assume Debian 10, but use the
+Ansible <b>package:</b> module rather than <b>apt:</b> for installing
+things.  Adapting to other distros should be mostly a matter of some
+different file locations, and migrating between older or newer package
+versions. <a href="debian.html">Some notes about using Debian</a>.
+The playbooks cover the following areas:
 <ul>
 <li><a href="firewall.html">Firewall</a>
 <li><a href="apache.html">Web Server</a>
@@ -66,26 +66,16 @@ the logs.
 <li><a href="encrypt.html">Encryption</a>
 <li><a href="dns.html">DNS Configuration</a>
 <li><a href="backup.html">Backup</a>
-<p>
 </ul>
 
-<p>Debian uses <code>apt</code> as the package manager.  The
-<a href=https://www.debian.org/distrib/packages>Debian packages</a>
-and the <a href=https://backports.debian.org/Packages/>Backport
-packages</a> are available for install.  To list the
-installed and available versions
 
-<PRE class=code>
-apt list &lt;pkg&gt;
-apt list &lt;pkg&gt; -a    # list all versions in the repo
-</PRE>
 
-<p>If you need to completely uninstall and reinstall a package.
 
-<PRE class=code>
-apt-get --purge remove &lt;pkg&gt;
-apt-get install &lt;pkg&gt;
-</PRE>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=hosts></A>Hosts</H2>
+
 
 <!-- ============================== -->
 <H2 class=rule>
