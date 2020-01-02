@@ -7,6 +7,7 @@
       - fail2ban
       - net-tools
 
+# netfilter-persistent?
 # iproute2 has the new ss command
 # net-tools has the legacy commands including netstat
       

@@ -18,22 +18,18 @@
 
 <p><b>ROLE</b> common, firewall.yml
 
-<p>This uses raw iptables and uses iptables-persistent to reload our
-config on boot.  The playbook writes our IPv4 and IPv6 rules to the
-following,
-<PRE>
-    /etc/iptables/testrules.v4
-    /etc/iptables/testrules.v6
-</PRE>
+<p>We implement firewall rules directly using <code>iptables</code>,
+with <code>iptables-persistent</code> to reload our configuration on
+boot.  The playbook writes our IPv4 and IPv6 rules to
+<code>/etc/iptables/testrules.v4</code> and <code>testrules.v6</code>,
+and then runs <code>iptables-restore</code>
+and <code>iptables-save</code> to round-trip them into
+the <code>rules.v4</code> and <code>rules.v6</code> files that are
+loaded at boot.  The rules drop most things unless explicitly enabled
+based on the variables described below.  We always open the ssh port.
 
-<p>It then runs iptables-restore/iptables-save to cycle them into the
-corresponding rules.v* files, which are what is loaded on boot.  To
-change rules, edit etc/iptables/testrules.v* in the templates dir and
-rerun the playbook.
-
-
-<p>We run fail2ban to scan the logs for repeated intrusion attempts
-and temporarily ban IPs.
+<p>We run <code>fail2ban</code> to scan the logs for repeated
+intrusion attempts and temporarily ban IPs.   
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -63,24 +59,24 @@ firewall_blacklist_ips: []
 <H2 class=rule>
 <A NAME=why></A>Why I Chose These Packages</H2>
 
-<p>Some people install the ufw front end, which makes it easier to
-block everything and open up a few ports.  It seemed that UFW took
-over everything, which makes it difficult to do other iptables stuff
-like ipsets to geoblock china, russia, etc.  However, a closer read of
-the docs shows that it just manages iptables-save files that are in
-etc, so we could use it and add whatever we want.  Look at the
-following two files.
+<p>The <code>ufw</code> (universal firewall) front end is very popular
+because it makes it easy to block everything and open up a few ports.
+It also has a convenient Ansible module.  It is very good if you are
+manually managing the ports, but it is just a wrapper
+around <code>iptables</code>.
 
-<p>/etc/ufw/after.init: initialization customization script run after ufw is initialized (ufw 0.34 and later)
-<p>/etc/ufw/before.init: initialization customization script run before ufw is initialized (ufw 0.34 and later)
+<p>I decided to use <code>iptables</code> directly for two reasons.
+First, it seemed that UFW took over everything, so it was not possible
+to integrate with other tools like ipsets.  However, a closer read of
+the docs shows that it just manages iptables-save files
+in <code>/etc/ufw</code>, so we could add things there.
 
-<p>You still have to be careful with UFW though.  It remembers the
-state, so idempotency is sketchy.  If you have a dozen ports open and
-then remove a bunch from your variables, your task will set the
-remaining ones, but the originals will remain open until you do an
-explicit ufw reset and then rerun the task.  Our current iptables task
-is totally idempotent.
-
+<p>The second reason was idempotency.  UFW remembers state, so if a
+port is open, you must explicitly tell it to close if you want it
+closed.  With Ansible, we are just adding and removing ports from a
+variable so you must reset ufw every playbook run.  That makes it
+appear that the state changed even when it did not.  Our current
+iptables task is totally idempotent.
 
 <p>Fail2ban helps a bit on password protected service like IMAP by
 limiting the number of attempts an attacker can make before switching
