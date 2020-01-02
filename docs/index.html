@@ -31,6 +31,7 @@ physical control over (old PC or Raspberry Pi in your basement).  I
 have run the total setup with a $5/mo cloud machine for mail/web and a
 Raspberry Pi Zero as the Bacula director.</p>
 
+
 <p>TO DO LIST
 <UL>
 <LI>Configure RSPAMD with postfix.
@@ -53,12 +54,15 @@ the logs.
 <H2 class=rule>
 <A NAME=pkgs></A>Packages</H2>
 
-<p>These playbooks assume Debian 10, but use the
-Ansible <b>package:</b> module rather than <b>apt:</b> for installing
-things.  Adapting to other distros should be mostly a matter of some
-different file locations, and migrating between older or newer package
-versions. <a href="debian.html">Some notes about using Debian</a>.
-The playbooks cover the following areas:
+<p>These playbooks assume Debian 10.  I haven't tested with other
+distros, but there are likely to be some changes to file locations or
+slightly different package lists.  In most cases, I used the
+Ansible <code>package:</code> module rather than <code>apt:</code> for
+installing things, so it works with package managers like emerge or
+yum.  <a href="debian.html">Why did I pick Debian?</a>.
+
+<p>The playbooks cover the following areas: 
+
 <ul>
 <li><a href="firewall.html">Firewall</a>
 <li><a href="apache.html">Web Server</a>
@@ -81,8 +85,8 @@ The playbooks cover the following areas:
 <H2 class=rule>
 <A NAME=vars></A>Variables</H2>
 
-<p>The ansible variables are located under the <b>group_vars</b>
-directory.  Right now we are just using a single <b>all</b> set, but
+<p>The ansible variables are located under the <code>group_vars</code>
+directory.  Right now we are just using a single <code>all</code> set, but
 you can get fancier if you have multiple machines and want to track
 more variations.</p>
 
@@ -168,7 +172,7 @@ given state, no matter how many times you run it or what state it was
 in before.</p>
 
 <p>The command below runs the playbook on all machines in the 'hosts'
-inventory file.  It runs as the <b>deploy</b> user and asks passwords
+inventory file.  It runs as the <code>deploy</code> user and asks passwords
 for sudo on the deploy user and the vault password.  Both are the
 stpbuild passwords.  The uppercase <code>-K</code> flag is a shorthand
 for <code>--ask-become-pass</code>
@@ -189,8 +193,8 @@ playbook is run in the same way as <code>site.yml</code>.
 
 <p>The machine should boot clean and everything will come up except
 mail.  Because the mail spool is encrypted, you must log in,
-run <b>/etc/postfix/mailboot</b> to enter the EncFS password.  This
-will mount the cleartext directories and start postfix.
+run <code>/etc/postfix/mailboot</code> to enter the EncFS password.
+This will mount the cleartext directories and start postfix.
 
 
 </BODY>

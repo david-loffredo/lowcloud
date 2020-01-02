@@ -8,6 +8,9 @@
 <div class=toc>
 <UL>
 <LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#vars">Variables</a>
+<li><a href="#why">Why I Chose These Packages</a>
 </UL>
 </div>
 
@@ -26,6 +29,14 @@ We initialize the root with an index.html if one is not present.  The
 files are currently owned by root, but we create a 'www-data' group
 for future use when others might be uploading content.</p>
 
+<P>The default Apache config enables gzip compression, and it is not
+recommended to turn it off.  If your website uses cookies, strongly
+advise using the SameSite flag to mitigate BREACH (CVE-2013-3587)
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
 <p>In the group_vars, the <b>web_vhosts</b> variable is a list of
 structs, one for each root domain, with a main name and any aliases.
 It looks something like this.</p>
@@ -43,9 +54,14 @@ web_vhosts:
 </PRE>
 
 
-<P>The default Apache config enables gzip compression, and it is not
-recommended to turn it off.  If your website uses cookies, strongly
-advise using the SameSite flag to mitigate BREACH (CVE-2013-3587)
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why I Chose These Packages</H2>
+
+<p>I really didn't give this much thought.  I've been using Apache for
+years and am already familiar with it.  I'm sure that Nginx would be a
+fine choice too. Any site of mine is likely to be mostly static HTML,
+with perhaps a few CGI scripts, so any server is fine.
 
 </BODY>
 </HTML>

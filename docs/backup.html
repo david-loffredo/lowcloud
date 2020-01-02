@@ -8,6 +8,10 @@
 <div class=toc>
 <UL>
 <LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#vars">Variables</a>
+<li><a href="#using">Using Bacula</a>
+<li><a href="#why">Why I Chose Bacula</a>
 </UL>
 </div>
 
@@ -15,46 +19,31 @@
 
 <p><b>ROLE</b> bacula-client, bacula-director
 
-TODO:
-
-Defaults to postgres -- try to get sqlite running.
-Could not open /usr/libexec/bacula/query.sql: ERR=No such file or directory
-
-/usr/share/bacula-common/dbtype
-/usr/share/bacula-director/ all DB scripts
-
-bacula-director-mysql
-bacula-director-pgsql
-bacula-director-sqlite
-
-
-
-Make the files configurable
-
 <p>We use <a href="https://www.bacula.org/">Bacula</a> to manage
-backups.  On the machine to be backed up, this is enabled by the
-"bacula-client" role.  Backups are initiated by and stored on a
-separate machine which is configured by the "bacula-director"
-role.</p>
+backups.  This usually runs on at least two machines.  Each machine to
+be backed up includes the <code>bacula-client</code> role, and a
+separate machine initiates and stores the backup data.  This is
+configured by the <code>bacula-director</code> role.</p>
 
-<p>Since the client is in the cloud and our director will likely be
-NATed and behind a firewall, we leave the Bacula ports blocked on the
-client.  When it is time for a backup, connection is initiated by the
-director, which set up an ssh tunnel to the right ports.  We use a
-restricted backup account with a separate ssh key just to set up the
+<p>The client and director communicate over several ports.  Since the
+client is in the cloud and our director is usually NATed and behind a
+firewall, we leave those ports blocked on both.  When it is time for a
+backup, the director sets up an ssh tunnel for the ports.  We use a
+restricted backup account with a separate ssh key to set up the
 tunnel, as described in
 the <a href="https://wiki.bacula.org/doku.php?id=sshtunnel">Bacula
 wiki</a>.  We can back up a mix of many machines, some needing a
 tunnel (like a cloud machine) and some that can directly connect (like
 a local PC).</p>
 
-<p>We will back up the list of config files covered by
-the <a href="snapshot.html">snapshot</a> playbook, plus the mail
-spool.  May or may not back up the document roots for the web sites.
-Is it worth it to back up logs?
+<p>We back up the mail spool, document roots for the web sites, and
+the list of config files covered by
+the <a href="snapshot.html">snapshot</a> playbook.  Is it worth it to
+back up logs?
 
 <p>Bacula has several processes that run, usually spread over at least
-two machines, and they are configured by the following:
+two machines, and they are configured by the following files
+in <code>/etc/bacula</code>:
 <ul>
 <li><code>bacula-fd.conf</code> - File daemon on each client machine.
 Authorizes one or more directors to contact it.
@@ -70,45 +59,127 @@ backup server machine but could be elsewhere.  Defines storage devices
 like disk or tape and authorizes one or more directors to contact it.
 
 <li><code>bconsole.conf</code> - Console, for talking with a director
-for status or to restore files.  Defines the director to talk to.
+for status or to restore files.  This defines the director to talk to.
 </ul>
 
-<h2>Why I chose Bacula</h2>
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
+<p>The director uses a database for the catalog of files and jobs.
+Postgres is the default, but MySQL and Sqlite3 are also available.
+Postgres and MySQL need a password but Sqlite does not.  The next
+three passwords for authenticate the director to the client, storage,
+and console processes and are usually given long (50-60char) random
+strings of letters and numbers.  The ssh tunnel that Bacula uses
+requires a public and private keyfile.
+
+<PRE class=code>
+bacula_db: <em>pgsql / mysql / sqlite3</em>
+bacula_db_pw: changeme  
+
+bacula_client_pw:  "{{ vault_bacula_client_pw }}"
+bacula_storage_pw: "{{ vault_bacula_storage_pw }}"
+bacula_console_pw: "{{ vault_bacula_console_pw }}"
+
+bacula_tunnel_sshpub:   "{{ lookup('file', '~/.ssh/tunnel.auth') }}"
+bacula_tunnel_sshkeypath: ~/.ssh/tunnel.key
+</PRE>
+
+<p>The client does not need many settings.  We will eventually have a
+variable for the file lists to back up.
+
+<PRE class=code>
+# Eventual list of files
+</PRE>
+
+<p>If a client does not need an ssh tunnel,
+set <code>bacula_client_tunnel</code> to false in variables <em>for
+that client</em>.  You can have some clients with a tunnel and others
+without.  Without a tunnel, the Bacula ports on director and client
+need to be open so they can contact each other - add 'bacula' to
+<code>firewall_services</code> list.  
+ 
+<PRE class=code>
+# Set to no if a client does not need an SSH tunnel.   
+#bacula_client_tunnel: no
+#firewall_services: ['ssh', 'other things', 'bacula']
+</PRE>
+
+<p>Creating these roles forced a deeper understanding of Ansible
+variables.  Most roles need settings for just one machine at a time.
+The Bacula roles need settings over a network of machines, like each
+client of a director.  Defaults makes it even more interesting.
+The <code>bacula-common</code> role is used by the client and director
+roles to coordinate these settings.  The comments in that role has
+more discussion on defaults and hostvars.
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=using></A>Using Bacula</H2>
+
+<p>Backups are usually automatic, and an status email will be sent to
+the admin account when they are done.  All other interaction is done
+on the director machine using the Bacula console <code>bconsole</code>.
+
+
+<p>I recommend firing up the console and getting familiar with it
+before you need to.  Try to manually run a backup ("run") and try to
+restore some files ("restore").  The Bacula manual has
+a <a href="https://www.bacula.org/9.4.x-manuals/en/main/Restore_Command.html">nice
+walkthrough</a> of the restore process.
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why I Chose Bacula</H2>
+
+<p>We do backups so that we can recover to a prior "known good" state.
+Two reasons we might need that:
+<OL>
+<li>Hardware problem, accidental deletion, or other
+<a href="https://en.wikipedia.org/wiki/User_error#PEBKAC">PEBKAC</a>
+situation.</li>
+<li>Someone has exploited the machine.</li>
+</OL>
 
 <p>Initially I planed to
 use <a href="https://www.borgbackup.org/">Borg</a> because it is
-simple to configure, has a nice list of features like deduplication,
+simple to configure, has nice features like deduplication &amp;
 encryption, and a good community.  It stores data on local disk or
 over SSH to a server like
 by <a href="https://www.rsync.net/products/borg.html">rsync.net</a>.
 Borg won't go to an S3 bucket, but a similar project called
-<a href="https://restic.net/">Restic</a> will.
+<a href="https://restic.net/">Restic</a> will.</p>
 
-<p>Once I started considered <em>who</em> could access the backups, I
-changed my mind.  Borg and Restic work from the client, which guards
-against a disk crash or mistake, but offers no protection for a p0wned
-machine.  If a client can access past backups for pruning, etc, an
-attacker can mess with them too.  Borg has an append-only mode for
-this, but it just queues deletions until a trusted machine touches the
-backups.  This makes any pruning of old backups dangerous unless you
-are sure nothing was compromised.
+<p>Once I thought more deeply about <em>who</em> could access the
+backups, I changed my mind.  For a disk crash or mistake, any backup
+software is fine.  All of them will let you access a recent copy of
+the data, then you can copy the missing files and get your machine
+back to normal.
+
+<p>The second scenario &mdash; a p0wned machine &mdash; is trickier.
+If you find yourself in this situation, you should not trust anything
+that the attacker had access to and, after figuring out how they got
+in, you should probably rebuild the machine from scratch.  Happily,
+with everything in an Ansible playbook, this is not as big a job as it
+used to be.
+
+<p>Borg and Restic work locally on the machine, and can access past
+backups for pruning, etc.  Once an attacker is on the machine, they
+can mess with the backups too.  Borg has an append-only mode for this,
+but it just queues deletions until a trusted machine touches the
+backups.  This makes any automatic pruning of old backups, even from a
+trusted machine, dangerous unless you are sure nothing was
+compromised.
 
 <p>So after considering all of these factors, I returned to Bacula,
-which is slightly more complex to configure, but covers oopsie and
-p0wnage, scales to as many machines as you want, and has all storage
+which is slightly more complex to configure, but handles both restore
+scenarios, scales to as many machines as you want, and has all storage
 options, including tape (which Borg thinks no longer exists).  It
-requires setting up more than one machine, but a $10 Rapsberry Pi Zero
-sitting on a shelf is more than adaquate for backing up a personal
-email/web server.
-
-<h2>Client-initiated backups with Bacula</h2>
-
-<P>If a client is only intermittently available, but can contact the
-director when present, create an empty Schedule and have the client
-connect the director using bconsole.  Not sure how well this actually
-works, but see
-https://resources.infosecinstitute.com/data-backups-bacula-mobile-devices/
-
+requires setting up more than one machine, but you can keep your
+Bacula director and storage on a machine that you physically control,
+with minimal access to the outside world.  Even a $10 Raspberry Pi
+Zero sitting on a shelf can back up a personal email/web server.
 
 </BODY>
 </HTML>

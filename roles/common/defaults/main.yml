@@ -93,6 +93,8 @@ mail_opentcp: [25, 465, 587, 993]
 # DNS - UDP port 53
 dns_openudp: [53]
 
+# Bacula Ports - Director (9101), File (9102), Storage (9103)
+bacula_opentcp: [9101, 9102, 9103]
 
 
 # Construct the list of open TCP and UDP ports from the known services

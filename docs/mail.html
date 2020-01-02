@@ -8,6 +8,13 @@
 <div class=toc>
 <UL>
 <LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#vars">Variables</a>
+<li><a href="#mailcfg">Mailcfg</a>
+<li><a href="#rspamd">Spam Filtering</a>
+<li><a href="#mailq">Managing the Mail Queue</a>
+<li><a href="#nullclient">System Mail from Client Machines</a>
+<li><a href="#why">Why I Chose These Packages</a>
 </UL>
 </div>
 
@@ -24,6 +31,48 @@ unix accounts and no mail is delivered to them.  The virtual user
 database holds account details in a set of SQL tables.  Background on
 virtual users can be found
 at <a href="http://www.postfix.org/VIRTUAL_README.html">postfix.org</a>
+
+<p>We use SQLite for the database because this is small, simple, and
+relatively static, but you can use MySQL, Maria, or Postgres if you
+prefer.  The <a href="#mailcfg">mailcfg</a> perl utility uses DBI and
+might just need a few minor changes to the connect statement and SQL
+for use with other RDBs.</p>
+
+<p>The mail is stored in maildir format and encrypted using EncFS.
+The encrypted directory is <b>/var/vmail_crypt</b> and mounted as
+cleartext in <b>/var/vmail</b>.  All mail is owned by the vmail user.
+Started having problems with "Error: Couldn't create mailbox list lock
+file_create_locked() failed ... Operation not permitted" This may be
+an interaction with EncFS and FUSE, but changing
+the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
+seemed to fix the issue.  Consider switching to ext4 encryption and
+fscrypt, which operates at a block level.
+
+<p>On Debian, smtpd runs chrooted to <b>/var/spool/postfix</b>, so we
+store maildb.sqlite3 encrypted like the mail in
+<b>/var/spool/postfix/etc/maildb_crypt</b> and <b>maildb</b> so that
+postfix can authenticate against it.  If you also run dovecot
+chrooted, you may have to switch to mysql so that you can access via
+network port rather than file.
+
+<p>On reboot, postfix does not start automatically because these
+encrypted directories must first be mounted.  Log in and run
+<b>/etc/postfix/mailboot</b> to enter the password, mount the
+cleartext directories, and start postfix.
+
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=mailcfg></A>Mailcfg</H2>
 
 <p>I wrote the <b>/etc/postfix/mailcfg</b> utility to manage these
 tables.  Run it as "mailcfg &lt;command&gt;".  The following commands
@@ -50,36 +99,10 @@ are available:
  enable &lt;email&gt;		Marks user as active
 </PRE>
 
-<p>We use SQLite for the database because this is small, simple, and
-relatively static, but you can use MySQL, Maria, or Postgres if you
-prefer.  The <b>mailcfg</b> perl utility uses DBI and might just need
-a few minor changes to the connect statement and SQL for use with
-other RDBs.</p>
 
-<p>The mail is stored in maildir format and encrypted using EncFS.
-The encrypted directory is <b>/var/vmail_crypt</b> and mounted as
-cleartext in <b>/var/vmail</b>.  All mail is owned by the vmail user.
-Started having problems with "Error: Couldn't create mailbox list lock
-file_create_locked() failed ... Operation not permitted" This may be
-an interaction with EncFS and FUSE, but changing
-the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
-seemed to fix the issue.  Consider switching to ext4 encryption and
-fscrypt, which operates at a block level.
-
-<p>On Debian, smtpd runs chrooted to <b>/var/spool/postfix</b>, so we
-store maildb.sqlite3 encrypted like the mail in
-<b>/var/spool/postfix/etc/maildb_crypt</b> and <b>maildb</b> so that
-postfix can authenticate against it.  If you also run dovecot
-chrooted, you may have to switch to mysql so that you can access via
-network port rather than file.
-
-<p>On reboot, postfix does not start automatically because these
-encrypted directories must first be mounted.  Log in and run
-<b>/etc/postfix/mailboot</b> to enter the password, mount the
-cleartext directories, and start postfix.
-
-
-<h2>FUTURE WORK -- MILTERS NOT YET IMPLEMENTED</h2>
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=rspamd></A>Spam Filtering</H2>
 
 <p>Mail delivery looks like this:
 
@@ -124,9 +147,16 @@ server).
 
 
 
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=mailq></A>Managing the Mail Queue</H2>
 
 
-<H1>System Mail from Client Machines</H1>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=nullclient></A>System Mail from Client Machines</H2>
+
 <p><b>ROLE</b> mailnull
 
 <p>The mail server is configured to always accept mail from the local
@@ -153,6 +183,12 @@ account, but postfix only restricts based on the FROM, not the AUTH
 <p>The default MTA for Debian is exim4, and it can be set it up in
 this way, but we already use postfix on the server, so I just stick
 with that.</p>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why I Chose These Packages</H2>
+
 
 </BODY>
 </HTML>

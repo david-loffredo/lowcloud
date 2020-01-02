@@ -8,6 +8,9 @@
 <div class=toc>
 <UL>
 <LI><A href=index.html>[home]</A>
+
+<li><a href="#vars">Variables</a>
+<li><a href="#why">Why I Chose These Packages</a>
 </UL>
 </div>
 
@@ -28,6 +31,14 @@ corresponding rules.v* files, which are what is loaded on boot.  To
 change rules, edit etc/iptables/testrules.v* in the templates dir and
 rerun the playbook.
 
+
+<p>We run fail2ban to scan the logs for repeated intrusion attempts
+and temporarily ban IPs.
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
 <p>Open ports for new services by setting 'firewall_services'.  This
 is checked by the iptables and fail2ban tasks.  It recongizes ssh,
 mail, web, and dns, but you can add your own names to this list.  For
@@ -45,6 +56,12 @@ firewall_openudp: []
 # blocked if defined
 firewall_blacklist_ips: []
 </PRE>
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why I Chose These Packages</H2>
 
 <p>Some people install the ufw front end, which makes it easier to
 block everything and open up a few ports.  It seemed that UFW took
@@ -64,11 +81,15 @@ remaining ones, but the originals will remain open until you do an
 explicit ufw reset and then rerun the task.  Our current iptables task
 is totally idempotent.
 
-<p>We run fail2ban to scan the logs for repeated intrusion attempts
-and temporarily ban IPs.  Debian 10 has a fairly updated package so we
-use it stock and enable checks for sshd, dovecot, postfix and a few
-others depending on what services are present.  The Debian 9 version
-was old so before we switched, we needed to add some custom patterns
-for ssh.
+
+<p>Fail2ban helps a bit on password protected service like IMAP by
+limiting the number of attempts an attacker can make before switching
+IPs, but is more noise control for the logs than security.
+
+Debian 10 has a fairly recent package so we use it stock and
+enable checks for sshd, dovecot, postfix and a few others depending on
+what services are present.  The version in Debian 9 was old, so we
+previously added some custom patterns for ssh.
+
 </BODY>
 </HTML>
