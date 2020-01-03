@@ -10,7 +10,7 @@
 <LI><A href=index.html>[home]</A>
 
 <li><a href="#vars">Variables</a>
-<li><a href="#why">Why I Chose These Packages</a>
+<li><a href="#why">Why These Packages?</a>
 </UL>
 </div>
 
@@ -25,30 +25,50 @@ boot.  The playbook writes our IPv4 and IPv6 rules to
 and then runs <code>iptables-restore</code>
 and <code>iptables-save</code> to round-trip them into
 the <code>rules.v4</code> and <code>rules.v6</code> files that are
-loaded at boot.  The rules drop most things unless explicitly enabled
-based on the variables described below.  We always open the ssh port.
+loaded at boot.</p>
+
+<p>The rules drop all incoming connections unless explicitly enabled
+by the variables described below.  It allows pings, but rate limits
+them, and also drops unusually-formed packets.  We always open the ssh
+port.</p>
 
 <p>We run <code>fail2ban</code> to scan the logs for repeated
-intrusion attempts and temporarily ban IPs.   
+intrusion attempts and temporarily ban IPs.
 
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=vars></A>Variables</H2>
 
-<p>Open ports for new services by setting 'firewall_services'.  This
-is checked by the iptables and fail2ban tasks.  It recongizes ssh,
-mail, web, and dns, but you can add your own names to this list.  For
-each element, we add &lt;name&gt;_opentcp and &lt;name&gt;_openudp, if
-they exist, to the open ports.  Define &lt;name&gt;_opentcp/udp as a
-list of ports.
+<p>Open ports for new services by adding the symbolic name to
+the <code>firewall_services</code> list.  This is used by the iptables
+and fail2ban tasks.  It recongizes 'ssh', 'mail', 'web', 'dns', and
+'bacula'.  You define your own names for services by defining
+<code>&lt;name&gt;_opentcp</code>
+and/or <code>&lt;name&gt;_openudp</code> as a list of port numbers.
+It doesn't matter if port numbers are repeated across services.
+
 <PRE class=code>
 firewall_services: [ 'ssh' ]
 
+# Define 'foobar' name for firewall services by defining:
+#foobar_opentcp: [ 12345, 23456 ]
+#foobar_openudp: [ 34567 ]
+</PRE>
+
+<p>The <code>firewall_opentcp</code> and <code>firewall_openudp</code>
+variables are just lists of extra ports that will be opened.
+
+<PRE class=code>
 # will append ports from the mnemonic list of services but can be
 # initialized with extra ports.
 firewall_opentcp: []
 firewall_openudp: []
+</PRE>
+
+<p>If you want to drop all connections from certain IPs, add them to the
+<code>firewall_blacklist_ips</code> list.
   
+<PRE class=code>
 # blocked if defined
 firewall_blacklist_ips: []
 </PRE>
@@ -57,7 +77,7 @@ firewall_blacklist_ips: []
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=why></A>Why I Chose These Packages</H2>
+<A NAME=why></A>Why These Packages?</H2>
 
 <p>The <code>ufw</code> (universal firewall) front end is very popular
 because it makes it easy to block everything and open up a few ports.

@@ -21,7 +21,7 @@
 -A INPUT -i lo -j ACCEPT
 -A OUTPUT -o lo -j ACCEPT
 
-# Force SYN checks
+# Drop new packets not a SYN  
 -A INPUT -p tcp ! --syn -m conntrack --ctstate NEW -j DROP
 
 # Drop all fragments
