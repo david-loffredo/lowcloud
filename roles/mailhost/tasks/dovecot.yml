@@ -1,4 +1,7 @@
 ---
+# Debian 10 versions
+# dovecot       1:2.3.4.1
+
 # Dovecot for local mail delivery and IMAP access.  Do not install the
 # dovecot-pop3 package, because we will only use IMAP.
 

@@ -1,4 +1,11 @@
 ---    
+# Debian 10 versions
+# encfs         1.9.5-1+b1
+
+## ENCFS is deprecated so consider switching to per directory ext4
+## encryption with fscrypt.  Need to investigate how to best do this
+## though.  https://tlbdk.github.io/ubuntu/2018/10/22/fscrypt.html
+
 - name: EncFS present
   package: name=encfs state=present
 
@@ -12,14 +19,9 @@
     - "{{private_dir_crypt}}"
     - "{{private_dir_clear}}"
 
-## ENCFS is deprecated so consider switching to per directory ext4
-## encryption with fscrypt.  Need to investigate how to best do this
-## though.  https://tlbdk.github.io/ubuntu/2018/10/22/fscrypt.html
-
 ##
 ## Mail Spool Directory
 ##
-  
 - name: encrypted mail spool contents check
   shell: ls {{mail_spool_crypt}}/*
   ignore_errors: True

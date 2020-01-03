@@ -1,4 +1,7 @@
 ---
+# Debian 10 versions
+# apache2        2.4.38
+
 - name: apache packages are installed
   package:
     state: present
@@ -49,9 +52,10 @@
 #  - htdigest (Manipulate digest authentication files)
 #  - htdbm (Manipulate basic authentication files in DBM format, using APR)
 #  - htcacheclean (Clean up the disk cache)
-#  - rotatelogs (Periodically stop writing to a logfile and open a new one)
-#  - split-logfile (Split a single log including multiple vhosts)
 #  - checkgid (Checks whether the caller can setgid to the specified group)
 #  - check_forensic (Extract mod_log_forensic output from Apache log files)
 #  - httxt2dbm (Generate dbm files for use with RewriteMap)
     
+# logrotate is already installed 
+#  - rotatelogs (Periodically stop writing to a logfile and open a new one)
+#  - split-logfile (Split a single log including multiple vhosts)

@@ -10,7 +10,7 @@
 <LI><A href=index.html>[home]</A>
 <p>
 <li><a href="#vars">Variables</a>
-<li><a href="#why">Why I Chose These Packages</a>
+<li><a href="#why">Why These Packages?</a>
 </UL>
 </div>
 
@@ -20,14 +20,15 @@
 
 <p>The web service configuration is handled by the "apache" role.
 Apache is used as the server and this role sets up SSL keys from Lets
-Encrypt using <a href="certbot.html">certbot</a>.  HTTP and HTTPS are
+Encrypt using <a href="encrypt.html">certbot</a>.  HTTP and HTTPS are
 configured on the standard ports.</p>
 
 <p>The role creates one or more vhosts, along with aliases for each.
-The document root for each vhost is at <b>/var/www/&lt;domain&gt;</b>.
-We initialize the root with an index.html if one is not present.  The
-files are currently owned by root, but we create a 'www-data' group
-for future use when others might be uploading content.</p>
+The document root for each vhost is
+at <code>/var/www/&lt;domain&gt;</code>.  We initialize the root with
+an index.html if one is not present.  The files are currently owned by
+root, but we create a 'www-data' group for future use when others
+might be uploading content.</p>
 
 <P>The default Apache config enables gzip compression, and it is not
 recommended to turn it off.  If your website uses cookies, strongly
@@ -37,9 +38,11 @@ advise using the SameSite flag to mitigate BREACH (CVE-2013-3587)
 <H2 class=rule>
 <A NAME=vars></A>Variables</H2>
 
-<p>In the group_vars, the <b>web_vhosts</b> variable is a list of
-structs, one for each root domain, with a main name and any aliases.
-It looks something like this.</p>
+<p>The <code>web_vhosts</code> variable is a list of structs, one for
+each root domain, with a main name and any aliases.  It looks
+something like this.  If the machine is also
+a <a href="mail.html">mail server</a>, be sure to add the name used in
+the MX record to the aliases of that domain.</p>
 
 <PRE class=code>
 web_vhosts:
@@ -56,12 +59,13 @@ web_vhosts:
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=why></A>Why I Chose These Packages</H2>
+<A NAME=why></A>Why These Packages?</H2>
 
 <p>I really didn't give this much thought.  I've been using Apache for
-years and am already familiar with it.  I'm sure that Nginx would be a
-fine choice too. Any site of mine is likely to be mostly static HTML,
-with perhaps a few CGI scripts, so any server is fine.
+years and am already familiar with it.  I'm sure that Nginx is also a
+fine choice.  Any site of mine is likely to be mostly static HTML,
+perhaps a few CGI scripts, and unlikely to spark worldwide interest,
+so any server would be fine.
 
 </BODY>
 </HTML>

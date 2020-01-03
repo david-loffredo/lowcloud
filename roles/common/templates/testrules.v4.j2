@@ -53,7 +53,8 @@
 -A INPUT -i {{ ansible_default_ipv4.interface }} -p icmp --icmp-type source-quench -m limit --limit 1/second -j ACCEPT
 -A INPUT -i {{ ansible_default_ipv4.interface }} -p icmp --icmp-type time-exceeded -m limit --limit 1/second -j ACCEPT
 
-# Allow needed services from anywhere
+# Allow needed services from anywhere.   Will need to split if
+# the list gets longer than 15 ports.
 -A INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m multiport --dport {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
 
 {% for udp in firewall_ports_udp %}

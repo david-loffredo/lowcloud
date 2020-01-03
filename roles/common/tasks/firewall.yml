@@ -1,4 +1,13 @@
 ---
+# Debian 10 versions
+# iptables-persistent   1.0.11
+# iptables              1.8.2
+# fail2ban              0.10.2
+#
+# netfilter-persistent?
+# iproute2 has the new ss command
+# net-tools has the legacy commands including netstat
+
 - name: network filtering packages are installed 
   package:
     state: present
@@ -6,11 +15,6 @@
       - iptables-persistent
       - fail2ban
       - net-tools
-
-# netfilter-persistent?
-# iproute2 has the new ss command
-# net-tools has the legacy commands including netstat
-      
 
 - debug:
     msg:

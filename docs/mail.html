@@ -13,18 +13,26 @@
 <li><a href="#mailcfg">Mailcfg</a>
 <li><a href="#rspamd">Spam Filtering</a>
 <li><a href="#mailq">Managing the Mail Queue</a>
-<li><a href="#nullclient">System Mail from Client Machines</a>
-<li><a href="#why">Why I Chose These Packages</a>
+<li><a href="#nullclient">Mailnull Role for Client Machines</a>
+<li><a href="#nullclient_vars">Mailnull Variables</a>
+<li><a href="#why">Why These Packages?</a>
 </UL>
 </div>
 
 <H1>Mail Server</H1>
 
-<p><b>ROLE</b> mailhost
+<p><b>ROLE</b> mailhost, mailnull
 
-<p>The email configuration is handled by the "mail" role.  Postfix is
-used as the MTA and Dovecot for the LDA and IMAP server.  Rspamd will
-be the only milter used.
+<p>The <code>mailhost</code> role configures a machine as a mail
+server.  It receives mail from the outside world and delivers to
+mailboxes accessible via IMAP.  We use Postfix for the mail transfer
+agent (MTA) and Dovecot as the local delivery agent (LDA) and IMAP
+server.  Rspamd will be the only milter used.</p>
+
+<p>The <code>mailnull</code> role configures a machine as a <em>null
+client</em> - any outgoing mail from system jobs like cron or bacula
+is relayed to the central mailhost and no local delivery is done.  We
+use Postfix for the null client too.</p>
 
 <p>All accounts are virtual mailboxes.  The machine only has system
 unix accounts and no mail is delivered to them.  The virtual user
@@ -39,25 +47,20 @@ might just need a few minor changes to the connect statement and SQL
 for use with other RDBs.</p>
 
 <p>The mail is stored in maildir format and encrypted using EncFS.
-The encrypted directory is <b>/var/vmail_crypt</b> and mounted as
-cleartext in <b>/var/vmail</b>.  All mail is owned by the vmail user.
-Started having problems with "Error: Couldn't create mailbox list lock
-file_create_locked() failed ... Operation not permitted" This may be
-an interaction with EncFS and FUSE, but changing
-the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
-seemed to fix the issue.  Consider switching to ext4 encryption and
-fscrypt, which operates at a block level.
+The encrypted directory is <code>/var/vmail_crypt</code> and mounted
+as cleartext in <code>/var/vmail</code>.  All mail is owned by the
+vmail user.
 
-<p>On Debian, smtpd runs chrooted to <b>/var/spool/postfix</b>, so we
-store maildb.sqlite3 encrypted like the mail in
-<b>/var/spool/postfix/etc/maildb_crypt</b> and <b>maildb</b> so that
-postfix can authenticate against it.  If you also run dovecot
-chrooted, you may have to switch to mysql so that you can access via
-network port rather than file.
+<p>On Debian, smtpd runs chrooted to <code>/var/spool/postfix</code>,
+so we store <code>maildb.sqlite3</code> encrypted like the mail in
+<code>/var/spool/postfix/etc/maildb_crypt</code>
+and <code>maildb</code> so that postfix can authenticate against it.
+If you also run dovecot chrooted, you may have to switch to mysql so
+that you can access via network port rather than file.
 
 <p>On reboot, postfix does not start automatically because these
 encrypted directories must first be mounted.  Log in and run
-<b>/etc/postfix/mailboot</b> to enter the password, mount the
+<code>/etc/postfix/mailboot</code> to enter the password, mount the
 cleartext directories, and start postfix.
 
 
@@ -155,21 +158,25 @@ server).
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=nullclient></A>System Mail from Client Machines</H2>
+<A NAME=nullclient></A>Mailnull Role for Client Machines</H2>
 
-<p><b>ROLE</b> mailnull
+<p>The <code>mailnull</code> role configures a machine as a <em>null
+client</em> - any outgoing mail from system jobs like cron or bacula
+is relayed to the central mailhost and no local delivery is done.  We
+use Postfix for the null client too.</p>
 
 <p>The mail server is configured to always accept mail from the local
-host, specific whitelisted IP addresses, and from authorized clients
-(user agents like Thunderbird or phones).  Everything else is
-subjected to the full battery of tests.</p>
+host, specific whitelisted IP addresses, and from clients that
+authorize using a user name and password (user agents like Thunderbird
+or phones).  Everything else is subjected to the full battery of
+tests.</p>
 
 <p>Historically, you whitelist the local network block so that other
 machines at your site can submit mail from system things like cron
-jobs.  The machines on site are configured to relay all mail through
-the main mailserver.  This can also work if your machines are spread
-among the cloud, as long as they have fixed IP addresses known ahead
-of time.</p>
+jobs.  The other machines on site are configured as null clients to
+relay all mail through the central mailserver.  This can also work if
+your machines are spread among the cloud, as long as they have fixed
+IP addresses known ahead of time.</p>
 
 <p>In the case of machines behind an ISP with changable IPs, or for
 machines come or go with an unpredictable IP, we need a different
@@ -178,17 +185,70 @@ they authorize with a special "relay" account, so they can be treated
 like a normal user agent.  We would like to configure the mail server
 to only accept mail for local addresses when authenticated with this
 account, but postfix only restricts based on the FROM, not the AUTH
-(you can force the two to match, but that does not help us much)
-
-<p>The default MTA for Debian is exim4, and it can be set it up in
-this way, but we already use postfix on the server, so I just stick
-with that.</p>
+(you can force the two to match, but that does not help us much)</p>
 
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=why></A>Why I Chose These Packages</H2>
+<A NAME=nullclient_vars></A>Mailnull Variables</H2>
 
+<p>The only variables that needs to be configured for the null client
+is the relay account password as <code>vault_mail_relay_pw</code> in
+an Ansible vault .  The relay account, host and port can also be set,
+but the defaults are usually fine.  The default values are shown
+below:
+
+<PRE class=code>
+# Relay all mail through a smarthost with authentication using the
+# given account and password.
+
+mail_relay_acct:   "relay@{{ domain }}"
+mail_relay_pw:     "{{vault_mail_relay_pw}}"
+
+mail_relay_host:   "{{ mail_server_hostname }}"
+mail_relay_port:   587
+</PRE>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why These Packages?</H2>
+
+<p>Back when dinosaurs weren't just in zoos, there was one mailer, its
+name was Sendmail, and it was configured by the black speech of
+M4-dor, which I will not utter here, lest it drive any readers mad.
+If you were lucky you had a leased line, but more often than not a
+couple of times a day you dialed in and swapped all of your messages
+via uucp.</p>
+
+<p>OK, Boomer moment over.  I really <b>did not</b> want to set up
+system around Sendmail.  I could do it, and it still does a fine job,
+but other great options exist that don't predate the fall of
+N&uacute;menor.</p>
+
+<p>As of this writing, the top three MTAs in use by number of servers
+are Exim (580k), Postfix (328k), and Sendmail (80k).  Of course, that
+says nothing about the volume of mail passing through each server, but
+it does give an idea of the general level of support.</p>
+
+<p>The default MTA for Debian is exim4, and it is capable.  I did some
+tests setting it up as a null client.  Ultimately, I chose Postfix.
+It is easy to find documentation for all of the use cases that
+interest me, has ample performance, and reasonable configuration
+files. It also supports the milter interface introduced by Sendmail,
+which is very nice for rejecting spam early in the connection.</p>
+
+<p>Dovecot is the customary choice for Local Delivery Agent and IMAP
+server.  It seems like Cyrus and Courier are other possibilities but I
+have no familiarity with them.</p>
+
+<p>I currently use EncFS to <a href="encrypt.html">encrypt the
+mailspool</a>.  It works, but I had some problems with "Error:
+Couldn't create mailbox list lock file_create_locked() failed".  This
+is probably an interaction with EncFS and FUSE, and changing
+the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
+seemed to fix the issue.  I would like to eventually switch to ext4
+encryption and fscrypt, which operates at a block level.</p>
 
 </BODY>
 </HTML>

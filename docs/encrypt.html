@@ -9,8 +9,9 @@
 <UL>
 <LI><A href=index.html>[home]</A>
 <p>
-<LI><A href="encrypt">Encryption</A>
-<LI><A href="certbot">Certbot / LetsEncrypt</A>
+<li><a href="#certbot">Certbot / LetsEncrypt</a>
+<li><a href="#certbot_vars">Certbot Variables</a>
+<li><a href="#why">Why These Packages?</a>
 </UL>
 </UL>
 </div>
@@ -21,11 +22,11 @@
 and web (HTTPS) to
 protect <a href="https://en.wikipedia.org/wiki/Data_in_transit">data
 in transit</a>.  We identify ourselves for these connections using
-certificates issued by <a href="#certbot">LetsEncrypt</a>.  We use
-encrypted directories for sensitive data like the mail spool to
+certificates issued by <a href="#certbot">LetsEncrypt</a>.  To
 protect the
-<a href="https://en.wikipedia.org/wiki/Data_at_rest">data at rest</a>.
-</p>
+<a href="https://en.wikipedia.org/wiki/Data_at_rest">data at rest</a>,
+we encrypt certain directories with EncFS for private data like the
+mail spool.</p>
 
 <p>Keeping the communication secure is an ongoing effort, as various
 protocols are strengthened and deprecated in response to ever more
@@ -36,8 +37,8 @@ periodically scanning for new vulnerabilities.
 
 
 <!-- ============================== -->
-<H1 class=rule>
-<A NAME=certbot></A>Certbot / LetsEncrypt</H1>
+<H2 class=rule>
+<A NAME=certbot></A>Certbot / LetsEncrypt</H2>
 
 <p><b>ROLE</b> apache, certbot.yml
 
@@ -47,38 +48,21 @@ all of the aliases that we use for that domain (www., mail., etc),
 which should make it easier to move domains to separate machines if
 needed.  Since we manage our own DNS, we could use the DNS challenge
 and get a wildcard cert, but that is not really recommended unless you
-really are creating machines dynamically.</p>
+are creating machines dynamically.</p>
 
-<p>We generate a cert for each web_vhost in the group_vars, and make
-it also support each of the "aliases" names for that host.  So in the
-example below, we would have two certs.  The first is
-for <b>example.com</b> and also supports <b>www.example.com</b>
-and <b>mail.example.com</b>.  The second is for <b>foobar.com</b> and
-also supports <b>www.foobar.com</b></p>
-
-<PRE class=code>
-web_vhosts:
-  - name: "example.com"
-    aliases:
-      - www.example.com
-      - mail.example.com
-  - name: foobar.com
-    aliases:
-      - www.foobar.com
-</PRE>
-
-<p>The /etc/letsencrypt directory holds a history of all past keys
-under the <code>archive</code> directory and symlinks to the current
-one under the <code>live</code> directory.  These are mode 700 so only
-apps that run as root can see them.  This works for apache, postfix
-and dovecot, but if a non-root app needs access, you might want to
-create a ssl-cert group and change it to mode 750.</p>
+<p>The <code>/etc/letsencrypt</code> directory holds a history of all
+past keys under the <code>archive</code> directory and symlinks to the
+current one under the <code>live</code> directory.  These are mode 700
+so only apps that run as root can see them.  This works for apache,
+postfix and dovecot, but if a non-root app needs access, you might
+want to create a ssl-cert group and change it to mode 750.</p>
 
 <p>Below is an example of certs for mydomain.net and foobar.com
 domains.  Note the symlinks in the live directory.  When archiving the
 letsencrypt directory, it is important to use a method that preserves
-these symlinks or else certbot may not renew properly.
-The <a href="snapshot.html">snapshot</a> playbook makes a compressed
+these symlinks or else certbot may not renew
+properly.  <a href="backup.html">Bacula</a> preserves the links and 
+the <a href="snapshot.html">snapshot</a> playbook makes a compressed
 tar file of this directory when preserving the config.</p>
 
 <PRE class=code>
@@ -118,6 +102,66 @@ them are stopped and started by adding small shell scripts to
 the <code>pre</code> and <code>post</code> directories
 under <code>renewal-hooks</code>.  Some can just be bounced by adding
 a reload or restart action to the <code>post</code> directory.</p>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=certbot_vars></A>Certbot Variables</H2>
+
+<p>We generate a cert for each host <code>name</code> in
+the <code>web_vhost</code> in the group_vars, and make it also support
+each of the <code>aliases</code> for that host.  So in the example
+below, we would have two certs.  The first is for "example.com",
+"www.example.com", and "mail.example.com".  The second is for
+"foobar.com" and "www.foobar.com".</p>
+
+<PRE class=code>
+web_vhosts:
+  - name: "example.com"
+    aliases:
+      - www.example.com
+      - mail.example.com
+  - name: foobar.com
+    aliases:
+      - www.foobar.com
+</PRE>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why These Packages?</H2>
+
+<p>Any cert can enable encrypted communication, even a self-signed
+one, but only a cert from a trusted certificate authority (CA) makes a
+statement about your identity.  LetsEncrypt is the baseline for that.
+They make a statement that you control a particular domain.  Other
+paid options exist, and can be used if you need something that has a
+stronger declaration of identity.  For simple HTTPS on a website and
+IMAPS login for mail, LetsEncrypt is fine.</p>
+
+<p>A <a href="https://en.wikipedia.org/wiki/Virtual_private_server">virtual
+private server</a> (VPS) in the cloud will never be as private as a
+machine that you physically control.  The hardware and disk resources
+exist within a virtualization layer that your cloud company must
+access to manage their operations.  In particular, the disks could be
+mounted by others, which is exactly how some cloud providers implement
+their backup services.</p>
+
+<p>You can set up a VPS with an encrypted boot disk, but it requires a
+fair bit more effort, and then you need something like dropbear to ssh
+in at boot time and unlock the root partition.  If you go this route,
+and manage to set it up with Ansible, I'd like to see how you do it.</p>
+
+<p>We take an intermediate path.  There are a few encrypted
+directories for private things (mail spool, mail user database) and
+the rest is left alone.  When the machine is rebooted, everything
+starts normally except mail.  We must ssh in and run
+the <code>mailboot</code> script to unlock the directories and start
+the mail daemon.  Any incoming mail should remain queued by the
+sending system until the mail daemon is up again.</p>
+
+<p>We use EncFS for encrypting directories, but it is rather outdated,
+as is eCryptfs, so we may switch to per-directory ext4 encryption with
+fscrypt.</p>
 
 
 
