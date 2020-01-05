@@ -4,6 +4,5 @@
 - import_tasks: dovecot.yml
 - import_tasks: rspamd.yml
 
-# - import_tasks: checkrbl.yml
 # - import_tasks: z-push.yml
 # - import_tasks: autoconfig.yml

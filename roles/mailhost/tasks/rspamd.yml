@@ -4,16 +4,38 @@
 # rspamd        1.8.1   is in stable and NOT recommended
 # redis         5:5.0.3
 
-# Need to call apt directly because we need the backports version.
-# The version in the default repo is wicked old and rspamd.com is
-# emphatic to not use it.
+# DEBIAN SPECIFIC - Need to call apt directly because we need the
+# backports version of rspamd. The version in the stable repo is
+# wicked old and rspamd.com is emphatic to not use it.  If you are
+# using a different distro, adjust as needed.
+#
+- name: backports repository is configured as a source
+  lineinfile:
+    dest: /etc/apt/sources.list.d/{{item}}-backports.list
+    line: "deb http://deb.debian.org/debian {{item}}-backports main"
+    state: present
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ansible_distribution_release}}"
+  register: backportconfig
+
+- name: backports cache updated
+  apt: update_cache=yes
+  when: backportconfig is changed
+
+
 - name: rspamd present from {{ansible_distribution_release}}-backports
   apt:
     name: rspamd
     state: present
     default_release: "{{ansible_distribution_release}}-backports"
     update_cache: yes
-    
+  tags: install-rspamd
+
+  
 - name: rspamd related packages present
   package:
     state: present
@@ -28,7 +50,7 @@
   notify: restart redis
 
 - name: rdspam local configuration
-  template: src=local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
+  template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
     owner=redis group=redis mode=640
   with_items:
     - options.inc
