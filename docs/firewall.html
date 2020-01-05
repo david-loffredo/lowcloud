@@ -43,12 +43,15 @@ check the jails if you are having trouble connecting.</p>
 <A NAME=vars></A>Variables</H2>
 
 <p>Open ports for new services by adding the symbolic name to
-the <code>firewall_services</code> list.  This is used by the iptables
-and fail2ban tasks.  It recongizes 'ssh', 'mail', 'web', 'dns', and
-'bacula'.  You define your own names for services by defining
+the <code>firewall_services</code> list.  It recongizes 'ssh', 'mail',
+'web', 'dns', and 'bacula'.  You define your own names for services by
+defining
 <code>&lt;name&gt;_opentcp</code>
 and/or <code>&lt;name&gt;_openudp</code> as a list of port numbers.
-It doesn't matter if port numbers are repeated across services.
+It doesn't matter if port numbers are repeated across services.  The
+fail2ban setup also uses these names and sets up jails for sshd,
+dovecot, postfix and a few others depending on what names are present.
+
 
 <PRE class=code>
 firewall_services: [ 'ssh' ]
@@ -107,12 +110,10 @@ iptables.  Something to keep an eye on for the future.</p>
 
 <p>Fail2ban helps a bit on password protected service like IMAP by
 limiting the number of attempts an attacker can make before switching
-IPs, but is more noise control for the logs than security.</p>
-
-<p>Debian 10 has a fairly recent package so we use it stock and
-enable checks for sshd, dovecot, postfix and a few others depending on
-what services are present.  The version in Debian 9 was old, so we
-previously added some custom patterns for ssh.</p>
+IPs, but is more noise control for the logs than security.  The
+version in Debian 10 is fairly recent so we use it stock.  The Debian
+9 version was old, so we previously added some custom patterns for
+ssh.</p>
 
 </BODY>
 </HTML>

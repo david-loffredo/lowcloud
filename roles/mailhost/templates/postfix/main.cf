@@ -173,14 +173,20 @@ smtpd_sender_restrictions =
 # to 554: Transaction Failed
 
 
-# # Milters: Rspamd
-# smtpd_milters = inet:127.0.0.1:11332
-# non_smtpd_milters = $smtpd_milters
-# milter_protocol = 6
-# milter_mail_macros = i {mail_addr} {client_addr} {client_name} {auth_authen} {auth_type}
-# milter_default_action = accept
+#----------------------------------------
+# Milters - Rspamd
 
-# smtpd_client_restrictions = permit_sasl_authenticated
+# rspamd proxy worker port
+smtpd_milters = inet:localhost:11332
+
+# skip mail without checks if something goes wrong
+milter_default_action = accept
+
+# default milter protocol version is 6. Postfix <2.6 was 2.
+# milter_protocol = 6
+
+# non_smtpd_milters = $smtpd_milters
+# milter_mail_macros = i {mail_addr} {client_addr} {client_name} {auth_authen} {auth_type}
 
 # # Postscreen
 # postscreen_access_list = permit_mynetworks

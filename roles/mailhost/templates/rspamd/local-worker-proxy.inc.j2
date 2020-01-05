@@ -1,0 +1,11 @@
+# local.d/worker-proxy.inc
+#
+# Talk via milter to postfix.  We will scan the message ourself rather
+# than pass it along to other processes. Set self_scan and bump up the
+# process count.  All other values are default.
+
+upstream "local" {
+  self_scan = yes;    # scan message ourself
+}
+
+# count = 4; # Spawn more processes in self-scan mode

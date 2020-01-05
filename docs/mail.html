@@ -27,7 +27,9 @@
 server.  It receives mail from the outside world and delivers to
 mailboxes accessible via IMAP.  We use Postfix for the mail transfer
 agent (MTA) and Dovecot as the local delivery agent (LDA) and IMAP
-server.  Rspamd will be the only milter used.</p>
+server.  Rspamd is the only milter used, and enables the default
+checks. Volume of mail is not expected to be high enough to benefit
+from postscreen.</p>
 
 <p>The <code>mailnull</code> role configures a machine as a <em>null
 client</em> - any outgoing mail from system jobs like cron or bacula

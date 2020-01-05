@@ -1,0 +1,9 @@
+# use per user statistics.  This still uses sqlite for the storage.
+# Should we switch it to redis?
+
+# Needs to be called at local delivery so that it can train multiple
+# recipients.  How does this work when we are already calling it as a
+# milter.
+per_user = true;
+
+

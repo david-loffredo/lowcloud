@@ -1,0 +1,73 @@
+---
+# Debian 10 version
+# rspamd        1.9.4   is in backports and good
+# rspamd        1.8.1   is in stable and NOT recommended
+# redis         5:5.0.3
+
+# Need to call apt directly because we need the backports version.
+# The version in the default repo is wicked old and rspamd.com is
+# emphatic to not use it.
+- name: rspamd present from {{ansible_distribution_release}}-backports
+  apt:
+    name: rspamd
+    state: present
+    default_release: "{{ansible_distribution_release}}-backports"
+    update_cache: yes
+    
+- name: rspamd related packages present
+  package:
+    state: present
+    name:
+      - redis-server
+
+- name: redis configuration 
+  template: src={{ item }}.j2 dest=/etc/redis/{{ item }}
+    owner=redis group=redis mode=640
+  with_items:
+    - redis.conf
+  notify: restart redis
+
+- name: rdspam local configuration
+  template: src=local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
+    owner=redis group=redis mode=640
+  with_items:
+    - options.inc
+    - worker-proxy.inc
+
+# - name: rdspam override configuration
+#   template: src={{ item }}.j2 dest=/etc/rspamd/override.d/{{ item }}
+#     owner=redis group=redis mode=640
+#   with_items:
+#     - foo.conf
+#   notify: restart rspamd
+    
+
+- name: services enabled
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - redis-server
+    - rspamd
+
+
+    
+# - name: Copy DMARC configuration into place
+#   template: src=etc_rspamd_local.d_dmarc.conf.j2 dest=/etc/rspamd/local.d/dmarc.conf owner=root group=root mode="0644"
+#   notify: restart rspamd
+
+# - name: Configure Rspamd to use Redis
+#   copy: src=etc_rspamd_local.d_redis.conf dest=/etc/rspamd/local.d/redis.conf owner=root group=root mode="0644"
+#   notify: restart rspamd
+
+# - name: Copy DKIM configuration into place
+#   copy: src=etc_rspamd_override.d_dkim_signing.conf dest=/etc/rspamd/override.d/dkim_signing.conf owner=root group=root mode="0644"
+#   notify: restart rspamd
+
+# - name: Create dkim key directory
+#   file: path=/var/lib/rspamd/dkim state=directory owner=_rspamd group=_rspamd
+
+# - name: Generate DKIM keys
+#   shell: rspamadm dkim_keygen -s default -d {{ item.name }} -k {{ item.name }}.default.key > {{ item.name }}.default.txt
+#   args:
+#     creates: /var/lib/rspamd/dkim/{{ item.name }}.default.key
+#     chdir: /var/lib/rspamd/dkim/
+#   with_items: "{{ mail_virtual_domains }}"

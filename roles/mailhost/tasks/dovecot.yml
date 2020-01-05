@@ -13,7 +13,8 @@
       - dovecot-imapd
       - dovecot-lmtpd
       - dovecot-sqlite
-
+      - dovecot-sieve    # for spam
+      
 # Do not start dovecot at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  
 #
