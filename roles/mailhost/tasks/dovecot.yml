@@ -24,7 +24,7 @@
 - name: spool directories for mail domain are present
   file: state=directory path="{{mail_spool_clear}}/{{ item }}"
     owner=vmail group=vmail mode=0770
-  with_items: "{{ mail_domains }}"
+  with_items: "{{ mail_domains + ['sieve', 'sieve/global'] }}"
 
 - name: dovecot etc files present
   template: src="dovecot/{{item}}" dest="/etc/dovecot/{{item}}"
@@ -52,6 +52,16 @@
     - auth-sql.conf.ext
   notify: restart dovecot
 
+
+- name: global sieves present
+  copy: src={{ item }} dest={{mail_spool_clear}}/sieve/global/{{ item }}
+    owner=vmail group=vmail mode=640
+  with_items:
+    - junk_spam.sieve
+    - learn_ham.sieve
+    - learn_spam.sieve
+
+  
 # 90-antispam.conf
 # 90-sieve.conf
 
@@ -61,12 +71,6 @@
 
 # - name: Configure sieve script moving spam into Junk folder
 #   copy: src=etc_dovecot_sieve_before.d_no-spam.sieve dest=/etc/dovecot/sieve/before.d/no-spam.sieve owner=vmail group=dovecot
-#   notify: restart dovecot
-
-# No need, we don't have any special database passwords in the configs
-# - name: Ensure correct permissions on Dovecot config directory
-#   file: state=directory path=/etc/dovecot
-#           group=dovecot owner=vmail mode=0770 recurse=yes
 #   notify: restart dovecot
 
 

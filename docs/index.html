@@ -21,7 +21,7 @@
 <H1>Server Configuration</H1>
 
 <p>These Ansible roles set up web service, email, and regular backups.
-It doesn't include a lot of extra packages and tries to be minimize both
+It doesn't include a lot of extra packages and tries to minimize both
 machine requirements and attack surface.  For example, SQLite rather
 than a full MySQL install for a half dozen virtual mailboxes.</p>
 
@@ -35,7 +35,7 @@ Raspberry Pi Zero as the Bacula director.</p>
 <p>TO DO LIST
 <UL>
 <LI>Configure RSPAMD with postfix.
-<LI>Extend SQL to allow reject mail to relay@ (login only)
+<LI>Extend SQL to allow reject mail to relay@ (login only) sendonly support to the SQL and recipient-access
 <LI>Deploy DNS on live machine
 <LI>Configure DKIM and automate key rotation with postfix and DNS.
 <LI>Configure DMARC entry in the DNS.
@@ -80,6 +80,30 @@ package managers like emerge or yum.
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=hosts></A>Hosts</H2>
+
+<p>The <code>hosts</code> file describes the machines that you are
+managing, and organizes them into groups.  The playbooks then describe
+tasks and roles that apply to the machines in each group.  We use two
+groups: <code>cloud</code> and <code>backup-server</code>.</p>
+
+<p>The machines are listed by fully qualified domain name (FQDN) and
+IP address, so the machine does not need to show up in DNS yet.
+Ansible uses the <code>ansible_host</code> variable to connect, and
+sets the <code>inventory_hostname</code> variable to the FQDN for use
+in the scripts.</p>
+
+<PRE class=code>
+[cloud]
+# mail and webserver, needs a public IP address from a business class
+# ISP connection or VPS provider like AWS, Linode, or DigitalOcean
+example.com		ansible_host=1.2.3.4
+
+[backup-server]
+# connects to other machines to fetch and store backups, best if you
+# have physical control of the machine.  It does not need a public IP
+# and can be behind a residential ISP connection.
+guardian.example.com	ansible_host=5.6.7.8
+</PRE>
 
 
 <!-- ============================== -->

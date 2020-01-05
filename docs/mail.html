@@ -41,20 +41,20 @@ unix accounts and no mail is delivered to them.  The virtual user
 database holds account details in a set of SQL tables.  Background on
 virtual users can be found
 at <a href="http://www.postfix.org/VIRTUAL_README.html">postfix.org</a>
-
-<p>We use SQLite for the database because this is small, simple, and
-relatively static, but you can use MySQL, Maria, or Postgres if you
-prefer.  The <a href="#mailcfg">mailcfg</a> perl utility uses DBI and
-might just need a few minor changes to the connect statement and SQL
-for use with other RDBs.</p>
+You can manage users with the <a href="#mailcfg">mailcfg</a> script.
+This is a perl script that uses DBI, so you can tweak the connect
+statement and SQL as needed for use with other RDBs.</p>
 
 <p>The mail is stored in maildir format and encrypted using EncFS.
 The encrypted directory is <code>/var/vmail_crypt</code> and mounted
 as cleartext in <code>/var/vmail</code>.  All mail is owned by the
 vmail user.
 
-<p>On Debian, smtpd runs chrooted to <code>/var/spool/postfix</code>,
-so we store <code>maildb.sqlite3</code> encrypted like the mail in
+<p>We use SQLite for the database because this is small, simple, and
+relatively static, but you can use MySQL, Maria, or Postgres if you
+prefer.  On Debian, smtpd runs chrooted
+to <code>/var/spool/postfix</code>, so we
+store <code>maildb.sqlite3</code> encrypted like the mail in
 <code>/var/spool/postfix/etc/maildb_crypt</code>
 and <code>maildb</code> so that postfix can authenticate against it.
 If you also run dovecot chrooted, you may have to switch to mysql so
@@ -63,9 +63,7 @@ that you can access via network port rather than file.
 <p>On reboot, postfix does not start automatically because these
 encrypted directories must first be mounted.  Log in and run
 <code>/etc/postfix/mailboot</code> to enter the password, mount the
-cleartext directories, and start postfix.
-
-
+cleartext directories, and start postfix.</p>
 
 
 <!-- ============================== -->
@@ -109,7 +107,22 @@ are available:
 <H2 class=rule>
 <A NAME=rspamd></A>Spam Filtering</H2>
 
-<p>Mail delivery looks like this:
+<p>The rspamd web console is run
+at <code>http://localhost:11334</code>, but that port is normally
+blocked and the server only allows connections from localhost.  You
+should can set up an SSH tunnel in order to use it.  Either do it from
+the command line or you can add the following to the config file entry
+for that machine.
+
+<PRE class=code>
+LocalForward 11334 localhost:11334
+</PRE>
+
+<p>We set up dovecot with the sieve module for automatic sorting of
+mail and create some global rules under <code>/var/vmail/sieve</code>
+to deliver all spam to the junk folder.  We also add some rules to
+train the filter when mail is dragged into or out of the junk folder.
+
 
 <PRE>
   Remote MTA -> Rspamd (milter) -> Postfix -> Rspamd (rspamc) -> Dovecot -> user mailbox
@@ -122,20 +135,8 @@ Dovecot uses the antispam module to run rspamc (employing Rspamd).
 The sieve module is finally used to process headers added by Rspamd or
 any other milters.
 
-## Mail filters
 
-The only mail filter (milter) used is [Rspamd](https://rspamd.com),
-which runs on port 11332.  Rspamd is hooked into postfix with the
-`smtpd_milters` variable.  See `etc_postfix_main.cf`.
 
-## Debugging
-
-### Rspamd
-
-A few tips:
-
-- Rspam's console listens on `127.0.0.1:11334`.  As above, you can use
-  ssh to port forward (e.g., -L 8080:localhost:11334).  The password is `d1`.
 - Use `rspamadm` to look at the configuration.
 - Use `rspamc` or the web-based console to scan problematic messages
   and see how rspamd scores them.

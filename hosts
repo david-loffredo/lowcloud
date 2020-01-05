@@ -1,13 +1,16 @@
-# The host will be 'inventory_hostname' and 'ansible_host' can be set
-# to an IP address as in the example below if the host does not show
-# up in DNS yet.
-#
-# myname	ansible_host=1.2.3.4
+# The host FQDN is 'inventory_hostname' and 'ansible_host' can be set
+# to an IP address as in the example below, so that the host does not
+# need to show up in DNS yet.
 #
 
 [cloud]
-davecloud.net
+# mail and webserver, needs a public IP address from a business class
+# ISP connection or VPS provider like AWS, Linode, or DigitalOcean
+example.com		ansible_host=1.2.3.4
 
 [backup-server]
-guardian
+# connects to other machines to fetch and store backups, best if you
+# have physical control of the machine.  It does not need a public IP
+# and can be behind a residential ISP connection.
+guardian.example.com	ansible_host=5.6.7.8
 

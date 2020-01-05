@@ -49,20 +49,14 @@
     - redis.conf
   notify: restart redis
 
+# local.d is merged, override.d overrides
 - name: rdspam local configuration
   template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
     owner=redis group=redis mode=640
   with_items:
     - options.inc
     - worker-proxy.inc
-
-# - name: rdspam override configuration
-#   template: src={{ item }}.j2 dest=/etc/rspamd/override.d/{{ item }}
-#     owner=redis group=redis mode=640
-#   with_items:
-#     - foo.conf
-#   notify: restart rspamd
-    
+    - milter_headers.conf
 
 - name: services enabled
   service: name={{ item }} state=started enabled=yes
