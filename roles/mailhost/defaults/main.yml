@@ -22,3 +22,9 @@ redis_maxmen: 500mb
 # volatile data.  Not setting at the moment.
 # redis_maxmen_policy: 
 
+# Rspamd - spam filter
+
+# The default filters are chartable,dkim,spf,surbl,regexp,fuzzy_check
+# We add the milter_headers just for information so we can get a sense
+# of what it is doing.
+rspamd_filters: chartable,dkim,spf,surbl,regexp,milter_headers,fuzzy_check

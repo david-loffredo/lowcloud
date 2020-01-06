@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <HTML>
 <HEAD>
-   <TITLE>DaveCloud Server Configuration</TITLE>
+   <TITLE>DaveCloud Mail and Backup</TITLE>
    <link rel="stylesheet" type="text/css" href="style.css">
 </HEAD>
 <BODY>
@@ -18,18 +18,31 @@
 </UL>
 </div>
 
-<H1>Server Configuration</H1>
+<H1>DaveCloud Mail, Web, and Backup</H1>
 
-<p>These Ansible roles set up web service, email, and regular backups.
-It doesn't include a lot of extra packages and tries to minimize both
-machine requirements and attack surface.  For example, SQLite rather
-than a full MySQL install for a half dozen virtual mailboxes.</p>
+<p>These Ansible scripts set up email and web service suitable for a
+cloud machine, with regular backups from a second machine.  One goal
+was to build it from the ground up with current tools and packages.  I
+describe <em>what</em> and <em>why</em> in these pages, for you to use
+as a starting point for your own decisions.  If you just want a
+push-button mail server and don't care about
+details, <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
+<a href="https://mailinabox.email/">mail-in-a-box</a>, or
+<a href="https://github.com/progmaticltd/homebox">homebox</a>
+are fine
+solutions.</p>
+
+<p>Another goal was to minimize machine requirements and attack
+surface, so it doesn't include a lot of extra packages.  For example,
+we use SQLite rather than a full MySQL install to manage a dozen
+virtual mailboxes.</p>
 
 <p>Typically, mail and web are on a machine in the cloud (AWS, Linode,
 DigitalOcean, etc.) while backups are run by a machine that you have
 physical control over (old PC or Raspberry Pi in your basement).  I
 have run the total setup with a $5/mo cloud machine for mail/web and a
 Raspberry Pi Zero as the Bacula director.</p>
+
 
 
 <p>TO DO LIST
@@ -55,12 +68,14 @@ the logs.
 <H2 class=rule>
 <A NAME=pkgs></A>Packages</H2>
 
-<p>These playbooks assume Debian 10.  <a href="debian.html">Why
-Debian?</a> I haven't tested with other distros, but there are likely
-to be some changes to file locations or slightly different package
-lists.  In most cases, I used the Ansible <code>package:</code> module
-rather than <code>apt:</code> for installing things, so it works with
-package managers like emerge or yum.
+<p>These playbooks assume Debian 10.  I haven't tested with other
+distros, but there are likely to be some changes to file locations or
+slightly different package lists.  In most cases, I used the
+Ansible <code>package:</code> module rather than <code>apt:</code> for
+installing things, so it works with package managers like emerge or
+yum.
+<a href="ansible.html">Why Ansible?</a>
+<a href="debian.html">Why Debian?</a>
 
 <p>The playbooks cover the following areas: 
 

@@ -1,20 +1,58 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>Why Ansible?</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
 
+<H1>Why Ansible?</H1>
 
-I've been around the net since before HTTP was a thing, but let my
-sysadmin skills get stale as others handled those duties.  It was time
-to refresh.  This project is the result of that journey.
+<p>Back in the day, you generally configured a new machine by editing
+an endless series of config files while sitting at the console, or
+once the OS was installed, remotely via telnet or ssh.  A few hours or
+days later, the machine was declared good and left alone.</p>
 
+<p>If you did it a few times, you could copy config files from other
+machines to use as starting points.  If did it many times, you might
+put together basic shell scripts to automate some things.  Really big
+sites could leverage enterprise deployment tools.  But if it had been
+a while, as was always the case with me, you forgot it all and had to
+relearn, iterating as you missed things.  Over time, machines
+accumulated undocumented tweaks and extra packages.</p>
 
-<p>I began this project by studying sovereign, homebox, mail in a box,
-frjo's ansible setups and a variety of other resources.  It is easy to
-fall into the cargo cult sysadmin trap by just following recipes, so I
-tried to use them as inspiration, examine all of the design decisions,
-and then make my own conscious decisions, which I have documented here
-and in the YML files.  I was also forced to develop a much deeper
-understanding of Ansible, particularly for configuring the network of
-machines and services required for Bacula to operate properly.</p>
+<p>This is no way to run a railroad.  In software development, we no
+longer call the C compiler manually.  Instead we describe the desired
+state - source files, object files, executables - and let a tool
+like <code>make</code> or <code>msbuild</code> figure out which
+actions to use to place the code into that state.</p>
 
+<p>Ansible is essentially <code>make</code> for machines, and the
+playbooks and roles are the <code>Makefiles</code>.  These describe a
+series of "idempotent" tasks - they leave the machine in the same
+state no matter how many times you run them.  For example, a config
+file needs a line "foo=bar".  If missing, "foo=bar" is added.  If
+"foo=zap" is present, it is changed to "foo=bar".  If it already has
+the correct value, it is left alone.  At the end, that config file
+will have one copy of the value and it will be "foo=bar".</p>
 
+<p>Other tasks might say that a package should be present or absent.
+The package will be either installed or uninstalled as needed to match
+the declared state.  The end result is that you will have a machine in
+a known state after running a series of Ansible tasks against it.</p>
+
+<p>This is a wonderful way to run a railroad.  You can describe in
+great detail the exact state of a machine, put it under source
+control, and reproduce it as needed.  Ansible works remotely over ssh
+and can operate in parallel on lists of hosts, so you can configure or
+reproduce whole networks of machines.</p>
+
+<h2>Ansible Notes</h2>
 
 <p>If you need to specify some parameters before a batch install, you
 can use the debconf module.  Typically we install then configure, but
@@ -34,4 +72,11 @@ dbconfig-common
 
 # - name: Confirm MySQL root password before installing
 #   debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{mysql_root_pass | quote}}' vtype='password'
+
+
+
+
+
+</BODY>
+</HTML>
 
