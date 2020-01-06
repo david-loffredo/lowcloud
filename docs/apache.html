@@ -56,6 +56,17 @@ web_vhosts:
       - www.foobar.com
 </PRE>
 
+<p>You can set the <code>apache_modules</code> variable to force
+certain modules to be enabled.  The rewrite module is always present.
+By default we always redirect http to https, but if you want to
+disable that you can set <code>apache_force_https</code> to no.</p>
+
+<PRE class=code>
+apache_modules: [ extra, modules, to, load ]
+
+# permanent redirect from http to https
+# apache_force_https: yes
+</PRE>
 
 <!-- ============================== -->
 <H2 class=rule>

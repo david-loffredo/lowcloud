@@ -27,6 +27,11 @@
   notify:
     - restart apache
 
+- name: modules present
+  apache2_module: name={{item}} state=present
+  with_items: "{{ (apache_modules + apache_default_modules) | unique }}"
+  notify:
+    - restart apache
 
 ## The default Apache config enables gzip compression, and it is not
 ## recommended to turn it off.  If your website uses cookies, strongly

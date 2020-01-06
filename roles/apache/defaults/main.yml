@@ -11,6 +11,16 @@ web_vhosts:
   - name: "{{ domain }}"
     aliases: [ "www.{{ domain }}" ] 
 
+
+# always need the rewrite and ssl modules for our own use, can set the
+# apache_modules vars to get extras.
+apache_default_modules: [ rewrite, ssl ]
+apache_modules: [ ]
+
+# permanent redirect from http to https
+apache_force_https: yes
+
+
 #========================================
 # Certbot Settings
 #

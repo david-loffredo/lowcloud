@@ -161,6 +161,26 @@ server).
 <H2 class=rule>
 <A NAME=mailq></A>Managing the Mail Queue</H2>
 
+<p>To inspect and manipulate mail queue, the following commands, run
+as root on the server, are helpful.
+
+<PRE class=code>
+List the contents of the mail queue
+# mailq
+
+Flush the queue (try to deliver mail)
+# postfix flush
+
+Delete everything in the queue
+# postsuper -d ALL
+
+Delete only deferred mail, that would otherwise retry later
+# postsuper -d ALL deferred
+
+You can also look at a particular message ID in the queue
+# postcat -vq XXXXXXXXXX
+</PRE>
+
 
 
 <!-- ============================== -->
@@ -223,20 +243,19 @@ mail_relay_port:   587
 
 <p>Back when dinosaurs weren't just in zoos, there was one mailer, its
 name was Sendmail, and it was configured by the black speech of
-M4-dor, which I will not utter here, lest it drive any readers mad.
-If you were lucky you had a leased line, but more often than not a
-couple of times a day you dialed in and swapped all of your messages
-via uucp.</p>
+M4-dor, which I will not utter here.  If you were lucky you had a
+leased line, but more often than not a couple of times a day you
+dialed in and swapped all of your messages via uucp.</p>
 
 <p>OK, Boomer moment over.  I really <b>did not</b> want to set up
 system around Sendmail.  I could do it, and it still does a fine job,
 but other great options exist that don't predate the fall of
 N&uacute;menor.</p>
 
-<p>As of this writing, the top three MTAs in use by number of servers
-are Exim (580k), Postfix (328k), and Sendmail (80k).  Of course, that
-says nothing about the volume of mail passing through each server, but
-it does give an idea of the general level of support.</p>
+<p>As of this writing, the top three MTAs by number of servers are
+Exim (580k), Postfix (328k), and Sendmail (80k).  Of course, that says
+nothing about the volume of mail passing through each server, but it
+does give an idea of the general level of support.</p>
 
 <p>The default MTA for Debian is exim4, and it is capable.  I did some
 tests setting it up as a null client.  Ultimately, I chose Postfix.
