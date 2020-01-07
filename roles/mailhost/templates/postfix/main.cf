@@ -6,7 +6,8 @@
 # is /etc/mailname.
 #myorigin = /etc/mailname
 
-smtpd_banner = $myhostname ESMTP $mail_name
+# remove $mail_name identifying info from banner
+smtpd_banner = $myhostname ESMTP
 biff = no
 
 # Accept messages up to 50MB
@@ -47,7 +48,8 @@ inet_protocols = all
 virtual_transport = lmtp:unix:private/dovecot-lmtp
 mailbox_transport = lmtp:unix:private/dovecot-lmtp
 
-dovecot_destination_recipient_limit = 1
+# postfix does not recognize, may no longer be needed
+# dovecot_destination_recipient_limit = 1
 virtual_mailbox_domains = sqlite:/etc/postfix/sqlite-virtual-mailbox-domains.cf
 virtual_mailbox_maps = sqlite:/etc/postfix/sqlite-virtual-mailbox-maps.cf
 virtual_alias_maps = sqlite:/etc/postfix/sqlite-virtual-alias-maps.cf
