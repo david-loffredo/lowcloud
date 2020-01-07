@@ -1,0 +1,25 @@
+---
+# Debian 10 versions
+# openssh-server 1:7.9p1-10
+
+# Hardening SSH by disabling weak protocols.  Scan occasionally.
+# https://www.ssh-audit.com/hardening_guides.html
+# https://github.com/jtesta/ssh-audit
+
+# These are weak key exchange algorithms that should be removed.  
+ssh_weak_kexs:
+  - ecdh-sha2-nistp256
+  - ecdh-sha2-nistp384
+  - ecdh-sha2-nistp521
+  - diffie-hellman-group14-sha1
+
+# These are weak message authentication code algorithms that should be
+# removed.
+ssh_weak_macs:
+  - hmac-sha1
+  - hmac-sha1-etm@openssh.com
+  - hmac-sha2-256
+  - hmac-sha2-512
+  - umac-128@openssh.com
+  - umac-64-etm@openssh.com
+  - umac-64@openssh.com

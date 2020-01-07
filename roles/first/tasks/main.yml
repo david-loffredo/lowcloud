@@ -23,7 +23,7 @@
 
 - name: wheel group allowed to sudo
   lineinfile:
-    dest: /etc/sudoers
+    path: /etc/sudoers
     state: present
     regexp: '^%wheel'
     line: '%wheel ALL=(ALL) ALL'
@@ -44,34 +44,95 @@
     - "{{ root_acct }}"
     - "{{ deploy_acct }}"
 
-- name: ssh password authentication off
+- name: ssh password authentication disabled
   lineinfile:
-    dest: /etc/ssh/sshd_config
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PasswordAuthentication"
     line: 'PasswordAuthentication no'
     insertafter: EOF
     state: present
 
-- name: modern host key present
+- name: modern host key enabled
   lineinfile:
-    dest: /etc/ssh/sshd_config
-    line: 'HostKey /etc/ssh/ssh_host_ed25519_key'
+    path: /etc/ssh/sshd_config
+    # match commented or uncommented
+    regexp: "^#?HostKey {{ item }}"
+    line: "HostKey {{ item }}"
     insertafter: EOF
     state: present
+  with_items:
+    - /etc/ssh/ssh_host_ed25519_key
   notify:
     - restart ssh
     - flush local known_hosts
 
-- name: missing host keys generated
-  command: ssh-keygen -A
+- name: outdated host key disabled
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: "^HostKey {{ item }}"
+    replace: "#HostKey {{ item }}"
+  with_items:
+    - /etc/ssh/ssh_host_rsa_key
+    - /etc/ssh/ssh_host_dsa_key
+    - /etc/ssh/ssh_host_ecdsa_key
+  notify:
+    - restart ssh
+    - flush local known_hosts
+
+# In the ssh config, you remove algorithms from the default sets by
+# starting the list with a dash.  Use a + to append to the defaults.
+- name: weak key exchange algorithm disabled
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^KexAlgorithms"
+    line: "KexAlgorithms -{{ ssh_weak_kexs | join(',') }}"
+    insertafter: EOF
+    state: present
+  when: ssh_weak_kexs is defined
+  notify:
+    - restart ssh
+
+- name: weak message authentication code disabled
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^MACs"
+    line: "MACs -{{ ssh_weak_macs | join(',') }}"
+    insertafter: EOF
+    state: present
+  when: ssh_weak_macs is defined
+  notify:
+    - restart ssh
+
+- name: weak cipher disabled
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^Ciphers"
+    line: "Ciphers -{{ ssh_weak_ciphers | join(',') }}"
+    insertafter: EOF
+    state: present
+  when: ssh_weak_ciphers is defined
+  notify:
+    - restart ssh
+    
+- name: modern host key generated
+  command: ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N "" 
   args:
     creates: /etc/ssh/ssh_host_ed25519_key
   notify:
     - restart ssh
     - flush local known_hosts
 
+- name: outdated host keys removed
+  file: path={{ item }} state=absent
+  with_items:
+    - /etc/ssh/ssh_host_dsa_key
+    - /etc/ssh/ssh_host_dsa_key.pub
+    - /etc/ssh/ssh_host_ecdsa_key
+    - /etc/ssh/ssh_host_ecdsa_key.pub
+    - /etc/ssh/ssh_host_rsa_key
+    - /etc/ssh/ssh_host_rsa_key.pub
 
 
 # add line Admin-Email: {{admin_email}} to /etc/debconf.conf
-
 # lineinfile for /etc/nssswitch.conf
 #sudoers:        files
