@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>SSH</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
+
+<H1>SSH Configuration</H1>
+
+<p><b>ROLE</b> first
+
+<p>As part of the initial setup of any machine, we lock down access
+via SSH, harden it by disabling some weak algorithms, and set up
+a <code>deploy</code> user with sudo access that is used instead
+of <code>root</code> for administration tasks.</p>
+
+<p>SSH is configured so that all remote access requires a key.
+Password-based login is only allowed from the console.  When multiple
+people need administrative access to your machines, I recommend
+authorizing separate public keys for each person rather than sharing
+one private key.  With Ansible, you can easily maintain a list of
+authorized keys on all of your machines.</p>
+
+<p>Whether to have a separate deploy account or just use root for
+everything is a personal preference.  Having a separate step to
+elevate permissions may avoid some accidents, and if a private key is
+compromised, an attacker still needs the deploy password to sudo.
+Raspberian follows this pattern with the <code>pi</code> account. On
+Pi's, we remove the <code>pi</code> account after creating
+the <code>deploy</code> one.</p>
+
+<p>We also do some hardening of the SSH server by disabling weak
+protocols.  Since encryption is a constantly changing battlefield, I
+recommend getting a "yearly Flu shot" by occasionally scanning the
+server with tools
+like <a href="https://github.com/jtesta/ssh-audit">ssh-audit</a> as
+discussed in the <a href="encrypt.html">encryption configuration</a>.
+
+</BODY>
+</HTML>
+
