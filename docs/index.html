@@ -20,22 +20,28 @@
 
 <H1>DaveCloud Mail, Web, and Backup</H1>
 
-<p>These Ansible scripts set up email and web service suitable for a
-cloud machine, with regular backups from a second machine.  One goal
-was to build it from the ground up with current tools and packages.  I
-describe <em>what</em> and <em>why</em> in these pages, for you to use
-as a starting point for your own decisions.  If you just want a
-push-button mail server and don't care about
-details, <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
-<a href="https://mailinabox.email/">mail-in-a-box</a>, or
-<a href="https://github.com/progmaticltd/homebox">homebox</a>
-are fine
-solutions.</p>
+<p>These Ansible scripts set up mail and web service, with regular
+backups to a second machine.  My three goals were:
+<ol>
+<li>Mail and web for one or more domains, 
+<li>Built securely with modern packages, and proper backups,
+<li>A ground-up understanding of what is on the machine and why.
+</ol>
 
-<p>Another goal was to minimize machine requirements and attack
-surface, so it doesn't include a lot of extra packages.  For example,
-we use SQLite rather than a full MySQL install to manage a dozen
-virtual mailboxes.</p>
+<p>Along the way, I also developed a pretty good knowledge of Ansible.
+The <em>what</em> and <em>why</em> are documented in these pages, as a
+starting point for your own choices.  If a ground-up understanding is
+not important to you, a push-button mail server
+like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
+<a href="https://mailinabox.email/">mail-in-a-box</a>, or
+<a href="https://github.com/progmaticltd/homebox">homebox</a> is a
+fine solution.</p>
+
+<p>I don't include many extra packages, which means fewer things to
+understand, a smaller attack surface, and lower machine requirements.
+For example, we manage the dozen or so virtual mail accounts using
+SQLite rather than a full MySQL install.  This simplifies database
+security to just file permissions.</p>
 
 <p>Typically, mail and web are on a machine in the cloud (AWS, Linode,
 DigitalOcean, etc.) while backups are run by a machine that you have
@@ -43,6 +49,8 @@ physical control over (old PC or Raspberry Pi in your basement).  I
 have run the total setup with a $5/mo cloud machine for mail/web and a
 Raspberry Pi Zero as the Bacula director.</p>
 
+<p>I hope you find this useful as a starting point for
+reaching <em>your</em> goals.</p>
 
 
 <p>TO DO LIST

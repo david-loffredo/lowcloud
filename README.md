@@ -13,9 +13,9 @@ It is easy to become a cargo-cult sysadmin by just searching for
 recipes on the net until you get something that works.  It may be
 quick, but your choices are never quite your own.
 
-I took a slower path.  I read all of the recipes, much of the
-documentation, asked questions, tried to understand why, and then made
-my own choices.  Also got a pretty good handle on Ansible.  The [docs
+I took a slower path.  I read the recipes and documentation, asked
+questions, ran tests, and then made my own choices.  Also got a pretty
+good handle on Ansible.  The [docs
 directory](https://david-loffredo.github.io/davecloud/) describes what
 I learned along the way.  Think of this as my travel journal.
 
