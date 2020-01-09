@@ -14,6 +14,7 @@
 </UL>
 </div>
 
+<div class=main>
 <H1>Firewall</H1>
 
 <p><b>ROLE</b> common, firewall.yml
@@ -50,7 +51,8 @@ defining
 and/or <code>&lt;name&gt;_openudp</code> as a list of port numbers.
 It doesn't matter if port numbers are repeated across services.  The
 fail2ban setup also uses these names and sets up jails for sshd,
-dovecot, postfix and a few others depending on what names are present.
+dovecot, postfix and a few others depending on what names are
+present.</p>
 
 
 <PRE class=code>
@@ -62,7 +64,7 @@ firewall_services: [ 'ssh' ]
 </PRE>
 
 <p>The <code>firewall_opentcp</code> and <code>firewall_openudp</code>
-variables are just lists of extra ports that will be opened.
+variables are just lists of extra ports that will be opened.</p>
 
 <PRE class=code>
 # will append ports from the mnemonic list of services but can be
@@ -72,7 +74,7 @@ firewall_openudp: []
 </PRE>
 
 <p>If you want to drop all connections from certain IPs, add them to the
-<code>firewall_blacklist_ips</code> list.
+<code>firewall_blacklist_ips</code> list.</p>
   
 <PRE class=code>
 # blocked if defined
@@ -115,5 +117,6 @@ version in Debian 10 is fairly recent so we use it stock.  The Debian
 9 version was old, so we previously added some custom patterns for
 ssh.</p>
 
+</div>
 </BODY>
 </HTML>

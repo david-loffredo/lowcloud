@@ -19,6 +19,7 @@
 </UL>
 </div>
 
+<div class=main>
 <H1>Mail Server</H1>
 
 <p><b>ROLE</b> mailhost, mailnull
@@ -48,7 +49,7 @@ statement and SQL as needed for use with other RDBs.</p>
 <p>The mail is stored in maildir format and encrypted using EncFS.
 The encrypted directory is <code>/var/vmail_crypt</code> and mounted
 as cleartext in <code>/var/vmail</code>.  All mail is owned by the
-vmail user.
+<code>vmail</code> user.</p>
 
 <p>We use SQLite for the database because this is small, simple, and
 relatively static, but you can use MySQL, Maria, or Postgres if you
@@ -58,7 +59,7 @@ store <code>maildb.sqlite3</code> encrypted like the mail in
 <code>/var/spool/postfix/etc/maildb_crypt</code>
 and <code>maildb</code> so that postfix can authenticate against it.
 If you also run dovecot chrooted, you may have to switch to mysql so
-that you can access via network port rather than file.
+that you can access via network port rather than file.</p>
 
 <p>On reboot, postfix does not start automatically because these
 encrypted directories must first be mounted.  Log in and run
@@ -79,7 +80,7 @@ cleartext directories, and start postfix.</p>
 
 <p>I wrote the <b>/etc/postfix/mailcfg</b> utility to manage these
 tables.  Run it as "mailcfg &lt;command&gt;".  The following commands
-are available:
+are available:</p>
 
 <PRE class=code>
  help		Print this message
@@ -112,7 +113,7 @@ at <code>http://localhost:11334</code>, but that port is normally
 blocked and the server only allows connections from localhost.  You
 should can set up an SSH tunnel in order to use it.  Either do it from
 the command line or you can add the following to the config file entry
-for that machine.
+for that machine.</p>
 
 <PRE class=code>
 LocalForward 11334 localhost:11334
@@ -161,8 +162,9 @@ server).
 <H2 class=rule>
 <A NAME=mailq></A>Managing the Mail Queue</H2>
 
-<p>To inspect and manipulate mail queue, the following commands, run
-as root on the server, are helpful.
+<p>To inspect and manipulate mail queue, the following commands are
+helpful.  You can list and flush the queue as any user, but to delete
+you must be root.</p>
 
 <PRE class=code>
 List the contents of the mail queue
@@ -223,7 +225,7 @@ account, but postfix only restricts based on the FROM, not the AUTH
 is the relay account password as <code>vault_mail_relay_pw</code> in
 an Ansible vault .  The relay account, host and port can also be set,
 but the defaults are usually fine.  The default values are shown
-below:
+below:</p>
 
 <PRE class=code>
 # Relay all mail through a smarthost with authentication using the
@@ -276,6 +278,7 @@ the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
 seemed to fix the issue.  I would like to eventually switch to ext4
 encryption and fscrypt, which operates at a block level.</p>
 
+</div>
 </BODY>
 </HTML>
 

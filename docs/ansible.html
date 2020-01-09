@@ -11,6 +11,7 @@
 </UL>
 </div>
 
+<div class=main>
 <H1>Why Ansible?</H1>
 
 <p>Back in the day, you generally configured a new machine by editing
@@ -56,8 +57,9 @@ reproduce whole networks of machines.</p>
 
 <p>If you need to specify some parameters before a batch install, you
 can use the debconf module.  Typically we install then configure, but
-this might be useful in certain situations.
+this might be useful in certain situations.</p>
 
+<PRE>
 #dbconfig-common/bacula-director-mysql.conf:dbc_dbpass='whereami' #
 dbconfig-common
 
@@ -73,9 +75,9 @@ dbconfig-common
 # - name: Confirm MySQL root password before installing
 #   debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{mysql_root_pass | quote}}' vtype='password'
 
+</PRE>
 
-
-
+</div>
 
 </BODY>
 </HTML>

@@ -15,9 +15,12 @@
 <li><a href="#first">First Login Playbook</a>
 <li><a href="#play">Site Setup Playbook</a>
 <li><a href="#reboot">Rebooting</a>
+<li>These Ansible scripts set up mail and web service, with regular
+backups to a second machine.  My three goals were:
 </UL>
 </div>
 
+<div class=main>
 <H1>DaveCloud Mail, Web, and Backup</H1>
 
 <p>These Ansible scripts set up mail and web service, with regular
@@ -83,7 +86,7 @@ Ansible <code>package:</code> module rather than <code>apt:</code> for
 installing things, so it works with package managers like emerge or
 yum.
 <a href="ansible.html">Why Ansible?</a>
-<a href="debian.html">Why Debian?</a>
+<a href="debian.html">Why Debian?</a></p>
 
 <p>The playbooks cover the following areas: 
 
@@ -143,7 +146,7 @@ more variations.</p>
 <a href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">vault
 file</a>.  Ansible asks for the password to this when
 the <code>--ask-vault-pass</code> flag is given.  You can edit and
-manipulate it from the command line with:
+manipulate it from the command line with:</p>
 <PRE class=code>
 ansible-vault edit foo.yml 		# run EDITOR on file
 
@@ -156,7 +159,7 @@ ansible-vault decrypt foo.yml 		# convert encrypted to plain file
 file has a stub for each value hidden in the vault.  The stub simply
 references a similar variable with a "vault_" prefix that is stored in
 the encrypted vault file.  For example, a password might show up like
-the following in the cleartext file.
+the following in the cleartext file.</p>
 
 <PRE class=code>
   - email: "somebody@foobar.com"
@@ -176,7 +179,7 @@ have any keys installed.  After this, remote password login is
 disabled and everything uses ssh keys.  It is also a good idea to
 change the root password manually because the original passed through
 the Linode UI.  The lowercase <code>-k</code> flag is a shorthand
-for <code>--ask-pass</code>
+for <code>--ask-pass</code></p>
 
 <PRE class=code>
 $ ansible-playbook -k --ask-vault-pass -i hosts first.yml --extra-vars "target=guardian"
@@ -186,12 +189,13 @@ $ ansible-playbook -k --ask-vault-pass -i hosts first.yml --extra-vars "target=g
 $ ansible-playbook --ask-vault-pass -i hosts site.yml --limit my-new-machine --tags first
 </PRE>
 
-<p><b>UPDATE</b> now we are preinstalling a public key for  needs to be in openssh form; to convert keys from
-putty, install the putty-utils package and do:
+<p><b>UPDATE</b> now we are preinstalling a public key for needs to be
+in openssh form; to convert keys from putty, install the putty-utils
+package and do:</p>
 
 
 <p>The public key needs to be in openssh form; to convert keys from
-putty, install the putty-utils package and do:
+putty, install the putty-utils package and do:</p>
 
 <PRE class=code>
 $ puttygen foobar.ppk -O public-openssh -o foobar.pub
@@ -201,7 +205,7 @@ $ puttygen foobar.ppk -O private-openssh -o foobar.key
 <p>When you rebuild a machine, the host key changes and SSH freaks out
 with ominous messages about man in the middle attacks.  You can
 selectively make ssh forget the key for the name and IP using commands
-like below.
+like below.</p>
 
 <PRE class=code>
 $ ssh-keygen -f "/home/foo/.ssh/known_hosts" -R "example.com"
@@ -224,7 +228,7 @@ in before.</p>
 inventory file.  It runs as the <code>deploy</code> user and asks passwords
 for sudo on the deploy user and the vault password.  Both are the
 stpbuild passwords.  The uppercase <code>-K</code> flag is a shorthand
-for <code>--ask-become-pass</code>
+for <code>--ask-become-pass</code></p>
 
 <PRE class=code>
 $ ansible-playbook -K --ask-vault-pass -i hosts site.yml
@@ -233,7 +237,7 @@ $ ansible-playbook -K --ask-vault-pass -i hosts site.yml
 <p>There is another <a href="snapshot.html">snapshot.yml</a> playbook
 that copies back certain data like the letsencrypt keys so that they
 can be transfered over when wiping or migrating a machine.  This
-playbook is run in the same way as <code>site.yml</code>.
+playbook is run in the same way as <code>site.yml</code>.</p>
 
 
 <!-- ============================== -->
@@ -243,8 +247,8 @@ playbook is run in the same way as <code>site.yml</code>.
 <p>The machine should boot clean and everything will come up except
 mail.  Because the mail spool is encrypted, you must log in,
 run <code>/etc/postfix/mailboot</code> to enter the EncFS password.
-This will mount the cleartext directories and start postfix.
+This will mount the cleartext directories and start postfix.</p>
 
-
+</div>
 </BODY>
 </HTML>

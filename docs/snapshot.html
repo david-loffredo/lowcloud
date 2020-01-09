@@ -11,6 +11,7 @@
 </UL>
 </div>
 
+<div class=main>
 <H1>Snapshot Unique Config Files</H1>
 
 <p><b>ROLE</b> snapshot, snapshot.yml playbook
@@ -40,7 +41,7 @@ exists and copies the data if it is present.</p>
 <p>When using this, run snapshot.yml to create the snapshot directory,
 rebuild the machine, then run site.yml to initialize the new machine.
 After the machine is configured, remove the snapshot directory so that
-it does not go stale and inadvertantly overwrite good data later on.
+it does not go stale and inadvertantly overwrite good data later on.</p>
 
 <PRE class=code>
 # make snapshot/machine.name directory
@@ -60,10 +61,12 @@ that we don't trip up people with the host changed warning.  This is a
 bit of a chicken and egg thing though since first login will regen
 keys and you will have to clear known_hosts yourself, but might be
 worth it if a lot of other people are sshing into the machine for some
-reason.
+reason.</p>
 
 <p>/etc/ssh/ssh_host_ed25519_key'
 
+
+</div>
 </BODY>
 </HTML>
 

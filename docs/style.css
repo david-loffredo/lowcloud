@@ -5,55 +5,71 @@
 
 /* colors: #deefe6, #e2deef, #dee7ef */
 
-/* Simple reactive settings - limit body width to a reasonable amount
- * for more comfortable reading of large blocks of text.  Also fold
- * the TOC box to inline when you get small.
+/* Limit width to a reasonable amount for more comfortable reading of
+ * large blocks of text.
  */
-@media only screen and (max-width: 34.99em) {
-    BODY {
-	background: white;
-	padding: 0.5em;
-    }
+BODY {
+    background: white;
+    margin: 1em auto;
+    max-width: 74rem;
+}
+
+DIV.main {
+    padding: 0 1rem;
+    max-width: 50rem;
+}    
+
+/* Table of contents.  Base properties, see other styling in the
+ * reactive layer below.
+ */
+DIV.toc {
+    font-size: 80%;
+    padding: 1rem;
+    border-bottom: solid 1px black;
+}
+    
+/* Kill the indent on lists and use different bullets.  Some browsers
+ * use margin and others use padding, so set both to zero and just use
+ * the padding 
+ */
+.toc UL{
+    margin: 0; 
+    padding: 0;
+    padding-left: 1.5em;
+    list-style-type: square;
+}
+.toc UL UL {
+    list-style-type: disc; 
+}
+
+
+/* Simple reactive settings - Limit body width to a reasonable amount
+ * and fold the TOC box to inline when you get small.
+ */
+
+/* eventually fold toc into a hamburger menu
+@media only screen and (max-width: 34.99rem) { }
+*/
+
+@media only screen and (min-width: 35rem) and (max-width: 73.99rem) { 
     DIV.toc {
-	border-bottom: 	solid 1px black;
-	padding-bottom: 0.5em;
+	width: 20rem;
+	margin: 0 0 1rem 1rem; 
+
+	float: right;
+	border-left: 1px solid black;
     }
 }
 
-@media only screen and (min-width: 35em) and (max-width: 59.99em) { 
-    BODY {
-	background: white;
-	padding: 0.7em;
-    }
+@media only screen and (min-width: 74rem) {
     DIV.toc {
-	min-width: 20em; 
-	padding: 1em; 
-	margin: 0 0 1em 1em; 
-	float: right;
-	box-shadow: 0 0 0.2em rgba(0, 0, 0, 0.5);
-	border-radius: 0.5em;
-    }
-}
+	width: 20rem;
+	margin: 0 0 1rem 1rem; 
 
-/* Desktop Styles */
-@media only screen and (min-width: 60em) {
-    HTML { background: #e2deef; }
-    BODY {
-	background: white;
-	padding: 0.7em;
-	margin: 2px auto;
-	width: 60em;
-	box-shadow: 0 0 2em rgba(0, 0, 0, 0.2), 0 0 1em rgba(0, 0, 0, 0.4);
-	border-radius: 0.5em;
-    }
-    DIV.toc {
-	min-width: 20em; 
-	padding: 1em; 
-	margin: 0 0 1em 1em; 
 	float: right;
-	box-shadow: 0 0 0.2em rgba(0, 0, 0, 0.5);
-	border-radius: 0.5em;
+	border-left: 1px solid black;
     }
+
 }
 
 
@@ -147,24 +163,6 @@ TABLE.fancy TH {
 TR.even { background: white; }
 TR.odd {  background: #DEE7EF; }
 
-/* Table of contents.  This are the base properties and then we add
- * some other styling at the reactive layer above.
- */
-DIV.toc { font-size: 	80%; }
-    
-/* Kill the indent on lists and use different bullets.  Some browsers
- * use margin and others use padding, so set both to zero and just use
- * the padding 
- */
-.toc UL{
-    margin: 0; 
-    padding: 0;
-    padding-left: 1.5em;
-    list-style-type: square;
-}
-.toc UL UL {
-    list-style-type: disc; 
-}
 
 /* ============================================================
  * PARAGRAPH AND FONT STYLES - Used primarily by the reference manuals
