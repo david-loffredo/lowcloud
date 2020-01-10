@@ -74,6 +74,10 @@ Messages {
 # Default pool definition
 # We may want to switch to VirtualFull and just always do incrementals
 # or differentials, since that may be more network efficient.
+
+# Limit volume sizes to 2gb so we don't need 64bit capable tools or
+# file systems for moving them around.  Not a big problem anymore but
+# one less thing to worry about if things go south.
 Pool {
   Name = Default
   Pool Type = Backup
@@ -88,6 +92,7 @@ Pool {
   Volume Retention = 6 months
   Label Format = Monthly-
   Volume Use Duration = 14 days
+  Maximum Volume Bytes = 2gb
 }
 
 Pool {
@@ -98,6 +103,7 @@ Pool {
   Volume Retention = 40 days
   Label Format = Weekly-
   Volume Use Duration = 6 days
+  Maximum Volume Bytes = 2gb
 }
 
 Pool {
@@ -108,9 +114,27 @@ Pool {
   Volume Retention = 10 days
   Label Format = Daily-
   Volume Use Duration = 23h
+  Maximum Volume Bytes = 2gb
 }
 
 {%- if 0 -%}
+
+# Catalog pool definition
+Pool {
+  Name = Catalog
+  Pool Type = Backup
+  Recycle = yes                     # Bacula can automatically recycle Volumes
+  AutoPrune = yes                   # Prune expired volumes
+  Storage = File
+  Volume Retention = 10 days
+  Maximum Volume Bytes = 2gb
+  Volume use Duration = 5 hours
+  LabelFormat = "CAT-"
+  Recycle oldest volume = yes
+  Recycle current volume = yes
+  maximum volumes = 30
+}
+
 # Backup the catalog database (after the nightly save)
 Job {
   Name = "BackupCatalog"
