@@ -14,3 +14,14 @@ example.com		ansible_host=1.2.3.4
 # and can be behind a residential ISP connection.
 guardian.example.com	ansible_host=5.6.7.8
 
+
+
+#------------------------------
+# This group is used to identify raspberry pi machines for a different
+# group variable.  We could create group_vars/raspberry-pi.yml, but it
+# is easier to just do it here.
+[raspberry-pi]
+
+
+[raspberry-pi:vars]
+first_acct=pi 

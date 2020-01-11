@@ -95,8 +95,8 @@
     {%- set ns = namespace(keys=[]) -%}
     {%- for i in bacula_clients -%}
     {{- ns.keys.append( {
-      "src": hostvars[i].bacula_tunnel_sshkeypath |
-      default(bacula_default_tunnel_sshkeypath),
+      "src": hostvars[i].bacula_tunnel_sshkey |
+      default(bacula_default_tunnel_sshkey),
       "dst": hostvars[i].bacula_tunnel_sshkeyname |
       default(bacula_default_tunnel_sshkeyname) } ) -}}
     {%- endfor -%}

@@ -23,9 +23,8 @@ DIV.main {
  * reactive layer below.
  */
 DIV.toc {
-    font-size: 80%;
+    font-size: 90%;
     padding: 1rem;
-    border-bottom: solid 1px black;
 }
     
 /* Kill the indent on lists and use different bullets.  Some browsers
@@ -57,7 +56,7 @@ DIV.toc {
 	margin: 0 0 1rem 1rem; 
 
 	float: right;
-	border-left: 1px solid black;
+	border-left: 2px solid black;
     }
 }
 
@@ -67,7 +66,7 @@ DIV.toc {
 	margin: 0 0 1rem 1rem; 
 
 	float: right;
-	border-left: 1px solid black;
+	border-left: 2px solid black;
     }
 
 }

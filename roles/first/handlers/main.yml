@@ -1,6 +1,9 @@
 ---
-- name: restart ssh
-  service: name=ssh state=restarted
+
+# Restart is usually fine but there is a small chance that it might
+# bounce the connection.  Reload instead.
+- name: reload ssh
+  service: name=ssh state=reloaded
 
 - name: flush local known_hosts
   known_hosts: name="{{item}}" state=absent

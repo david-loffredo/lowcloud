@@ -20,4 +20,4 @@
   with_items:
     - { dst: '/root', owner: 'root', group: 'root' }
     - { dst: '/etc/skel', owner: 'root', group: 'root' }
-    - { dst: "/home/{{ deploy_acct.name }}", owner: "{{ deploy_acct.name }}", group: "{{ deploy_acct.group }}" }
+    - { dst: "/home/{{ deploy_acct }}", owner: "{{ deploy_acct }}", group: "{{ deploy_acct_group }}" }

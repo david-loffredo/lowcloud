@@ -7,7 +7,8 @@
 <BODY>
 <div class=toc>
 <UL>
-<LI><A href=index.html>[home]</A>
+<LI><A href="index.html">[home]</A>
+<LI><A href="https://github.com/david-loffredo/davecloud">[github repo]</A>
 <p>
 <li><a href="#pkgs">Packages</a>
 <li><a href="#hosts">Hosts</a>
@@ -15,8 +16,6 @@
 <li><a href="#first">First Login Playbook</a>
 <li><a href="#play">Site Setup Playbook</a>
 <li><a href="#reboot">Rebooting</a>
-<li>These Ansible scripts set up mail and web service, with regular
-backups to a second machine.  My three goals were:
 </UL>
 </div>
 
@@ -33,8 +32,8 @@ backups to a second machine.  My three goals were:
 
 <p>Along the way, I also developed a pretty good knowledge of Ansible.
 The <em>what</em> and <em>why</em> are documented in these pages, as a
-starting point for your own choices.  If a ground-up understanding is
-not important to you, a push-button mail server
+starting point for your own choices.  If ground-up knowledge is not
+one of your priorities, a push-button mail server
 like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
 <a href="https://mailinabox.email/">mail-in-a-box</a>, or
 <a href="https://github.com/progmaticltd/homebox">homebox</a> is a
@@ -79,9 +78,9 @@ the logs.
 <H2 class=rule>
 <A NAME=pkgs></A>Packages</H2>
 
-<p>These playbooks assume Debian 10.  I haven't tested with other
-distros, but there are likely to be some changes to file locations or
-slightly different package lists.  In most cases, I used the
+<p>These playbooks assume Debian 10.  Other distros should be close,
+but may need some changes because of differing file locations or
+package versions.  In most cases, I used the
 Ansible <code>package:</code> module rather than <code>apt:</code> for
 installing things, so it works with package managers like emerge or
 yum.

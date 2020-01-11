@@ -1,46 +1,36 @@
 ---
-# We do everything via the deploy_acct, may also set ansible_become=true
-#ansible_ssh_user:               "{{ deploy_acct.name }}"
-#ansible_ssh_private_key_file:   "{{ deploy_acct.sshkeypath }}"
-
-# An hour is good enough for packages where we want the latest 
-pkg_cache_life: 3600
-
 # Things that are common across all administered machines.  Initially
 # we are only doing a single machine that provides web and mail for a
 # variety of domains, but if we decide to move some domains onto their
 # own machines, these settings would remain common to them.
 # 
-# Host specific things would go to host_vars/davecloud.net.yml
-#
-domain: davecloud.net
-    
-# Common credentials for root and deploy accounts.
-#
 # This file defines all of the variables, including "vault_" stubs for
 # sensitive ones like passwords.  The vault.yml file is encrypted and
 # defines the sensitive values.  Use "ansible-vault edit vault.yml" to
 # look at it.   
-#
-# The various things that can be called by lookup things can be found
-# in /usr/lib/python2.7/dist-packages/ansible/plugins/lookup/
-#
-root_acct:
-  name: root 
-  sshpub: "{{ vault_root_sshpub }}"
-  sshkeypath: "{{ vault_root_sshkeypath }}"
 
-deploy_acct:
-  name: deploy
-  group: users
-  sshpub: "{{ vault_deploy_sshpub }}"
-  sshkeypath: "{{ vault_deploy_sshkeypath }}"
-  passwd: "{{ vault_deploy_passwd }}"
+vaultfile: ../davevault/changeme.yml
 
-main_user_shell: "/bin/bash"
-  
-# Admin email
-# apticron, fail2ban reports will be sent to this address
+# An hour is good enough for packages where we want the latest 
+pkg_cache_life: 3600
+
+domain: davecloud.net
+    
+#========================================
+# Common credentials for root and deploy accounts.
+#
+# Account used to create the deploy account and lock down ssh. Usually
+# root, but may be the 'pi' account on a raspberry pi
+first_acct: root 
+
+# Deploy account is the only login 
+deploy_acct: deploy
+deploy_acct_group: users
+deploy_acct_sshpub: "{{ vault_deploy_sshpub }}"
+deploy_acct_sshkey: "{{ vault_deploy_sshkey }}"
+deploy_acct_pwhash: "{{ vault_deploy_pwhash }}"
+
+# admin email - reports will be sent to this address
 admin_email: "admin@{{ domain }}"
 
 # timezone, 'Etc/UTC' is another choice
@@ -112,7 +102,7 @@ web_vhosts:
 # simplicity.
 #
 mail_server_hostname: "mail.{{ domain }}"
-mail_server_autoconfig_hostname: "autoconfig.{{ domain }}"
+mail_autoconfig_hostname: "autoconfig.{{ domain }}"
 
 mail_cfg_dir: /etc/postfix
 mail_db_crypt:  /var/spool/postfix/etc/maildb_crypt
@@ -124,7 +114,7 @@ mail_db: "{{ mail_db_clear }}/{{ mail_db_name }}"
 # Encrypt mail data at rest with EncFS, and cleartext mountpoint
 mail_spool_crypt: "/var/vmail_crypt"
 mail_spool_clear: "/var/vmail"
-mail_spool_pw:    "{{vault_mail_spool_pw}}"
+mail_spool_pw:    "{{vault_crypt_pw}}"
 
 mail_domains:
   - "{{ domain }}"
@@ -134,7 +124,7 @@ mail_users:
   - email: "{{ admin_email }}"
     pw: "{{vault_mbox_admin_pw}}"
   - email: "relay@{{ domain }}"
-    pw: "{{vault_mail_relay_pw}}"
+    pw: "{{vault_relay_pw}}"
   - email: "dave@{{ domain }}"
     pw: "{{vault_mbox_dave_pw}}"
   - email: "somebody@machineplan.com"
@@ -157,7 +147,7 @@ mail_aliases:
 # Encrypt private data at rest with EncFS, and cleartext mountpoint
 private_dir_crypt:  /var/private_crypt
 private_dir_clear:  /var/private
-private_dir_pw:    "{{vault_mail_spool_pw}}"
+private_dir_pw:    "{{vault_crypt_pw}}"
 
 
 # Bacula
@@ -168,7 +158,7 @@ bacula_client_pw:       "{{ vault_bacula_client_pw }}"
 bacula_storage_pw:      "{{ vault_bacula_storage_pw }}"
 bacula_console_pw:      "{{ vault_bacula_console_pw }}"
 bacula_tunnel_sshpub:   "{{ vault_bacula_tunnel_sshpub }}"
-bacula_tunnel_sshkeypath: "{{ vault_bacula_tunnel_sshkeypath }}"
+bacula_tunnel_sshkey:   "{{ vault_bacula_tunnel_sshkey }}"
 # bacula_clients defaults to cloud group, set if extra machines
 
 #bacula_client_tunnel: no
@@ -206,4 +196,4 @@ dns_zones:
 
   - name: machineplan.com
     cnames: [ www ]
-  
+

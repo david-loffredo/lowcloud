@@ -40,9 +40,9 @@ bacula_default_client_tunnel: True      # The director set up an ssh tunnel
 bacula_default_tunnel_acct: bacula-tun
 bacula_default_tunnel_group: users
 bacula_default_tunnel_sshpub:
-bacula_default_tunnel_sshkeypath:               # local path
+bacula_default_tunnel_sshkey:               # local path
 bacula_default_tunnel_sshkeyname: tunnel.key    # remote name
-bacula_default_tunnel_passwd: '*'
+bacula_default_tunnel_pwhash: '*'
 bacula_default_tunnel_fdport: 9112
 
 # bacula_default_director_name: A DEFAULT ONLY GOOD IF ONE DIRECTOR
@@ -90,9 +90,9 @@ bacula_client_tunnel:           "{{ bacula_default_client_tunnel }}"
 bacula_tunnel_acct:             "{{ bacula_default_tunnel_acct }}"
 bacula_tunnel_group:            "{{ bacula_default_tunnel_group }}"
 bacula_tunnel_sshpub:           "{{ bacula_default_tunnel_sshpub }}"
-bacula_tunnel_sshkeypath:       "{{ bacula_default_tunnel_sshkeypath }}"
+bacula_tunnel_sshkey:           "{{ bacula_default_tunnel_sshkey }}"
 bacula_tunnel_sshkeyname:       "{{ bacula_default_tunnel_sshkeyname }}"
-bacula_tunnel_passwd:           "{{ bacula_default_tunnel_passwd }}"
+bacula_tunnel_pwhash:           "{{ bacula_default_tunnel_pwhash }}"
 bacula_tunnel_fdport:           "{{ bacula_default_tunnel_fdport }}"
 
 bacula_director_name:           "{{ inventory_hostname_short }}-dir"
