@@ -9,12 +9,10 @@
 # defines the sensitive values.  Use "ansible-vault edit vault.yml" to
 # look at it.   
 
-vaultfile: ../davevault/changeme.yml
-
 # An hour is good enough for packages where we want the latest 
 pkg_cache_life: 3600
 
-domain: davecloud.net
+domain: example.com
     
 #========================================
 # Common credentials for root and deploy accounts.
@@ -33,11 +31,15 @@ deploy_acct_pwhash: "{{ vault_deploy_pwhash }}"
 # admin email - reports will be sent to this address
 admin_email: "admin@{{ domain }}"
 
-# timezone, 'Etc/UTC' is another choice
-timezone: 'US/Eastern'
 
-# Can set LANG and LANGUAGE separately, roll your own if you want
-# something finer grained.
+# UTC is default, see paths under /usr/share/zoneinfo
+# https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+#timezone: 'Etc/UTC' 
+#timezone: 'US/Eastern'
+
+
+# Can set LANG and LANGUAGE separately, hack common/tasks/locale.yml
+# if you want something finer grained.
 #host_locale:    en_US.UTF-8
 #host_language:  en_US.UTF-8
 
@@ -69,9 +71,6 @@ firewall_services: [ 'mail', 'web' ]
 #
 snapshot_dir: "{{inventory_dir}}/snapshot/{{inventory_hostname}}"
 
-# Known snapshots are:
-# letsencrypt_backup.tgz - /etc/letsencrypt contents with symlinks
-
 
 #========================================
 # Webserver Settings
@@ -85,9 +84,9 @@ web_vhosts:
     aliases:
       - www.{{ domain }}
       - mail.{{ domain }}
-  - name: machineplan.com
+  - name: second-domain.example
     aliases:
-      - www.machineplan.com
+      - www.second-domain.example
 
 
 # Mail domains and users.  Set into the virtual.sqlite database for
@@ -125,10 +124,10 @@ mail_users:
     pw: "{{vault_mbox_admin_pw}}"
   - email: "relay@{{ domain }}"
     pw: "{{vault_relay_pw}}"
-  - email: "dave@{{ domain }}"
-    pw: "{{vault_mbox_dave_pw}}"
-  - email: "somebody@machineplan.com"
-    pw: "{{vault_mbox_someone_pw}}"
+  - email: "user1@{{ domain }}"
+    pw: "{{vault_mbox_user1_pw}}"
+  - email: "user2@second-domain.example"
+    pw: "{{vault_mbox_user2_pw}}"
 
 mail_aliases:
   - { src: "root@{{ domain }}",         dst: "{{ admin_email }}" }
@@ -136,11 +135,11 @@ mail_aliases:
   - { src: "webmaster@{{ domain }}",    dst: "{{ admin_email }}" }
   - { src: "security@{{ domain }}",     dst: "{{ admin_email }}" }
   - { src: "abuse@{{ domain }}",        dst: "{{ admin_email }}" }
-  - { src: "root@machineplan.com",         dst: "{{ admin_email }}" }
-  - { src: "postmaster@machineplan.com",   dst: "{{ admin_email }}" }
-  - { src: "webmaster@machineplan.com",    dst: "{{ admin_email }}" }
-  - { src: "security@machineplan.com",        dst: "{{ admin_email }}" }
-  - { src: "abuse@machineplan.com",        dst: "{{ admin_email }}" }
+  - { src: "root@second-domain.example",        dst: "{{ admin_email }}" }
+  - { src: "postmaster@second-domain.example",  dst: "{{ admin_email }}" }
+  - { src: "webmaster@second-domain.example",   dst: "{{ admin_email }}" }
+  - { src: "security@second-domain.example",    dst: "{{ admin_email }}" }
+  - { src: "abuse@second-domain.example",       dst: "{{ admin_email }}" }
 
 
 
@@ -162,38 +161,3 @@ bacula_tunnel_sshkey:   "{{ vault_bacula_tunnel_sshkey }}"
 # bacula_clients defaults to cloud group, set if extra machines
 
 #bacula_client_tunnel: no
-
-
-dns_ns:  
-  master: "ns1.{{ domain }}"
-  email: "root.{{ domain }}"
-  replica:
-#  - { name: "ns1.foo.com", ip: "1.2.3.4" }
-
-# name: "linode-slaves-v6"
-#     provide-xfr: 2600:3c00::a NOKEY
-#     provide-xfr: 2600:3c01::a NOKEY
-#     provide-xfr: 2600:3c02::a NOKEY
-#     provide-xfr: 2600:3c03::a NOKEY
-#     provide-xfr: 2a01:7e00::a NOKEY
- 
-# pattern:
-#     name: "linode-slaves-v4"
-#     provide-xfr: 65.19.178.10 NOKEY
-#     provide-xfr: 69.93.127.10 NOKEY
-#     provide-xfr: 75.127.96.10 NOKEY
-#     provide-xfr: 109.74.194.10 NOKEY
-#     provide-xfr: 207.192.70.10 NOKEY
-
-dns_mx:  
-  master: "mail.{{ domain }}"
-  backup:
-
-dns_zones:  
-  - name: "{{ domain }}"
-    master: true
-    cnames: [ www ]
-
-  - name: machineplan.com
-    cnames: [ www ]
-

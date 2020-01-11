@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+   <TITLE>Provisioning Machines</TITLE>
+   <link rel="stylesheet" type="text/css" href="style.css">
+</HEAD>
+<BODY>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#mail">Mail and Web Server</a>
+<li><a href="#backup">Backup Server</a>
+</UL>
+</div>
+
+<div class=main>
+<H1>Provisioning Machines</H1>
+
+<p>These playbooks assume that you will be setting up two machines.
+Typically, the mail and web server is a machine in the cloud while
+backups are run by a machine that you have physical control over (old
+PC in a corner).  I have run the total setup with a $5/mo cloud
+machine for mail/web and a Raspberry Pi Zero as the Bacula
+director.</p>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=mail></A>Mail and Web Server</H2>
+
+<p>A mail and web server needs a public IP address with connectivity
+to all ports.  Residential ISP connections have a semi-dynamic IP
+address and typically block incomming connections to port 25, so they
+are useless for running a public mail server.</p>
+
+<p>There are two ways to get this: Use your own hardware with a
+business class ISP connection, or use someone else's hardware provided
+as a Virtual Private Server (VPS) in the cloud.  It doesn't matter
+which you do for the purposes of these playbooks.</p>
+
+<p>There are many VPS providers.  In the US, Linode (founded 2003),
+DigitalOcean (founded 2011), or Amazon EC2 (launched 2006) are all
+solid choices.  Linode and DigitalOcean have comparable pricing with
+simple $5/10/20/etc. packages that include CPU, memory, disk, and
+network bandwidth.  Amazon charges for everything separately with
+different rate classes (on-demand vs reserved) and you assemble your
+own.</p>
+
+<p>For the simple email host and static web site that these scripts
+set up, a small (1GB nanode, 1GB droplet, t3.micro) host is fine.  You
+might need something bigger if you will run other services, or a
+database-heavy dynamic website like Wordpress.  The providers usually
+let you migrate to a larger instance later on.</p>
+
+<p>I prefer Linode because they have a long history, a solid focus, well
+managed network, and keep things simple.  If you choose them, it would
+be nice if you signed up using
+<a href="https://www.linode.com/?r=e74c06bee7a764232b36ae63d0cebd3b8287fd4c">my
+referral code</a> (they give me few bucks off my bill if you stick
+around for three months).</p>
+
+<p>In any case, once you allocate a machine, make sure that the IP
+address is not on any of the spam blacklists.  That would be the
+internet equivalent of like getting a telephone number that used to
+belong to a deadbeat.  Some cloud providers have had more problems
+than others in keeping their networks clean.</p>
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=backup></A>Backup Server</H2>
+
+<p>The backup machine should be something under your physical control,
+usually an old machine in your basement.  It connects to other
+machines to fetch backups and send outgoing status mail.  Nothing on
+the internet needs to find it, so it can live happily behind a
+residential ISP connection.</p>
+
+<p>Hardware does not matter as long as it has a reasonable amount of
+storage space for the backup data.  For just backing up personal
+email, even a decent sized USB key is probably sufficient.  Literally
+anything will work, even a Raspberry Pi Zero.</p>
+
+<p>The playbooks assume that you using a fresh machine.  If you want
+to use a NAS that is already running other things,
+the <code>bacula-director</code> role should be fairly self-contained,
+but you should make sure that the <code>common</code>
+and <code>mailnull</code> roles don't interfere with existing things
+on the machine.</p>
+
+<p align=center>
+<img src="images/backup.jpg" style="max-width:75%;" alt="Backup Server"><br>
+Backup Server with Disaster Man<br>
+(Still beats any machine in the first twenty years of my career)
+</p>
+
+
+</div>
+</BODY>
+</HTML>

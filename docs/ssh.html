@@ -44,6 +44,32 @@ like <a href="https://github.com/jtesta/ssh-audit">ssh-audit</a>
 or <a href="https://github.com/CISOfy/lynis">Lynis</a> as discussed in
 the <a href="encrypt.html">encryption configuration</a>.</p>
 
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=play></A>Other Notes</H2>
+
+<p>If you happen to change host keys, like when rebuilding a machine,
+SSH freaks out with ominous messages about man in the middle attacks.
+You can selectively make ssh forget the key for the name and IP using
+commands like below.</p>
+
+<PRE class=code>
+$ ssh-keygen -f "/home/foo/.ssh/known_hosts" -R "example.com"
+$ ssh-keygen -f "/home/foo/.ssh/known_hosts" -R "11.22.33.44"
+</PRE>
+
+
+<p>The public key needs to be in openssh form.  If you happen to use
+putty to generate a key, you can convert it as follows.  Install the
+<code>putty-utils</code> package and do:</p>
+
+<PRE class=code>
+$ puttygen foobar.ppk -O public-openssh -o foobar.pub
+$ puttygen foobar.ppk -O private-openssh -o foobar.key
+</PRE>
+
+
 </div>
 </BODY>
 </HTML>
