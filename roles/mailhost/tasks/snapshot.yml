@@ -1,0 +1,25 @@
+---
+# For quick reimaging, grab locally unique system data, such as dkim
+# keys and the mail user database.  Afterwards, you can use bacula to
+# restore any user data (mail spool).
+#
+- name: backup dkim keys
+  archive:
+    path: "{{ dkim_keyroot }}"
+    format: gz
+    dest: /tmp/dkim_keys.tgz
+  tags: [snapshot, mail-snapshot]
+    
+- name: return maildb and dkim to mothership
+  fetch: src={{item}} dest="{{snapshot_dir}}/" flat=yes
+  with_items:
+    - "{{mail_db}}"
+    - /tmp/dkim_keys.tgz
+  tags: [snapshot, mail-snapshot]
+
+- name: clean up temporary archive
+  file:
+    path: /tmp/dkim_keys.tgz
+    state: absent
+  tags: [snapshot, mail-snapshot]
+    

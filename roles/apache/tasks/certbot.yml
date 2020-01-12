@@ -6,7 +6,6 @@
 # twelve hours.  This only updates the cert if it is near expiration
 # so it can be called frequently.
 #
-
 - name: certbot packages are installed
   package:
     state: present

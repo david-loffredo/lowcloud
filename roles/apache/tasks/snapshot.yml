@@ -7,14 +7,17 @@
     path: /etc/letsencrypt
     format: gz
     dest: /tmp/letsencrypt_keys.tgz
+  tags: [never, snapshot, web-snapshot]
 
 - name: return certbot keys to mothership
   fetch:
     src: /tmp/letsencrypt_keys.tgz
     dest: "{{snapshot_dir}}/"
     flat: yes
+  tags: [never, snapshot, web-snapshot]
 
 - name: clean up temporary archive
   file:
     path: /tmp/letsencrypt_keys.tgz
     state: absent
+  tags: [never, snapshot, web-snapshot]

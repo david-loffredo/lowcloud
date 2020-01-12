@@ -37,10 +37,10 @@ wiki</a>.  We can back up a mix of many machines, some needing a
 tunnel (like a cloud machine) and some that can directly connect (like
 a local PC).</p>
 
-<p>We back up the mail spool, document roots for the web sites, and
-the list of config files covered by
-the <a href="snapshot.html">snapshot</a> playbook.  Is it worth it to
-back up logs?
+<p>We back up user data like the mail spool and document roots for the
+web sites, as well as system data like certs, DKIM keys, and so forth.
+The <a href="snapshot.html">snapshot</a> tag is another way to make a
+short-term copy of the system data.  Is it worth it to back up logs?
 
 <p>Bacula has several processes that run, usually spread over at least
 two machines, and they are configured by the following files

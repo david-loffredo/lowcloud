@@ -11,7 +11,7 @@
 
 # We use the script to check whether the cert exists and matches all
 # of the names that we are looking for.
-- name: certificate exists and matches domains
+- name: "{{cert_item.domains[0]}} certificate exists and matches domains"
   command: "{{certbot_test_util}} -d {{ cert_item.domains | join(',') }}"
   register: cert_result
   failed_when: no
@@ -24,11 +24,11 @@
   when: cert_result.rc != 0
   with_items: "{{ certbot_create_standalone_stop_services }}"
 
-- name: certbot create new certificate
+- name: "{{cert_item.domains[0]}} certbot create new certificate"
   command: "{{ certbot_create_command }}"
   when: "'No cert file' in cert_result.stdout"
 
-- name: certbot expand existing certificate 
+- name: "{{cert_item.domains[0]}} certbot expand existing certificate"
   command: "{{ certbot_modify_command }}"
   when: "'cert missing' in cert_result.stdout"
 

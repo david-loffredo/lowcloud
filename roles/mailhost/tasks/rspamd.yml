@@ -65,6 +65,24 @@
     - rspamd
 
 
+
+
+
+# Restore snapshot from existing machine if needed
+- name: Check for local dkim key backup
+  become: False
+  local_action:
+    stat path="{{snapshot_dir}}/dkim_keys.tgz"
+  register: dkim_key_backup
+
+- name: restore local dkim key backup to {{dkim_keyroot|dirname}}
+  unarchive:
+    src: "{{snapshot_dir}}/dkim_keys.tgz"
+    dest: "{{dkim_keyroot|dirname}}"
+    owner: root
+    group: root
+  when: dkim_key_backup.stat.exists == true
+    
     
 # - name: Copy DMARC configuration into place
 #   template: src=etc_rspamd_local.d_dmarc.conf.j2 dest=/etc/rspamd/local.d/dmarc.conf owner=root group=root mode="0644"

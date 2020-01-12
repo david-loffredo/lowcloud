@@ -12,59 +12,45 @@
 </div>
 
 <div class=main>
-<H1>Snapshot Unique Config Files</H1>
+<H1>Snapshot System Data</H1>
 
-<p><b>ROLE</b> snapshot, snapshot.yml playbook
+<p><b>TAG</b> snapshot
 
-<p>When migrating to a new machine most of the user data like the mail
-spool and HTML root directories can be restored from backups once the
-machine is up and running.</p>
+<p>Both system and user data is backed up by Bacula.  In a disaster
+recovery situation, we would do a clean install and replace the system
+and user data from backups after the machine is running.  During the
+install we would end up generating a bunch of keys and certs, perhaps
+from third parties like LetsEncrypt, that we would then abandon.</p>
 
-<p>There are some configuration files that we would prefer to save and
-install as part of the first pass configuration by ansible (SLL keys,
-the mail users database) rather than recreate then from scratch and
-then replace later.</p>
+<p>If we are reimaging or migrating to a new machine in a pre-planned
+fashion, we can collect small amounts of unique local system data like
+certs, host keys, mail passwords, and DKIM keys for use when doing the
+initial install.  This avoids churning the certs and keys.  Once the
+machine is up and running, you can use Bacula to restore the larger
+volume of user data like the mail spool and web roots.</p>
 
-<p>In particular, with the SSL keys, we want to avoid creating a new
-account and allocating new keys which we would then abandon and get
-warnings about later.  The mail user DB might have new users or
-changed passwords that have accumulated over time.  It doesn't matter
-much if this is replaced in the second pass, but this way it is good
-right out of the box.</p>
+<p>Use the <code>snapshot</code> tag with <code>site.yml</code> to
+create a <code>snapshot/&lt;hostname&gt;</code> local directory for
+each machine.  This will contain tarfiles with system data collected
+from the machine.  The various roles in the playbook this directory
+exists and restores the data if it is present.</p>
 
-<p>The <code>snapshot.yml</code> playbook populates the "snapshot"
-local directory with a subdirectory for each hostname containing
-individual files or tared directories that we want to carry over.  The
-various roles called by <code>site.yml</code> check whether this
-exists and copies the data if it is present.</p>
-
-<p>When using this, run snapshot.yml to create the snapshot directory,
-rebuild the machine, then run site.yml to initialize the new machine.
-After the machine is configured, remove the snapshot directory so that
-it does not go stale and inadvertantly overwrite good data later on.</p>
+<p>After the machine is configured, remove the snapshot directory so
+that it does not go stale and inadvertantly overwrite good data weeks
+or months later.</p>
 
 <PRE class=code>
 # make snapshot/machine.name directory
-$ ansible-playbook -K --ask-vault-pass -i hosts snapshot.yml
+$ ansible-playbook -K --ask-vault-pass -i ../myhosts site.yml --tags snapshot
 
 # wipe/rebuild machine
 
 # initialize the new machine
-$ ansible-playbook --ask-pass --ask-vault-pass -i hosts first.yml
-$ ansible-playbook -K --ask-vault-pass -i hosts site.yml
+$ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml
+$ ansible-playbook -K --ask-vault-pass -i ../myhosts site.yml
 
 # delete snapshot/machine.name directory
 </PRE>
-
-<p>We might also want to include the SSH host keys in the snapshot so
-that we don't trip up people with the host changed warning.  This is a
-bit of a chicken and egg thing though since first login will regen
-keys and you will have to clear known_hosts yourself, but might be
-worth it if a lot of other people are sshing into the machine for some
-reason.</p>
-
-<p>/etc/ssh/ssh_host_ed25519_key'
-
 
 </div>
 </BODY>

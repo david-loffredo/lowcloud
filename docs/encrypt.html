@@ -66,9 +66,9 @@ want to create a ssl-cert group and change it to mode 750.</p>
 domains.  Note the symlinks in the live directory.  When archiving the
 letsencrypt directory, it is important to use a method that preserves
 these symlinks or else certbot may not renew
-properly.  <a href="backup.html">Bacula</a> preserves the links and 
-the <a href="snapshot.html">snapshot</a> playbook makes a compressed
-tar file of this directory when preserving the config.</p>
+properly.  <a href="backup.html">Bacula</a> preserves the links and
+the <a href="snapshot.html">snapshot</a> action makes a compressed tar
+file of this directory when preserving the config.</p>
 
 <PRE class=code>
 root@localhost:/etc/letsencrypt# ls -l

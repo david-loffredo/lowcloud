@@ -1,3 +1,18 @@
 ---
 - import_tasks: apache.yml
 - import_tasks: certbot.yml
+
+
+# For quick reimaging, grab local system data (certs).  Afterwards,
+# you can use bacula to restore the user data (web roots). The when
+# rule is needed to restrict to only these explicit tags, otherwise it
+# fires on any inherited tags (like 'mail') too.
+#
+# Unfortunately, the combo of tag/never+when always prints skipped,
+# unlike tag/never which is silent unless it fires.  We load this
+# dynamically so it just prints skipped for the include_tasks action
+# rather than skipped for each task within an import_tasks.
+- name: create snapshot of system data
+  include_tasks: snapshot.yml
+  when: ansible_run_tags | intersect(['snapshot', 'web-snapshot']) | length
+  tags: [never, snapshot, web-snapshot]
