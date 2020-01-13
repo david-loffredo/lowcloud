@@ -1,4 +1,6 @@
 # local.d/dkim_signing.conf
+enabled=true
+
 try_fallback = true;
 path = "{{ dkim_keyroot }}/$domain.$selector.key";
 selector = "{{ dkim_selector }}";

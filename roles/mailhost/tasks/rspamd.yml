@@ -50,23 +50,17 @@
   notify: restart redis
 
 # local.d is merged, override.d overrides
-- name: rdspam local configuration
+- name: rspamd local configuration
   template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
     owner=redis group=redis mode=640
   with_items:
     - options.inc
     - worker-proxy.inc
     - milter_headers.conf
+  notify: restart rspamd
 
-- name: services enabled
-  service: name={{ item }} state=started enabled=yes
-  with_items:
-    - redis-server
-    - rspamd
-
-
-
-
+  
+# Turn it on if we set the DKIM selector
 
 # Restore snapshot from existing machine if needed
 - name: Check for local dkim key backup
@@ -82,26 +76,40 @@
     owner: root
     group: root
   when: dkim_key_backup.stat.exists == true
-    
-    
+
+- name: dkim key directory present
+  file: path={{dkim_keyroot}} state=directory
+        owner=_rspamd group=_rspamd mode=0755
+
+- name: Generate DKIM keys
+  shell: rspamadm dkim_keygen -b 2048 -s {{dkim_selector}} -d {{item}} -k {{item}}.{{dkim_selector}}.key > {{item}}.{{dkim_selector}}.txt
+  args:
+    creates: "{{dkim_keyroot}}/{{item}}.{{dkim_selector}}.key"
+    chdir: "{{dkim_keyroot}}"
+  with_items: "{{ mail_domains }}"
+  notify: restart rspamd
+
+- name: rspamd dkim signing local configuration
+  template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
+    owner=redis group=redis mode=640
+  with_items:
+    - dkim_signing.conf
+    - logging.inc
+  notify: restart rspamd
+
+
+
+
+
+  
+- name: services enabled
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - redis-server
+    - rspamd
+
+
 # - name: Copy DMARC configuration into place
 #   template: src=etc_rspamd_local.d_dmarc.conf.j2 dest=/etc/rspamd/local.d/dmarc.conf owner=root group=root mode="0644"
 #   notify: restart rspamd
 
-# - name: Configure Rspamd to use Redis
-#   copy: src=etc_rspamd_local.d_redis.conf dest=/etc/rspamd/local.d/redis.conf owner=root group=root mode="0644"
-#   notify: restart rspamd
-
-# - name: Copy DKIM configuration into place
-#   copy: src=etc_rspamd_override.d_dkim_signing.conf dest=/etc/rspamd/override.d/dkim_signing.conf owner=root group=root mode="0644"
-#   notify: restart rspamd
-
-# - name: Create dkim key directory
-#   file: path=/var/lib/rspamd/dkim state=directory owner=_rspamd group=_rspamd
-
-# - name: Generate DKIM keys
-#   shell: rspamadm dkim_keygen -s default -d {{ item.name }} -k {{ item.name }}.default.key > {{ item.name }}.default.txt
-#   args:
-#     creates: /var/lib/rspamd/dkim/{{ item.name }}.default.key
-#     chdir: /var/lib/rspamd/dkim/
-#   with_items: "{{ mail_virtual_domains }}"

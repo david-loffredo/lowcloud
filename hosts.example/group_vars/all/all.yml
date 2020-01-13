@@ -1,13 +1,11 @@
 ---
-# Things that are common across all administered machines.  Initially
-# we are only doing a single machine that provides web and mail for a
-# variety of domains, but if we decide to move some domains onto their
-# own machines, these settings would remain common to them.
+# Things that are common across all administered machines.  With a
+# single web and mail machine for a variety of domains, all values can
+# stay here, but if some domains are on separate machines, break those
+# settings into separate files.
 # 
-# This file defines all of the variables, including "vault_" stubs for
-# sensitive ones like passwords.  The vault.yml file is encrypted and
-# defines the sensitive values.  Use "ansible-vault edit vault.yml" to
-# look at it.   
+# Sensitive values with the "vault_" prefix are in the encrypted
+# vault.yml file. Use "ansible-vault edit vault.yml" to look at it.
 
 # An hour is good enough for packages where we want the latest 
 pkg_cache_life: 3600
@@ -59,17 +57,6 @@ firewall_services: [ 'mail', 'web' ]
 
 # fail2ban will ignore these networks
 # firewall_friendly_networks:
-
-
-#========================================
-# Snapshot/Backup Settings
-#
-# If present, the roles will restore tar files of data found in the
-# directory below.  This can be populated by running the snapshot.yml
-# playbook on the original machine and is useful if we are restoring
-# or updating rather than a clean install.
-#
-snapshot_dir: "{{inventory_dir}}/snapshot/{{inventory_hostname}}"
 
 
 #========================================

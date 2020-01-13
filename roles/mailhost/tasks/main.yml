@@ -1,10 +1,10 @@
 ---
-- name: poop
-  debug: msg=foo
-# - import_tasks: encfs.yml
-# - import_tasks: postfix.yml
-# - import_tasks: dovecot.yml
-# - import_tasks: rspamd.yml
+# Mail server components
+- import_tasks: encfs.yml
+- import_tasks: postfix.yml
+- import_tasks: dovecot.yml
+- import_tasks: rspamd.yml
+  tags: rspamd
 
 # For quick reimaging, grab local system data (keys, db).  Afterwards,
 # you can use bacula to restore the user data (mail spool).  The when

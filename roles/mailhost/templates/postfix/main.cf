@@ -1,6 +1,5 @@
 # See /usr/share/postfix/main.cf.dist for a commented, more complete version
 
-
 # Debian specific:  Specifying a file name will cause the first
 # line of that file to be used as the name.  The Debian default
 # is /etc/mailname.
@@ -176,31 +175,16 @@ smtpd_sender_restrictions =
 
 
 #----------------------------------------
-# Milters - Rspamd
+# Milters - Rspamd for spam filtering and DKIM signing
 
-# rspamd proxy worker port
+# rspamd proxy worker port for inbound (smtpd) and outbound
+# (non_smtpd) mail.   Outbound is just for DKIM signing.
 smtpd_milters = inet:localhost:11332
+non_smtpd_milters = $smtpd_milters
 
 # skip mail without checks if something goes wrong
 milter_default_action = accept
 
-# default milter protocol version is 6. Postfix <2.6 was 2.
-# milter_protocol = 6
-
-# non_smtpd_milters = $smtpd_milters
-# milter_mail_macros = i {mail_addr} {client_addr} {client_name} {auth_authen} {auth_type}
-
-# # Postscreen
-# postscreen_access_list = permit_mynetworks
-# postscreen_dnsbl_sites =
-#   sbl-xbl.spamhaus.org*2
-#   cbl.abuseat.org*2
-#   bl.spamcop.net*2
-#   dnsbl.sorbs.net*1
-#   spam.spamrats.com*2
-# postscreen_dnsbl_threshold = 3
-# postscreen_dnsbl_action = enforce
-# postscreen_greet_action = enforce
 
 #  mail_header_privacy
 # # Remove local client IP from headers
