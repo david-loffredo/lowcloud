@@ -1,0 +1,24 @@
+# local.d/settings.conf
+
+# Create a couple of custom settings blocks to apply to messages from
+# authenticated users or local hosts.  These should only match things
+# that originate from us.  Turn off all spam testing and just DKIM
+# sign the messages.
+
+sign_auth {
+  priority = high;
+  authenticated = yes
+  apply {
+    symbols_enabled = ["DKIM_SIGNED"];
+    flags = ["skip_process"]; # Disable expensive MIME processing
+  }
+}
+
+sign_local {
+  priority = high;
+  local = yes
+  apply {
+    symbols_enabled = ["DKIM_SIGNED"];
+    flags = ["skip_process"]; # Disable expensive MIME processing
+  }
+}

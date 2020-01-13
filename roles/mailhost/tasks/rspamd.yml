@@ -93,6 +93,7 @@
   template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
     owner=redis group=redis mode=640
   with_items:
+    - settings.conf
     - dkim_signing.conf
     - logging.inc
   notify: restart rspamd
