@@ -23,8 +23,24 @@ redis_maxmen: 500mb
 # redis_maxmen_policy: 
 
 # Rspamd - spam filter
+
+# Will do DKIM signing if the selector is set.  Usually follow a year
+# month pattern (202001) so that we have a predictable pattern when we
+# rotate them.  When near rotation time, we can set the selector_next
+# var to pre-generate the keys, but do not use them.  This gives us a
+# chance to get the public keys into DNS and let them propogate.
 dkim_keyroot: "/var/vmail/dkim"
-#dkim_selector: 
+dkim_selector:
+dkim_selector_next:
+
+# utility variables to simplify the templates
+dkim_selector_is_set: "{{ 
+  dkim_selector|default(none) is not none and 
+  dkim_selector|string|length > 0 }}"
+
+dkim_selector_next_is_set: "{{ 
+  dkim_selector_next|default(none) is not none and 
+  dkim_selector_next|string|length > 0 }}"
 
 
 #========================================

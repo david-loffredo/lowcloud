@@ -180,7 +180,9 @@ smtpd_sender_restrictions =
 # rspamd proxy worker port for inbound (smtpd) and outbound
 # (non_smtpd) mail.   Outbound is just for DKIM signing.
 smtpd_milters = inet:localhost:11332
+{% if dkim_selector_is_set %}
 non_smtpd_milters = $smtpd_milters
+{% endif %}
 
 # skip mail without checks if something goes wrong
 milter_default_action = accept

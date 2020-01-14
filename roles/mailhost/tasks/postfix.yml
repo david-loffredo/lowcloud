@@ -89,7 +89,7 @@
     - sqlite-virtual-mailbox-domains.cf
     - sqlite-virtual-mailbox-maps.cf
   notify: restart postfix
-
+  tags: dkim    # main.cf can change with dkim signing
 
 # This strips outgoing mail headers
 # - name: Create postfix maps directory

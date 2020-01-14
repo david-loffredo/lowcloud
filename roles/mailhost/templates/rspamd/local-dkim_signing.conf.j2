@@ -1,7 +1,11 @@
 # local.d/dkim_signing.conf
+
+{% if dkim_selector_is_set %}
 enabled=true
 
 try_fallback = true;
 path = "{{ dkim_keyroot }}/$domain.$selector.key";
 selector = "{{ dkim_selector }}";
-
+{% else %}
+enabled=false
+{% endif %}

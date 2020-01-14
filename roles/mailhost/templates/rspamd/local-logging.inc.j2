@@ -1,2 +1,5 @@
 # local.d/logging.inc
+
+{% if dkim_selector_is_set %}
 debug_modules = ["dkim_signing"];
+{% endif %}

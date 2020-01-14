@@ -1,5 +1,6 @@
 # local.d/settings.conf
 
+{% if dkim_selector_is_set %}
 # Create a couple of custom settings blocks to apply to messages from
 # authenticated users or local hosts.  These should only match things
 # that originate from us.  Turn off all spam testing and just DKIM
@@ -22,3 +23,4 @@ sign_local {
     flags = ["skip_process"]; # Disable expensive MIME processing
   }
 }
+{% endif %}

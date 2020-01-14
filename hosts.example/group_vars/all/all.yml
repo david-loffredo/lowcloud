@@ -129,6 +129,16 @@ mail_aliases:
   - { src: "abuse@second-domain.example",       dst: "{{ admin_email }}" }
 
 
+# Will do DKIM signing if the selector is set.  Usually follow a year
+# month pattern (202001) so that we have a predictable pattern when we
+# rotate them.  When near rotation time, we can set the selector_next
+# var to pre-generate the keys, but do not use them.  This gives us a
+# chance to get the public keys into DNS and let them propogate.
+#
+#dkim_selector:
+#dkim_selector_next:
+
+
 
 # Encrypt private data at rest with EncFS, and cleartext mountpoint
 private_dir_crypt:  /var/private_crypt
