@@ -159,9 +159,8 @@ Borg won't go to an S3 bucket, but a similar project called
 
 <p>Once I thought more deeply about <em>who</em> could access the
 backups, I changed my mind.  For a disk crash or mistake, any backup
-software is fine.  All of them will let you access a recent copy of
-the data, then you can copy the missing files and get your machine
-back to normal.
+software is fine.  All of them can provide a recent copy of any
+damaged files so you can get your machine back to normal.
 
 <p>The second scenario &mdash; a p0wned machine &mdash; is trickier.
 If you find yourself in this situation, you should not trust anything
@@ -186,6 +185,15 @@ requires setting up more than one machine, but you can keep your
 Bacula director and storage on a machine that you physically control,
 with minimal access to the outside world.  Even a $10 Raspberry Pi
 Zero sitting on a shelf can back up a personal email/web server.</p>
+
+
+<figure>
+<img src="images/eagle.jpg" alt="Fujitsu Eagle">
+<figcaption>Choose backup storage wisely.  A 128GB USB Key is spacious
+and portable, but a 300MB Fujitsu Eagle can resist small-arms fire.
+</figcaption>
+</figure>
+
 
 </div>
 

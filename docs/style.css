@@ -42,6 +42,21 @@ DIV.toc {
 }
 
 
+FIGURE {
+    display: block;
+    margin: 1em 0;
+}
+
+FIGURE IMG {
+    max-width: 100%;
+}
+
+FIGCAPTION {
+    display: block;
+    text-align:center; 
+    font-size: 90%;
+}
+
 /* Simple reactive settings - Limit body width to a reasonable amount
  * and fold the TOC box to inline when you get small.
  */
@@ -58,6 +73,9 @@ DIV.toc {
 	float: right;
 	border-left: 2px solid black;
     }
+    FIGURE {
+	margin: 1em 10%;
+    }
 }
 
 @media only screen and (min-width: 74rem) {
@@ -68,7 +86,9 @@ DIV.toc {
 	float: right;
 	border-left: 2px solid black;
     }
-
+    FIGURE {
+	margin: 1em 10%;
+    }
 }
 
 

@@ -276,14 +276,15 @@ mailspool</a>.  It works, but I had some problems with "Error:
 Couldn't create mailbox list lock file_create_locked() failed".  This
 is probably an interaction with EncFS and FUSE, and changing
 the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
-seemed to fix the issue.  I would like to eventually switch to ext4
-encryption and fscrypt, which operates at a block level.</p>
+seemed to fix the issue.  I would like to eventually switch to luks or
+ext4 encryption and fscrypt, which operate at a block level.</p>
 
-
-<p align=center>
-<img src="images/necronomicon.jpg" style="max-width:80%;" alt="Sendmail Book"><br>
-Necronomicon, 20+ year old edition within easy reach at the office
-</p>
+<figure>
+<img src="images/necronomicon.jpg" alt="Sendmail Book">
+<figcaption>Necronomicon, 20+ years old edition, bound with ancient
+RFCs and written in black coffee.  Within easy reach at the office.
+</figcaption>
+</figure>
 
 
 </div>
