@@ -109,29 +109,10 @@ H1.rule { }
 H2.rule { width:75% }
 H3.rule { width:50% }
 
-.shadow {
-    box-shadow: 5px 5px 5px #555;
-    -moz-box-shadow: 5px 5px 5px #555;
-    -webkit-box-shadow: 5px 5px 5px #555;
-}
-
-DIV.figure {
-    text-align:center; 
-    padding-top: 1em;
-    padding-bottom: 1em;
-}
-
-P.caption {
-    font-weight: bold;
-    text-align:center; 
-}
-
 DIV.copyright {
     font-size: 70%;
-    padding: 0.5em;
-    margin: 2em 20% 1em 20%;
+    margin: 3rem 20% 0 20%;
     text-align: center;
-    border-top: 1px solid #000000;
     clear: both; /* avoid interference with floats */
 }
 
