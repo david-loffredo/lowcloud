@@ -177,8 +177,14 @@ smtpd_sender_restrictions =
 #----------------------------------------
 # Milters - Rspamd for spam filtering and DKIM signing
 
-# rspamd proxy worker port for inbound (smtpd) and outbound
-# (non_smtpd) mail.   Outbound is just for DKIM signing.
+# Rspamd proxy worker port for inbound scanning and outbound DKIM
+# signing.  The smtpd_milters run on all inbound mail.  Submission
+# adds mail through smtpd, so it scans that too (see master.cf) The
+# non_smtpd_milters run on local sendmail things, so we only enable
+# that if we are doing DKIM signing.
+#
+# We things in Rspamd settings.conf to turn off filtering for outbound
+# mail and just do the signing.
 smtpd_milters = inet:localhost:11332
 {% if dkim_selector_is_set %}
 non_smtpd_milters = $smtpd_milters
