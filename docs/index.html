@@ -36,24 +36,17 @@ on an old machine in your house.  My three goals were:</p>
 <li>A ground-up understanding of what is on the machine and why.
 </ol>
 
-<p>Along the way, I also developed a pretty good knowledge of Ansible.
-The <em>what</em> and <em>why</em> are documented in these pages, as a
-starting point for your own choices.  If ground-up knowledge is not
-one of your priorities, a push-button mail server
+<p>These pages explain <em>what</em> I learned, <em>how</em> to
+configure it, and <em>why</em> I made the choices that I did for each
+aspect of the setup, plus some fun pictures of my old hardware.  If
+ground-up knowledge is not your priority, a push-button mail server
 like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
 <a href="https://mailinabox.email/">mail-in-a-box</a>, or
 <a href="https://github.com/progmaticltd/homebox">homebox</a> is a
-fine solution.</p>
+fine alternative.</p>
 
-<p>I don't include many extra packages, which means fewer things to
-understand, a smaller attack surface, and lower machine requirements.
-For example, we manage the dozen or so virtual mail accounts using
-SQLite rather than a full MySQL install.  This simplifies database
-security to just file permissions.</p>
-
-
-<p>I hope you find this useful as a starting point for
-reaching <em>your</em> goals.</p>
+<p>I hope this is a useful starting point for <em>your own</em> goals
+and choices.</p>
 
 
 <p>TO DO LIST
@@ -77,14 +70,19 @@ the logs.
 <H2 class=rule>
 <A NAME=pkgs></A>Packages</H2>
 
-<p>These playbooks assume Debian 10.  Other distros should be close,
-but may need some changes because of differing file locations or
-package versions.  In most cases, I used the
-Ansible <code>package:</code> module rather than <code>apt:</code> for
-installing things, so it works with package managers like emerge or
-yum.
-<a href="ansible.html">Why Ansible?</a>
-<a href="debian.html">Why Debian?</a></p>
+<p>This setup assumes Debian 10. <a href="debian.html">Why Debian</a>?
+Other distros may be close, but have some differing file locations or
+package versions.  In most places, the Ansible playbooks use
+the <code>package:</code> module rather than <code>apt:</code> for
+installing, so it can work with other package managers like emerge or
+yum.  <a href="ansible.html">Why Ansible</a>?</p>
+
+<p>I avoid extra packages, which means fewer things to understand, a
+smaller attack surface, and lower machine requirements.  For example,
+the virtual mail accounts are managed with SQLite rather than a full
+MySQL install, which works just fine for a dozen accounts and
+simplifies database security to just file permissions.</p>
+
 
 <p>The playbooks cover the following areas: 
 
