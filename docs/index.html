@@ -303,10 +303,10 @@ $ ansible-playbook -K --ask-vault-pass -i ../myhosts site.yml \
     --limit cloud  --tags apache
 </PRE>
 
-<p>There is another <a href="snapshot.html">snapshot.yml</a> playbook
-that copies back certain data like the letsencrypt keys so that they
-can be transfered over when wiping or migrating a machine.  This
-playbook is run in the same way as <code>site.yml</code>.</p>
+<p>Most roles have their own tags, so you can call them selectively.
+There is another <a href="snapshot.html">snapshot</a> tag that copies
+back certain system data like keys and certs for easy transfer when
+wiping or migrating a machine.</p>
 
 
 <!-- ============================== -->
