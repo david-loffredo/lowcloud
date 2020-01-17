@@ -1,24 +1,25 @@
-# DaveCloud Server Configuration
+# DaveCloud Mail, Web, and Backup
+
+I've been on the net since well before HTTP was a thing, but let my
+sysadmin skills get a bit stale as others handled those daily duties.
+It was time to refresh.  This project is the result of that journey.
 
 These Ansible roles set up web service, email, and regular backups.
-Typically, mail and web are on a machine in the cloud (AWS, Linode,
-DigitalOcean, etc.) while backups are run by a machine that you have
-physical control over (old PC or Raspberry Pi in your basement)
+Typically, mail and web are in the cloud while backups are run by a
+machine in your physical posession.
 
-I've been around the net since before HTTP was a thing, but let my
-sysadmin skills get stale as others handled those duties.  It was time
-to refresh.  This project is the result of that journey.
+It is tempting to become a cargo-cult sysadmin by just following
+recipes found on the net.  It is quick, but your choices are never
+quite your own.
 
-It is easy to become a cargo-cult sysadmin by just searching for
-recipes on the net until you get something that works.  It may be
-quick, but your choices are never quite your own.
+I took a slower path.  I read the documentation, asked questions,
+tried to understand the choices behind the various recipes, ran tests,
+looked at source, and ultimately built something that reflected my own
+priorities.  Also got a pretty good handle on Ansible.  The [DOCS
+directory](https://david-loffredo.github.io/davecloud/) explains what
+I learned along the way.  Think of this as a travel journal, with
+funny pictures of my old hardware.
 
-I took a slower path.  I read the recipes and documentation, asked
-questions, ran tests, and then made my own choices.  Also got a pretty
-good handle on Ansible.  The [docs
-directory](https://david-loffredo.github.io/davecloud/) describes what
-I learned along the way.  Think of this as my travel journal.
-
-May it inspire you to take a journey yourself.
+May it be a useful starting point for your own journey.
 
 \- Dave
