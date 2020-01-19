@@ -110,54 +110,46 @@ are available:</p>
 <H2 class=rule>
 <A NAME=rspamd></A>Spam Filtering</H2>
 
-<p>The rspamd web console is run
-at <code>http://localhost:11334</code>, but that port is normally
-blocked and the server only allows connections from localhost.  You
-should can set up an SSH tunnel in order to use it.  Either do it from
-the command line or you can add the following to the config file entry
-for that machine.</p>
+<p>We use <a href="https://rspamd.com/">rspamd</a> to filter spam.
+This hooks into postfix as a milter and includes specific rules
+similar to SpamAssasin and Bayesean classification similar to the old
+Dspam project.  It does both quite quickly.  Because it is run as a
+milter, it can reject the very bad spam before it is accepted for
+processing.</p>
+
+<p>We use the sieve module under dovecot to deliver messages marked as
+spam to the <code>Junk</code> folder.  It trains the Bayes filter on
+any good message delivered to the inbox.  We also add IMAP sieve
+scripts to retrain the Bayes classifier when mail is dragged into or
+out of the Junk folder.  The sieve scripts are near the mail spool in
+the location given by the <code>sieve_root</code> variable.  You can
+also add your own personal sieve scripts.
+
+<p>Statistics and fine-grain control are available on the rspamd web
+console at <code>http://localhost:11334</code>.  That port is normally
+blocked and the server only allows connections from localhost.  Set up
+an SSH tunnel to use it.  Either do it from the command line or you
+can add the following to the ssh config file for that machine.</p>
 
 <PRE class=code>
 LocalForward 11334 localhost:11334
 </PRE>
 
-<p>We set up dovecot with the sieve module for automatic sorting of
-mail and create some global rules under <code>/var/vmail/sieve</code>
-to deliver all spam to the junk folder.  We also add some rules to
-train the filter when mail is dragged into or out of the junk folder.
+<p>We keep per-user Bayes training data, because everyone has a
+different definition of spam.  Right now we do everything during
+milting and rspamd picks the first of multiple recipients for the
+statistics.</p>
 
+<p>It would be better to disable Bayes during milting, then classify
+during delivery, when we have one recipient.  However, we should carry
+over the score from milting.  I can turn classification on and off
+in <code>settings.conf</code>, but haven't figured out how to carry
+over the score.  Probably needs to be done in a Lua plugin.  For the
+future.</p>
 
-<PRE>
-  Remote MTA -> Rspamd (milter) -> Postfix -> Rspamd (rspamc) -> Dovecot -> user mailbox
-</PRE>
-
-<p>Mail from the remote MTA is received by Postfix and run through
-Rspamd.  Greylisting and rejects happen in this pipeline.  Once
-Postfix receives the message, it is sent to Dovecot over LMTP.
-Dovecot uses the antispam module to run rspamc (employing Rspamd).
-The sieve module is finally used to process headers added by Rspamd or
-any other milters.
-
-
-<p>If we open up port 4190 or tunnel, clients can use the managesieve
-daemon.  There doesn't seem to be a lot of client support for it
-though.
-
-
-- Use `rspamadm` to look at the configuration.
-- Use `rspamc` or the web-based console to scan problematic messages
-  and see how rspamd scores them.
-
-### DMARC
-
-For verifying DMARC operation, read the rpsamd log in
-`/var/log/rspamd` to verify the report generator is running.
-
-For receiving reports, you will get an email if a message comes from
-your server that fails authentication (although by configuring
-`p=none`, any such email should not be rejected by the other
-server).
-
+<p>This also has the nice property that we only reject on objective
+criteria found during the milter pass, and can at most quarantine
+based on the subjective criteria of the Bayes.</p>
 
 
 <!-- ============================== -->
@@ -285,13 +277,13 @@ ext4 encryption and fscrypt, which operate at a block level.</p>
 RFCs and written in black coffee.  Within easy reach at the office.
 </figcaption>
 </figure>
-</div>
 
 <div class=copyright>
 <p>Copyright &copy; 2020 David Loffredo, licensed under
 <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
 CC BY 4.0</a>.
 </p>
+</div>
 </div>
 </body>
 </html>

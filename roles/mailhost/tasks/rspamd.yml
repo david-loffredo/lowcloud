@@ -53,6 +53,7 @@
   template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
     owner=redis group=redis mode=640
   with_items:
+    - classifier-bayes.conf
     - dkim_signing.conf
     - logging.inc
     - milter_headers.conf
@@ -62,7 +63,24 @@
   notify: restart rspamd
   tags: dkim
 #   - dmarc.conf
-  
+
+
+- name: sieves for pre-filter present
+  copy: src={{ item }} dest={{sieve_root}}/before.d/{{ item }}
+    owner=vmail group=vmail mode=640
+  with_items:
+    - separate_spam.sieve
+  notify: restart dovecot
+
+- name: sieves for training present
+  copy: src={{ item }} dest={{sieve_root}}/global/{{ item }}
+    owner=vmail group=vmail mode=640
+  with_items:
+    - learn_ham.sieve
+    - learn_spam.sieve
+
+
+#------------------------------  
 # DKIM Signing - Only enabled when we set a selector
 - name: Check for local dkim key backup
   become: False

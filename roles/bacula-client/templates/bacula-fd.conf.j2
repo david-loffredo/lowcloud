@@ -1,21 +1,21 @@
+{%- set dir_names=[] -%}
+{%- for i in groups['backup-server'] -%}
+{{- dir_names.append(
+    hostvars[i].bacula_director_name | default(
+    hostvars[i].inventory_hostname_short + '-dir')) -}}
+{%- endfor -%}
+{%- if dir_names|length == 0 -%}
+{{- dir_names.append('missing-dir') -}}
+{%- endif -%}
 #
 # Bacula File Daemon Configuration
 #
-{% for i in groups['backup-server'] %}
-{%- set dir = hostvars[i] -%}
-{%- set dir_name = dir.bacula_director_name | default(dir.inventory_hostname_short + '-dir') -%}
+{% for dir_name in dir_names %}
 Director {
   Name = {{ dir_name }}
   Password = "{{ bacula_client_pw }}"
 }
 {% endfor %}
-
-# Restricted Director, used by tray-monitor to get file daemon status
-#Director {
-#  Name = bacula-mon
-#  Password = "foobar"
-#  Monitor = yes
-#}
 
 #
 # "Global" File daemon configuration specifications
@@ -32,9 +32,7 @@ FileDaemon {
 }
 
 # All messages except skipped files back to primary director
-{% for i in ([groups['backup-server'].0]) %}
-{%- set dir = hostvars[i] -%}
-{%- set dir_name = dir.bacula_director_name | default(dir.inventory_hostname_short + '-dir') -%}
+{% for dir_name in [dir_names.0] %}
 Messages {
   Name = Standard
   director = {{ dir_name }} = all, !skipped, !restored

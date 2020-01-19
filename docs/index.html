@@ -51,20 +51,21 @@ and choices.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Configure DKIM with manual entry to  DNS.
+<LI>Can we split RSPAMD into a milter pass and bayes@LDA pass so
+that it always has the right per-user statistics?
 <LI>Configure DMARC entry in the DNS.
-<LI>Configure DKIM with automatic key rotation.
-<LI>Deploy DNS on live machine
 <LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, locking you out.
 <LI>Look at apticron or unattended-upgrades for keeping patched.
 <LI>Null client switch to cert based auth
 <LI>Null client extend SQL to allow reject mail to relay@ - sendonly support to the SQL and recipient-access
 <LI>Ipset with a variety of Class As to block port 22 and quiet down
 the logs.
-<LI>Strip extra headers on outgoing mail
+<LI>Sanitize extra headers on outgoing mail?
+<LI>Use LUKS on a whole /data partition rather than EncFS here and
+there, move postfix chroot for the mail queue onto that.  Can set dpkg
+options for install or run dpkg-reconfigure?
+<LI><a href="#dns">DNS</a> improvements.
 </UL>
-
-<p>Can run dpkg-reconfigure on packages
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -237,10 +238,11 @@ variables</a> have an absurd amount of flexibility.
 <H2 class=rule>
 <A NAME=dns></A>DNS</H2>
 
-<p>Still getting <a href="dns.html">DNS</a> sorted out.  Would like to
-eventually self host to make it easier to automatically rotate DKIM
-keys, but for the moment just set A, CNAME, and MX entries using your
-registrar or other service.</p>
+<p>For the moment just set A, CNAME, and MX entries, DKIM keys and
+other things using your registrar or other service.  Would like
+to <a href="dns.html">make the machine the DNS master</a> then
+automatically rotate DKIM keys, but still getting this sorted out.
+Also think about DNSSEC signing.
 
 
 <!-- ============================== -->
@@ -324,14 +326,12 @@ as that is a little old.
 </figcaption>
 </figure>
 
-
-</div>
-
 <div class=copyright>
 <p>Copyright &copy; 2020 David Loffredo, licensed under
 <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
 CC BY 4.0</a>.
 </p>
+</div>
 </div>
 </body>
 </html>

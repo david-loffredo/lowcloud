@@ -30,3 +30,42 @@ sign_local {
     flags = ["skip_process"]; # Disable expensive MIME processing
   }
 }
+
+{% if 0 %}
+# For per user statistics, we need to classify during delivery rather
+# than milting, because it picks the first of multiple recipients.
+# Disable Bayes during milting, and then call rspamc later with an
+# option to do just classify.  However, we should carry over the score
+# that was computed during milting and start from that, not zero.
+#
+# This also has the nice property that we only reject on objective
+# criteria found during the milter pass, and can at most quarantine
+# based on the subjective criteria of the Bayes.
+# 
+# The two settings below turn classification on and off for these two
+# passes, but I haven't figured out how to carry over the score.
+
+# symbols_enabled/disabled
+# groups_enabled/disabled
+
+# These are matched in alphabetic order within the priority so watch
+# the symbol naming.  
+filter_all_except_classify {
+  id = "filter_all_except_classify"
+  priority = med;
+  apply {
+     # need milter headers to save the spam number
+     groups_disabled = ["statistics"];
+  }
+}
+
+# rspamc --header="settings-id=filter_only_classify" message.eml
+filter_classify_only {
+  id = "filter_classify_only"
+  priority = med;
+  apply {
+     # parse spam number from milter headers to add extra weight.
+     groups_enabled = ["statistics"];
+  }
+}
+{% endif %}

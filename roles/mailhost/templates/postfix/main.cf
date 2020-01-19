@@ -47,7 +47,7 @@ inet_protocols = all
 virtual_transport = lmtp:unix:private/dovecot-lmtp
 mailbox_transport = lmtp:unix:private/dovecot-lmtp
 
-# postfix does not recognize, may no longer be needed
+# postfix does not recognize, no longer needed
 # dovecot_destination_recipient_limit = 1
 virtual_mailbox_domains = sqlite:/etc/postfix/sqlite-virtual-mailbox-domains.cf
 virtual_mailbox_maps = sqlite:/etc/postfix/sqlite-virtual-mailbox-maps.cf
@@ -185,7 +185,9 @@ smtpd_sender_restrictions =
 #
 # We things in Rspamd settings.conf to turn off filtering for outbound
 # mail and just do the signing.
+{% if spam_filter_is_set and spam_filter == 'rspamd' %}
 smtpd_milters = inet:localhost:11332
+{% endif %}
 {% if dkim_selector_is_set %}
 non_smtpd_milters = $smtpd_milters
 {% endif %}

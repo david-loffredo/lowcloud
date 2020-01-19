@@ -15,14 +15,26 @@ mail_db_clear:  /var/spool/postfix/etc/maildb
 private_dir_crypt:  /var/private_crypt
 private_dir_clear:  /var/private
 
-# Redis - used by rspamd.  By default, redis now binds only to
+# Where all of the sieve scripts are kept, both the global ones and
+# per user ones if any.
+sieve_root: "{{mail_spool_clear}}/sieve"
+
+# Normally rspamd, but can disable by setting to empty
+spam_filter: rspamd
+spam_per_user_bayes: yes
+
+spam_filter_is_set: "{{ 
+  spam_filter|default(none) is not none and 
+  spam_filter|string|length > 0 }}"
+  
+# redis is used by rspamd.  By default, redis now binds only to
 # localhost.   
 redis_maxmen: 500mb
 # default policy is noeviction, rspamd docs warn against evicting
 # volatile data.  Not setting at the moment.
 # redis_maxmen_policy: 
 
-# Rspamd - spam filter
+
 
 # Will do DKIM signing if the selector is set.  Usually follow a year
 # month pattern (202001) so that we have a predictable pattern when we

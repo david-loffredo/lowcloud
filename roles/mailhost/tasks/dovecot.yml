@@ -13,8 +13,10 @@
       - dovecot-imapd
       - dovecot-lmtpd
       - dovecot-sqlite
-      - dovecot-sieve    # for spam
-      
+      - dovecot-sieve    # spam filing and learning
+
+#      - dovecot-managesieved   # managesieve server
+
 # Do not start dovecot at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  
 #
@@ -24,7 +26,7 @@
 - name: spool directories for mail domain are present
   file: state=directory path="{{mail_spool_clear}}/{{ item }}"
     owner=vmail group=vmail mode=0770
-  with_items: "{{ mail_domains + ['sieve', 'sieve/global'] }}"
+  with_items: "{{ mail_domains }}"
 
 - name: dovecot etc files present
   template: src="dovecot/{{item}}" dest="/etc/dovecot/{{item}}"
@@ -33,11 +35,6 @@
     - dovecot.conf
     - dovecot-sql.conf.ext
   notify: restart dovecot
-
-
-#  Commented out mail_plugins sieve in 15-lda.conf.  Enable at a later
-#  date.  Soverign also has a 20-imap.conf that loads some plugins and
-#  also has a protocol lmtp.   Not sure whether it is needed.
 
 - name: dovecot conf.d files present
   template: src="dovecot/{{item}}" dest="/etc/dovecot/conf.d/{{item}}"
@@ -49,31 +46,31 @@
     - 10-ssl.conf
     - 15-lda.conf
     - 15-mailboxes.conf
+    - 20-imap.conf
+    - 20-lmtp.conf
+    - 90-sieve.conf
     - auth-sql.conf.ext
   notify: restart dovecot
+    
+
+#------------------------------
+# SIEVE
+#
+# We use vmail as default_internal_user, but if we switch back to
+# dovecot probably need to change ownership of these so that dovecot
+# can automatically compile them.
+#
+- name: sieve directories are present
+  file: state=directory path="{{sieve_root}}/{{ item }}"
+    owner=vmail group=vmail mode=0770 
+  with_items: "{{ mail_domains + ['after.d', 'before.d', 'global'] }}"
+
+# sieve scripts are installed by rspamd
 
 
-- name: global sieves present
-  copy: src={{ item }} dest={{mail_spool_clear}}/sieve/global/{{ item }}
-    owner=vmail group=vmail mode=640
-  with_items:
-    - junk_spam.sieve
-    - learn_ham.sieve
-    - learn_spam.sieve
-
-  
-# 90-antispam.conf
-# 90-sieve.conf
-
-# - name: Create before.d sieve scripts directory
-#   file: path=/etc/dovecot/sieve/before.d state=directory owner=vmail group=dovecot recurse=yes mode=0770
-#   notify: restart dovecot
-
-# - name: Configure sieve script moving spam into Junk folder
-#   copy: src=etc_dovecot_sieve_before.d_no-spam.sieve dest=/etc/dovecot/sieve/before.d/no-spam.sieve owner=vmail group=dovecot
-#   notify: restart dovecot
-
-
+#------------------------------
+# CERTBOT
+#
 - name: certbot post-renew hook to reload dovecot
   copy:
     content: "#!/bin/bash\n\nservice dovecot reload\n"
@@ -81,5 +78,3 @@
     owner: root
     group: root
     mode: 0755
-    
-

@@ -2,6 +2,9 @@
 #
 # <doc/wiki/AuthDatabase.SQL.txt>
 
+# DAVECLOUD - Get password from SQL maildb.  We use a constant pattern
+# for all mailboxes, so just use static string for that location.
+
 passdb {
   driver = sql
 

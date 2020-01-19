@@ -1,10 +1,19 @@
 ---
 # Mail server components
 - import_tasks: encfs.yml
-- import_tasks: postfix.yml
-- import_tasks: dovecot.yml
-- import_tasks: rspamd.yml
-  tags: rspamd
+- { import_tasks: postfix.yml,  tags: postfix }
+- { import_tasks: dovecot.yml,  tags: dovecot }
+- { import_tasks: rspamd.yml,   tags: rspamd }
+
+# Just comment out the import if you are disabling rspamd.  Tried to
+# make it conditional, but ansible 2.5 doesn't flow tags down to
+# included tasks and apply: wasn't added until later.
+
+# - name: spam filtering with rspamd
+#   include_tasks: rspamd.yml
+#   apply: { tags: [rspamd, mail] }
+#   when: spam_filter|default('') == 'rspamd'
+#   tags: rspamd
 
 # For quick reimaging, grab local system data (keys, db).  Afterwards,
 # you can use bacula to restore the user data (mail spool).  The when
@@ -20,5 +29,4 @@
   when: ansible_run_tags | intersect(['snapshot', 'mail-snapshot']) | length
   tags: [never, snapshot, mail-snapshot]
 
-# - import_tasks: z-push.yml
 # - import_tasks: autoconfig.yml
