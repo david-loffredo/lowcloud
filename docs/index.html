@@ -16,7 +16,6 @@
 <li><a href="#start">Getting Started</a>
 <li><a href="#hosts">Hosts</a>
 <li><a href="#vars">Variables</a>
-<li><a href="#dns">DNS</a>
 <li><a href="#first">First Login Playbook</a>
 <li><a href="#play">Site Setup Playbook</a>
 <li><a href="#reboot">Rebooting</a>
@@ -51,7 +50,6 @@ and choices.</p>
 
 <p>TO DO LIST
 <UL>
-<LI>Configure DMARC entry in the DNS.
 <LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, locking you out.
 <LI>Look at apticron or unattended-upgrades for keeping patched.
 <LI>Null client switch to cert based auth
@@ -62,7 +60,6 @@ the logs.
 <LI>Use LUKS on a whole /data partition rather than EncFS here and
 there, move postfix chroot for the mail queue onto that.  Can set dpkg
 options for install or run dpkg-reconfigure?
-<LI><a href="#dns">DNS</a> improvements.
 </UL>
 
 <!-- ============================== -->
@@ -79,8 +76,9 @@ yum.  <a href="ansible.html">Why Ansible</a>?</p>
 <p>I avoid extra packages, which means fewer things to understand, a
 smaller attack surface, and lower machine requirements.  For example,
 the virtual mail accounts are managed with SQLite rather than a full
-MySQL install, which works just fine for a dozen accounts and
-simplifies database security to just file permissions.</p>
+MySQL install, which works just fine for a dozen accounts, has zero
+moving parts, and simplifies database security to just file
+permissions.</p>
 
 
 <p>The playbooks cover the following areas: 
@@ -88,11 +86,12 @@ simplifies database security to just file permissions.</p>
 <ul>
 <li><a href="ssh.html">SSH</a>
 <li><a href="firewall.html">Firewall</a>
+<li><a href="mail.html">Mail Server</a>
+<li><a href="mailnull.html">Mail from Client Machines</a>
 <li><a href="apache.html">Web Server</a>
-<li><a href="mail.html">Mail Server and Clients</a>
-<li><a href="encrypt.html">Encryption</a>
-<li><a href="dns.html">DNS Configuration</a>
 <li><a href="backup.html">Backup</a>
+<li><a href="encrypt.html">Encryption</a>
+<li><a href="dns.html">DNS</a>
 </ul>
 
 
@@ -115,10 +114,10 @@ davecloud  myhosts
 </PRE>
 
 <p>The new <code>myhosts</code> directory contains
-a <a href="#hosts">hosts</a> file and a <a href="#vars">group_vars</a>
-directory.  After customizing these as described below, I recommend
-putting this directory under source control.  You can do that however
-you like because it is completely separate from
+a <code>hosts</code> file and a <code>group_vars</code> directory.
+After customizing these as described in the following sections, I
+recommend putting this directory under source control.  You can do
+that however you like because it is not connected to
 the <code>davecloud</code> repo.
 
 <p>If you keep <code>myhosts</code> on Github, I recommend a private
@@ -139,8 +138,8 @@ all.yml  vault.yml
 </PRE>
 
 <p>Since all of your settings are kept in a separate, external
-directory, you shouldn't need to fork <code>davecloud</code> unless
-you want to edit the playbooks to do new things.</p>
+directory, you only need to fork <code>davecloud</code> if you plan to
+edit the playbooks to do new things.</p>
 
 
 <!-- ============================== -->
@@ -172,6 +171,11 @@ example.com		ansible_host=1.2.3.4
 # and can be behind a residential ISP connection.
 guardian.example.com	ansible_host=5.6.7.8
 </PRE>
+
+<p>After you have provisioned the machines, <a href="dns.html">create
+DNS entries for them</a> using your registrar or other service.  We
+may eventually run Bind and make the cloud machine the DNS master, but
+still getting that sorted out.</p>
 
 
 <!-- ============================== -->
@@ -230,17 +234,6 @@ these playbooks for other things, be aware
 that <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html">Ansible
 variables</a> have an absurd amount of flexibility.
 
-
-
-<!-- ============================== -->
-<H2 class=rule>
-<A NAME=dns></A>DNS</H2>
-
-<p>For the moment just set A, CNAME, and MX entries, DKIM keys and
-other things using your registrar or other service.  Would like
-to <a href="dns.html">make the machine the DNS master</a> then
-automatically rotate DKIM keys, but still getting this sorted out.
-Also think about DNSSEC signing.
 
 
 <!-- ============================== -->

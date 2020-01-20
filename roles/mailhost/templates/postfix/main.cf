@@ -4,7 +4,16 @@
 # line of that file to be used as the name.  The Debian default
 # is /etc/mailname.
 #myorigin = /etc/mailname
-
+                                                                                
+# LOCAL PATHNAME INFORMATION                                                    
+#                                                                               
+# The queue_directory specifies the location of the Postfix queue.              
+# This is also the root directory of Postfix daemons that run chrooted.         
+# See the files in examples/chroot-setup for setting up Postfix chroot          
+# environments on different UNIX systems.                                       
+#                                                                               
+queue_directory = {{mail_queue_dir}}
+                         
 # remove $mail_name identifying info from banner
 smtpd_banner = $myhostname ESMTP
 biff = no

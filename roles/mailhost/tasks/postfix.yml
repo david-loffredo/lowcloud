@@ -18,11 +18,6 @@
       - libdbi-perl
       - libdbd-sqlite3-perl
 
-#      - postfix-pcre
-#      - postgrey
-#      - python-psycopg2
-
-
 # Do not start postfix at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  This should run
 # "sudo update-rc.d postfix disable" and change the postfix links from
@@ -30,15 +25,48 @@
 #
 - name: postfix not started at boot
   service: name=postfix enabled=no
-    
+
+- name: postfix configuration present
+  template: src="postfix/{{item}}" dest="{{mail_cfg_dir}}/{{item}}"
+    owner=root group=root mode=0644
+  with_items:
+    - main.cf
+    - master.cf
+    - sqlite-virtual-alias-maps.cf
+    - sqlite-virtual-mailbox-domains.cf
+    - sqlite-virtual-mailbox-maps.cf
+  notify: restart postfix
+  tags: dkim    # main.cf can change with dkim signing
+
+- name: custom postfix queue and default needs cleanup
+  stat: path={{mail_queue_default_dir}}
+  register: test_dflt_queue
+  when: mail_queue_dir != mail_queue_default_dir
+  changed_when: test_dflt_queue.stat.exists and
+        test_dflt_queue.stat.isdir
+  notify:
+    - restart postfix
+    - restart dovecot
+    - remove default postfix queue
+
+
+- name: certbot post-renew hook to reload postfix
+  copy:
+    content: "#!/bin/bash\n\nservice postfix reload\n"
+    dest: /etc/letsencrypt/renewal-hooks/post/postfix
+    owner: root
+    group: root
+    mode: 0755
+
+
+#------------------------------
+# Mail user database    
 - name: mail account utilities present
   template: src={{ item }}.j2 dest={{ mail_cfg_dir }}/{{ item }}
     owner=root group=root mode=0755
   with_items:
     - mailboot
     - mailcfg
-
-
 
 # Restore snapshot from existing machine if needed
 - name: check for mail database backup
@@ -55,8 +83,6 @@
     group: root
     mode: 0644
   when: mail_db_backup.stat.exists == true
-
-    
 
     
 # The database directory should have been created and encrypted by the
@@ -77,32 +103,9 @@
   command: "{{ mail_db_util }} addalias {{ item.src }} {{ item.dst }}"
   register: result
   changed_when: result.stdout != ""  
-  with_items: "{{ mail_aliases }}"
-  
-- name: mail config templates present
-  template: src="postfix/{{item}}" dest="{{mail_cfg_dir}}/{{item}}"
-    owner=root group=root mode=0644
-  with_items:
-    - main.cf
-    - master.cf
-    - sqlite-virtual-alias-maps.cf
-    - sqlite-virtual-mailbox-domains.cf
-    - sqlite-virtual-mailbox-maps.cf
-  notify: restart postfix
-  tags: dkim    # main.cf can change with dkim signing
+  with_items: "{{ mail_admin_aliases + mail_aliases|default([]) }}"
 
-# This strips outgoing mail headers
-# - name: Create postfix maps directory
-#   file: path=/etc/postfix/maps state=directory owner=root group=root
+# Use vmail group so that dovecot can also see it.
+- name: mail database permissions set
+  file: path={{mail_db}} owner=root group=vmail mode=0640
 
-# - name: Copy smtp_header_checks.pcre
-#   copy: src=etc_postfix_maps_smtp_header_checks.pcre dest=/etc/postfix/maps/smtp_header_checks.pcre owner=root group=root
-  
-
-- name: certbot post-renew hook to reload postfix
-  copy:
-    content: "#!/bin/bash\n\nservice postfix reload\n"
-    dest: /etc/letsencrypt/renewal-hooks/post/postfix
-    owner: root
-    group: root
-    mode: 0755

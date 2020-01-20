@@ -9,12 +9,12 @@
 - name: restart dovecot
   service: name=dovecot state=restarted
 
-- name: restart opendkim
-  service: name=opendkim state=restarted
-
 - name: restart rspamd
   service: name=rspamd state=restarted
 
 - name: restart redis
   service: name=redis-server state=restarted
   
+- name: remove default postfix queue
+  file: path={{mail_queue_default_dir}} state=absent
+  when: mail_queue_dir != mail_queue_default_dir

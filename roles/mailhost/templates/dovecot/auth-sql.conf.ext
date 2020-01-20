@@ -30,5 +30,5 @@ passdb {
 
 userdb {
   driver = static
-  args = uid=vmail gid=vmail home={{mail_spool_clear}}/%d/%n
+  args = uid=vmail gid=vmail home={{mail_spool_dir}}/%d/%n
 }

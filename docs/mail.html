@@ -15,8 +15,6 @@
 <li><a href="#mailcfg">Mailcfg</a>
 <li><a href="#rspamd">Spam Filtering</a>
 <li><a href="#mailq">Managing the Mail Queue</a>
-<li><a href="#nullclient">Mailnull Role for Client Machines</a>
-<li><a href="#nullclient_vars">Mailnull Variables</a>
 <li><a href="#why">Why These Packages?</a>
 </UL>
 </div>
@@ -24,20 +22,16 @@
 <div class=main>
 <H1>Mail Server</H1>
 
-<p><b>ROLE</b> mailhost, mailnull
+<p><b>ROLE</b> mailhost
 
 <p>The <code>mailhost</code> role configures a machine as a mail
 server.  It receives mail from the outside world and delivers to
 mailboxes accessible via IMAP.  We use Postfix for the mail transfer
 agent (MTA) and Dovecot as the local delivery agent (LDA) and IMAP
-server.  Rspamd is the only milter used, and enables the default
-checks. Volume of mail is not expected to be high enough to benefit
-from postscreen.</p>
-
-<p>The <code>mailnull</code> role configures a machine as a <em>null
-client</em> - any outgoing mail from system jobs like cron or bacula
-is relayed to the central mailhost and no local delivery is done.  We
-use Postfix for the null client too.</p>
+server.  Rspamd is the only milter used, for spam filtering and DKIM
+signing.  The <a href="mailnull.html">mailnull</a> role is used on
+other machines, like the backup server, to relay mail through the
+central server.</p>
 
 <p>All accounts are virtual mailboxes.  The machine only has system
 unix accounts and no mail is delivered to them.  The virtual user
@@ -48,9 +42,11 @@ You can manage users with the <a href="#mailcfg">mailcfg</a> script.
 This is a perl script that uses DBI, so you can tweak the connect
 statement and SQL as needed for use with other RDBs.</p>
 
-<p>The mail is stored in maildir format and encrypted using EncFS.
-The encrypted directory is <code>/var/vmail_crypt</code> and mounted
-as cleartext in <code>/var/vmail</code>.  All mail is owned by the
+<p>The mail is stored in maildir format and in
+an <a href="encrypt.html">encrypted directory or partition</a>.  When
+using EncFS, the encrypted directory is <code>/var/vmail_crypt</code>
+and mounted as cleartext in <code>/var/vmail</code>.  All mail is
+owned by the
 <code>vmail</code> user.</p>
 
 <p>We use SQLite for the database because this is small, simple, and
@@ -73,6 +69,69 @@ cleartext directories, and start postfix.</p>
 <H2 class=rule>
 <A NAME=vars></A>Variables</H2>
 
+<p>The <code>mail_server_hostname</code> is what the machine
+identifies itself as and where <a href="mailnull.html machines">client
+machines</a> try to relay their mail.  The <code>mail_spool_pw</code>
+is the password for encryption on the mail spool and is usually kept
+in the vault file.
+
+
+<PRE class=code>
+mail_server_hostname: "mail.{{ domain }}"
+
+mail_spool_pw: "{{vault_crypt_pw}}"
+</PRE>
+
+<p>The <code>mail_domains</code> and <code>mail_users</code> lists
+give the domains that we should accept mail for and the virtual users
+and initial passwords for those users.  
+
+<PRE class=code>
+mail_domains:
+  - "{{ domain }}"
+  - second.example
+
+mail_users:
+  - email: "{{ admin_email }}"
+    pw: "{{vault_mbox_admin_pw}}"
+  - email: "relay@{{ domain }}"
+    pw: "{{vault_relay_pw}}"
+  - email: "user1@{{ domain }}"
+    pw: "{{vault_mbox_user1_pw}}"
+  - email: "user2@second.example"
+    pw: "{{vault_mbox_user2_pw}}"
+</PRE>
+
+
+<p>Define your mail aliases with the <code>mail_aliases</code> list of
+src/dst pairs.  We automatically add aliases to
+the <code>admin_email</code> for a list of system addresses for each
+domain.  These system aliases include 'root', 'abuse', 'postmaster',
+etc. and is given by <code>mail_local_admin_aliases</code>.</p>
+
+<PRE class=code>
+mail_aliases: 
+   - { src: "source@domain",         dst: "dest@domain" }
+</PRE>
+
+<p>If you want DKIM signing, the <code>dkim_selector</code>, usually
+following a year month pattern (202001) so that we have a predictable
+pattern when we rotate them.  This enables signing and generates the
+keys in the <code>dkim_keyroot</code> directory, which defaults to
+being under the mail spool.  The .txt files there contain the entries
+to add to the DNS zones.</p>
+
+<p>When near rotation time, we can set <code>dkim_selector_next</code>
+to pre-generate the keys, but not use them.  This gives us a chance to
+get the public keys into DNS and let them propagate.</p>
+
+<PRE class=code>
+dkim_selector: 202001
+dkim_selector_next:
+</PRE>
+
+
+
 
 
 
@@ -80,8 +139,9 @@ cleartext directories, and start postfix.</p>
 <H2 class=rule>
 <A NAME=mailcfg></A>Mailcfg</H2>
 
-<p>I wrote the <b>/etc/postfix/mailcfg</b> utility to manage these
-tables.  Run it as "mailcfg &lt;command&gt;".  The following commands
+<p>The virtual user database is initialized as described above but you
+can do additional things with the <b>/etc/postfix/mailcfg</b> perl
+script.  Run it as "mailcfg &lt;command&gt;".  The following commands
 are available:</p>
 
 <PRE class=code>
@@ -176,62 +236,6 @@ Delete only deferred mail, that would otherwise retry later
 You can also look at a particular message ID in the queue
 # postcat -vq XXXXXXXXXX
 </PRE>
-
-
-
-<!-- ============================== -->
-<H2 class=rule>
-<A NAME=nullclient></A>Mailnull Role for Client Machines</H2>
-
-<p>The <code>mailnull</code> role configures a machine as a <em>null
-client</em> - any outgoing mail from system jobs like cron or bacula
-is relayed to the central mailhost and no local delivery is done.  We
-use Postfix for the null client too.</p>
-
-<p>The mail server is configured to always accept mail from the local
-host, specific whitelisted IP addresses, and from clients that
-authorize using a user name and password (user agents like Thunderbird
-or phones).  Everything else is subjected to the full battery of
-tests.</p>
-
-<p>Historically, you whitelist the local network block so that other
-machines at your site can submit mail from system things like cron
-jobs.  The other machines on site are configured as null clients to
-relay all mail through the central mailserver.  This can also work if
-your machines are spread among the cloud, as long as they have fixed
-IP addresses known ahead of time.</p>
-
-<p>In the case of machines behind an ISP with changable IPs, or for
-machines come or go with an unpredictable IP, we need a different
-approach.  Those machines still relay all mail, but when they connect,
-they authorize with a special "relay" account, so they can be treated
-like a normal user agent.  We would like to configure the mail server
-to only accept mail for local addresses when authenticated with this
-account, but postfix only restricts based on the FROM, not the AUTH
-(you can force the two to match, but that does not help us much)</p>
-
-
-<!-- ============================== -->
-<H2 class=rule>
-<A NAME=nullclient_vars></A>Mailnull Variables</H2>
-
-<p>The only variables that needs to be configured for the null client
-is the relay account password as <code>vault_mail_relay_pw</code> in
-an Ansible vault .  The relay account, host and port can also be set,
-but the defaults are usually fine.  The default values are shown
-below:</p>
-
-<PRE class=code>
-# Relay all mail through a smarthost with authentication using the
-# given account and password.
-
-mail_relay_acct:   "relay@{{ domain }}"
-mail_relay_pw:     "{{vault_mail_relay_pw}}"
-
-mail_relay_host:   "{{ mail_server_hostname }}"
-mail_relay_port:   587
-</PRE>
-
 
 <!-- ============================== -->
 <H2 class=rule>

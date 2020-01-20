@@ -16,23 +16,78 @@
 <div class=main>
 <H1>DNS Configuration</H1>
 
-<p>Originally I just used my registrars DNS service and added records
-using their web form.  This worked fine during the initial testing but
-when it came time to advertize DKIM records, best practice says they
-should be rotated periodically.  I decided to set up bind and make the
-machine the DNS master for all domains, then automate DKIM rotation.
+<p>For the moment I just use my registrars DNS service and add records
+using their web form.  This works fine but means a bit more work when
+it comes time to advertize DKIM records, since best practice says they
+should be rotated periodically.  Future work will set up bind and make
+the machine the DNS master for all domains, then automate DKIM
+rotation.</p>
 
-<p>I wanted to do DNSSEC, and the homebox config that I started with
-can set that up, but it is difficult to find anyone that will support
-secondary DNS with DNSSEC.  DNSMadeEasy ($30/yr), BuddyNS ($18/mo),
-and the Bulgarian CloudNS claim to do it, but they do not even have it
-configured properly for their own domains.   
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=records></A>Records</H2>
 
-<p>At the moment, the choice seems to be DNSSEC and run your own one
-or two servers that could be DDOSed, or none and use broadly available
-secondaries.  It also seems that key rotation is a big problem.  Mail
-in a box has probably the best setup and even they do not do it
-because of the potential for DNS outages.</p>
+<p>You will need address records for the domain root and the mail
+server, and a MX record that points to the mail server. Set the
+reverse DNS to point to the mail server address.  When running email
+for several virtual domains, pick one as the root, say
+mail.example.com, and then have the MX records for the other domains
+point to it.
+
+<PRE class=code>
+@	IN      A 	11.22.33.44
+mail	IN      A 	11.22.33.44
+
+@	IN	MX	10	mail.example.com.
+
+www	IN     CNAME	example.com.
+</PRE>
+
+<p>It is not required, but a good idea to add a CAA record that
+declares your <a href="https://en.wikipedia.org/wiki/DNS_Certification_Authority_Authorization">certificate
+authority in DNS</a>.</p>
+
+<PRE class=code>
+example.com. CAA 1 issue "letsencrypt.org"
+example.com. CAA 1 iodef "mailto:security@example.com"
+</PRE>
+
+<p>If you are using DKIM signing, you need a record for each selector
+that you are using.  I recommend using a date based selector to make
+it simpler to move to a new one.</p>
+
+<PRE class=code>
+202002._domainkey IN TXT ( "v=DKIM1; k=rsa; p=longhexstring" );
+</PRE>
+
+<p>Create simple SPF record that says all mail must come from our MX
+and to ignore anything else.  Add a DMARC entry that says quarantine
+anything that doesn't pass relaxed DKIM or SPF checks.</p>
+
+<PRE class=code>
+example.com.  IN TXT "v=spf1 mx a -all"
+_dmarc.example.com IN TXT "v=DMARC1; p=quarantine; rua=mailto:postmaster@example.com;"
+</PRE>
+
+<p>DNS entries can be used to tell mail clients how to configure
+themselves, but I'm not sure how many look at this.  This is
+documented in RFC 6186. The listings below say use imaps, and that
+imap, pop3, and pop3s are not supported.
+
+<PRE class=code>
+_imap._tcp     SRV  0 0 0   .
+_imaps._tcp    SRV  0 1 993 imap.example.com.
+_pop3._tcp     SRV  0 0 0   .
+_pop3s._tcp    SRV  0 0 0   .
+
+ _submission._tcp     SRV  0 1 587 mail.example.com.
+</PRE>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=secondary></A>Secondaries</H2>
+
 
 <p>We will probably use Linode's and BuddyNS nameservers as slaves.
 For Linode, you need to go into their domain manager and add each
@@ -57,7 +112,8 @@ IP addresses:
     2a01:7e00::a
 </PRE>
 
-Buddy instructions are at https://www.buddyns.com/support/setup/zone-transfer/
+<p>Buddy instructions are at
+https://www.buddyns.com/support/setup/zone-transfer/
 
 
 <!-- ============================== -->
@@ -76,134 +132,38 @@ use our local one.
 </blockquote>
 
 
-<p>DNS entries can be used to tell mail clients how to configure
-themselves.  This is documented in RFC 6186 The listings below say use
-imaps and imap is not supported.  Imaps has the lower priority than
-pop3s so that is indicated as preferred.
-
-<PRE>
-       _imap._tcp     SRV  0 0 0   .
-       _imaps._tcp    SRV  0 1 993 imap.example.com.
-       _pop3._tcp     SRV  0 0 0   .
-       _pop3s._tcp    SRV 10 1 995 pop3.example.com.
-
- _submission._tcp     SRV 0 1 587 mail.example.com.
-
-</PRE>
-
 
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=propagation></A>Monitor World-Wide Propagation</H2>
 
-<p>DNS propogation may take upto 48 hours. This can be monitored and
+<p>DNS propogation may take up to 48 hours. This can be monitored and
 checked on <a href="https://www.whatsmydns.net">www.whatsmydns.net</a>, 
-<a href="https://dnschecker.org">dnschecker.org</a>, or from the
-command line:
-<PRE class=code>
-root@foo /etc/network# host main.hmbx.pw 1.1.1.1
-Using domain server:
-Name: 1.1.1.1
-Address: 1.1.1.1#53
-Aliases:
-
-Host main.hmbx.pw not found: 2(SERVFAIL)
-
-<b>OR</b>
-
-main.rodier.me has address 92.19.253.41
-</PRE>
+<a href="https://dnschecker.org">dnschecker.org</a>.</p>
 
 
 
-<PRE>
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=dnssec></A>DNSSEC</H2>
 
-HOMEBOX DOCS
+<p>I would like to do DNSSEC, but it is difficult to find anyone that
+will support secondary DNS with DNSSEC.  DNSMadeEasy ($30/yr), BuddyNS
+($18/mo), and the Bulgarian CloudNS claim to do it, but they do not
+even have it configured properly for their own domains.</p>
 
-The default configuration for the DNS server comes with the following options:
-
-- Installed by default
-- Forward to google and cloudflare DNS
-- DNSSEC Not activated by default
-
-Default options for the server:
-
-```yaml
-bind_default:
-  # Bind is actually in testing phase, feedback welcome
-  install: true
-  # Default servers to forward queries
-  forward:
-    - 8.8.8.8
-    - 8.8.4.4
-    - 1.1.1.1
-  # Actually, reverse IP address creation only works for IPv4
-  # If you are using IPv6, create the reverse IP block here
-  reverse_ip: auto
-  # Timing configuration (see https://www.ripe.net/publications/docs/ripe-203)
-  refresh: 86400          # 24 hours
-  retry: 7200             # 2 hours
-  expire: 3600000         # 10000 hours
-  neg_cache_ttl: 172800   # 2 days
-  ttl: 3600               # 1 hour
-  # General configuration
-  mx_priority: 10
-  # List of backup MX records, if the server is unreachable
-  # The default is an empty list
-  mx_backup: []
-  # Example of records
-  # mx_backup:
-  #   - fqdn: spool.mail.gandi.net
-  #     priority: 10
-  #   - fqdn: fb.mail.gandi.net
-  #     priority: 50
-  # List of trusted servers to accept cache / recursive queries
-  trusted:
-    - src: 192.168.0.0/16
-      comment: LAN
-    - src: localhost
-    - src: localnets
-      comment: Local networks
-  #  - src: 72.13.58.64
-  #    comment: https://dnssec-analyzer.verisignlabs.com
-  # DNSSEC options
-  dnssec:
-    active: false
-    algo: RSASHA256
-
-```
-
-# Forwarding queries
-
-By default, the Google public DNS servers are used, as well as the one from cloudflare.
-
-More choice here: [Public DNS](https://en.wikipedia.org/wiki/Google_Public_DNS#See_also).
-
-# Backup MX records
-
-If your server is not online, for instance due to an internet outage, you can use this option to redirect emails
-reception to another server. In this case, the other MTA should be configured to accept emails for your domain.
-
-If you use this option, you will probably consider importing the emails delivered to these "backup servers", to your own
-server, using the [external account](external-accounts.md) functionality.
-
-# Trusted servers
-
-Enter the list of trusted servers for recursion and cache query.
-
-# DNSSEC extensions
-
-DNSSEC is not activated by default. Be sure your domain name supports it before activating it.
-
-More details on the [Wikipedia page](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions)
-</PRE>
+<p>At the moment, the choice seems to be DNSSEC and run your own one
+or two servers that could be DDOSed, or none and use broadly available
+secondaries.  It also seems that key rotation is a big problem.  Mail
+in a box has probably the best setup and even they do not do it
+because of the potential for DNS outages.</p>
 
 
 <figure>
-<img src="images/arpanet.jpg" alt="Arpanet ca. 1980">
-<figcaption>In 1978, a printed list of computers on the Arpanet,
-sorted by manufacturer, was four entire pages long.  Mostly DEC-10s and
-PDP-11s.  London had the only PDP-9.
+<img src="images/arpanet.jpg" alt="Arpanet 1980">
+<figcaption>In 1978, a printed list of computers on the Arpanet was
+four pages long and <a href="images/arpanet1978.png">mostly PDP-9's,
+PDP-10's, and PDP-11's</a>.  It was all downhill from there.
 </figcaption>
 </figure>
 

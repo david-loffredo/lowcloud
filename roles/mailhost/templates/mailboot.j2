@@ -10,19 +10,14 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # need to make sure the crypted volume has first been created.
 # read -s -p "EncFS Password: " PASS
 
-if [ ! -f {{ mail_spool_clear }}/mounted.txt ]; then
+if [ ! -f {{ mail_spool_dir }}/mounted.txt ]; then
    echo "Mount encrypted mail spool"
-   encfs {{ mail_spool_crypt }} {{ mail_spool_clear }} --public
+   encfs {{ mail_spool_crypt }} {{ mail_spool_dir }} --public
 fi
 
-if [ ! -f {{ mail_db_clear }}/mounted.txt ]; then
+if [ ! -f {{ mail_db_dir }}/mounted.txt ]; then
    echo "Mount encrypted mail user database"
-   encfs {{ mail_db_crypt }} {{ mail_db_clear }} --public
-fi
-
-if [ ! -f {{ private_dir_clear }}/mounted.txt ]; then
-   echo "Mount private config directory"
-   encfs {{ private_dir_crypt }} {{ private_dir_clear }} --public
+   encfs {{ mail_db_crypt }} {{ mail_db_dir }} --public
 fi
 
 /usr/sbin/service postfix start

@@ -13,85 +13,72 @@
   file: state=directory path={{item}}
   with_items:
     - "{{mail_spool_crypt}}"
-    - "{{mail_spool_clear}}"
+    - "{{mail_spool_dir}}"
     - "{{mail_db_crypt}}"
-    - "{{mail_db_clear}}"
-    - "{{private_dir_crypt}}"
-    - "{{private_dir_clear}}"
+    - "{{mail_db_dir}}"
 
+    
 ##
 ## Mail Spool Directory
 ##
-- name: encrypted mail spool contents check
-  shell: ls {{mail_spool_crypt}}/*
-  ignore_errors: True
-  changed_when: False  # never report as "changed"
+# Check for the presence of files in the crypt directory to see if the
+# filesystem has been initialized yet.  The find just looks at the top
+# level and does not recurse. On first call, EncFS gathers info and
+# inits the filesystem.  The "p" is for paranoia mode.
+# 
+- name: encrypted mail spool is initialized
+  find: paths={{mail_spool_crypt}} hidden=yes file_type=any
   register: encfs_spool_check
+  changed_when: encfs_spool_check.matched == 0
+  
+- name: encrypted mail spool is mounted
+  command: "/bin/mountpoint -q {{mail_spool_dir}}"
+  register: encfs_spool_mount
+  changed_when: encfs_spool_mount.rc != 0
+  failed_when: false
 
-# Check for the presence of a flag file to see if the filesystem has
-# been initialized yet.  On first call, EncFS gathers info and inits
-# the filesystem.  The "p" is for paranoia mode.
-#
 - name: encrypted mail spool empty, creating new
-  shell: printf "p\n{{ mail_spool_pw }}" | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass && touch {{mail_spool_clear}}/mounted.txt
-  when: encfs_spool_check.rc > 0
+  shell: printf "p\n{{ mail_spool_pw }}" | encfs {{mail_spool_crypt}} {{mail_spool_dir}} --public --stdinpass
+  when: encfs_spool_check.matched == 0
 
-- name: encrypted mail spool present, mounted if needed
-  shell: command="printf '{{ mail_spool_pw }}' | encfs {{mail_spool_crypt}} {{mail_spool_clear}} --public --stdinpass" creates="{{mail_spool_clear}}/mounted.txt"
-  when: encfs_spool_check.rc == 0
+- name: encrypted mail spool present, mounting existing
+  shell: printf '{{ mail_spool_pw }}' | encfs {{mail_spool_crypt}} {{mail_spool_dir}} --public --stdinpass
+  when: encfs_spool_check.matched > 0  and encfs_spool_mount.rc != 0
+  register: wtf
+
+- name: encrypted mail spool, verified as mounted
+  command: "/bin/mountpoint -q {{mail_spool_dir}}"
+  changed_when: false
 
 ##
 ## Mail User Database Directory
 ##
-- name: encrypted mail database contents check
-  shell: ls {{mail_db_crypt}}/*
-  ignore_errors: True
-  changed_when: False  # never report as "changed"
+# this just looks at the top level and does not recurse
+- name: encrypted mail database is initialized
+  find: paths={{mail_db_crypt}} hidden=yes file_type=any
   register: encfs_db_check
+  changed_when: encfs_db_check.matched == 0
 
-# Check for the presence of a flag file to see if the filesystem has
-# been initialized yet.  On first call, EncFS gathers info and inits
-# the filesystem.  The "p" is for paranoia mode.
-#
+- name: encrypted mail database is mounted
+  command: "/bin/mountpoint -q {{mail_db_dir}}"
+  register: encfs_db_mount
+  changed_when: encfs_db_mount.rc != 0
+  failed_when: false
+
 - name: encrypted mail database empty, creating new
-  shell: printf "p\n{{ mail_spool_pw }}" | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass && touch {{mail_db_clear}}/mounted.txt
-  when: encfs_db_check.rc > 0
+  shell: printf "p\n{{ mail_spool_pw }}" | encfs {{mail_db_crypt}} {{mail_db_dir}} --public --stdinpass
+  when: encfs_db_check.matched == 0
 
-- name: encrypted mail database present, mounted if needed
-  shell: command="printf '{{ mail_spool_pw }}' | encfs {{mail_db_crypt}} {{mail_db_clear}} --public --stdinpass" creates="{{mail_db_clear}}/mounted.txt"
-  when: encfs_db_check.rc == 0
+- name: encrypted mail database present, mounting existing
+  shell: printf '{{ mail_spool_pw }}' | encfs {{mail_db_crypt}} {{mail_db_dir}} --public --stdinpass
+  when: encfs_db_check.matched > 0  and encfs_db_mount.rc != 0
+  register: wtf
 
-- name: cleartext mail database directory permissions
-  file: state=directory path={{mail_db_clear}} mode=0755
-
-
-##
-## Private Configuration Directory
-##
-- name: encrypted private dir contents check
-  shell: ls {{private_dir_crypt}}/*
-  ignore_errors: True
-  changed_when: False  # never report as "changed"
-  register: encfs_private_check
-
-# Check for the presence of a flag file to see if the filesystem has
-# been initialized yet.  On first call, EncFS gathers info and inits
-# the filesystem.  The "p" is for paranoia mode.
-#
-- name: encrypted private dir empty, creating new
-  shell: printf "p\n{{ private_dir_pw }}" | encfs {{private_dir_crypt}} {{private_dir_clear}} --public --stdinpass && touch {{private_dir_clear}}/mounted.txt
-  when: encfs_private_check.rc > 0
-
-- name: encrypted private dir present, mounted if needed
-  shell: command="printf '{{ private_dir_pw }}' | encfs {{private_dir_crypt}} {{private_dir_clear}} --public --stdinpass" creates="{{private_dir_clear}}/mounted.txt"
-  when: encfs_private_check.rc == 0
-
-- name: cleartext private dir directory permissions
-  file: state=directory path={{private_dir_clear}} mode=0700
+- name: encrypted mail database, verified as mounted
+  command: "/bin/mountpoint -q {{mail_db_dir}}"
+  changed_when: false
 
 
-
-  
 ##
 ## VMAIL user/group and permissions
 ##
@@ -100,9 +87,13 @@
 
 - name: user vmail present
   user: name=vmail group=vmail state=present uid=5000
-    home={{mail_spool_clear}} shell=/usr/sbin/nologin
+    home={{mail_spool_dir}} shell=/usr/sbin/nologin
 
 # use mode=02775 to setgid
 - name: cleartext mail spool directory permissions 
-  file: state=directory path={{mail_spool_clear}} group=vmail mode=0775
+  file: state=directory path={{mail_spool_dir}} group=vmail mode=0775
+
+- name: cleartext mail database directory permissions
+  file: state=directory path={{mail_db_dir}} mode=0755
+  
 

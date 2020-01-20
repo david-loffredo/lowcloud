@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Mail</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#vars">Variables</a>
+</UL>
+</div>
+
+<div class=main>
+<H1>Mail for Client Machines</H1>
+
+<p><b>ROLE</b> mailnull
+
+<p>The <code>mailnull</code> role configures a machine as a <em>null
+client</em> - any outgoing mail from system jobs like cron or bacula
+is relayed to the central mailhost and no local delivery is done.  We
+use Postfix for the null client too.</p>
+
+<p>The mail server is configured to always accept mail from the local
+host, specific whitelisted IP addresses, and from clients that
+authorize using a user name and password (user agents like Thunderbird
+or phones).  Everything else is subjected to the full battery of
+tests.</p>
+
+<p>Historically, you whitelist the local network block so that other
+machines at your site can submit mail from system things like cron
+jobs.  The other machines on site are configured as null clients to
+relay all mail through the central mailserver.  This can also work if
+your machines are spread among the cloud, as long as they have fixed
+IP addresses known ahead of time.</p>
+
+<p>In the case of machines behind an ISP with changable IPs, or for
+machines come or go with an unpredictable IP, we need a different
+approach.  Those machines still relay all mail, but when they connect,
+they authorize with a special "relay" account, so they can be treated
+like a normal user agent.  We would like to configure the mail server
+to only accept mail for local addresses when authenticated with this
+account, but postfix only restricts based on the FROM, not the AUTH
+(you can force the two to match, but that does not help us much)</p>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
+<p>The only variables that needs to be configured for the null client
+is the relay account password as <code>vault_mail_relay_pw</code> in
+an Ansible vault .  The relay account, host and port can also be set,
+but the defaults are usually fine.  The default values are shown
+below:</p>
+
+<PRE class=code>
+# Relay all mail through a smarthost with authentication using the
+# given account and password.
+
+mail_relay_acct:   "relay@{{ domain }}"
+mail_relay_pw:     "{{vault_mail_relay_pw}}"
+
+mail_relay_host:   "{{ mail_server_hostname }}"
+mail_relay_port:   587
+</PRE>
+
+<figure>
+<img src="images/spam.jpg" alt="Global Spam">
+<figcaption>Spam is spam, no matter where it comes from.</figcaption>
+</figure>
+
+
+<div class=copyright>
+<p>Copyright &copy; 2020 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+CC BY 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

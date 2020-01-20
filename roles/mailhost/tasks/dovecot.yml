@@ -24,7 +24,7 @@
   service: name=dovecot enabled=no 
 
 - name: spool directories for mail domain are present
-  file: state=directory path="{{mail_spool_clear}}/{{ item }}"
+  file: state=directory path="{{mail_spool_dir}}/{{ item }}"
     owner=vmail group=vmail mode=0770
   with_items: "{{ mail_domains }}"
 

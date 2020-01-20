@@ -76,35 +76,18 @@ web_vhosts:
       - www.second-domain.example
 
 
-# Mail domains and users.  Set into the virtual.sqlite database for
-# use with postfix, dovecot, and roundcube.
-
-# On Debian, smtpd normally runs chrooted to /var/spool/postfix, so we
-# need to put the database under there or else it will not be able to
-# authenticate.  For security at rest, we encrypt the directory where
-# the user database is located as well as the mail spool.
-# 
-# The mail scripts for config and boot are just under /etc/postfix for
-# simplicity.
+#========================================
+# Mail Server Settings
 #
 mail_server_hostname: "mail.{{ domain }}"
 mail_autoconfig_hostname: "autoconfig.{{ domain }}"
 
-mail_cfg_dir: /etc/postfix
-mail_db_crypt:  /var/spool/postfix/etc/maildb_crypt
-mail_db_clear:  /var/spool/postfix/etc/maildb
-mail_db_util: "{{ mail_cfg_dir }}/mailcfg"
-mail_db_name: maildb.sqlite3
-mail_db: "{{ mail_db_clear }}/{{ mail_db_name }}"
-
-# Encrypt mail data at rest with EncFS, and cleartext mountpoint
-mail_spool_crypt: "/var/vmail_crypt"
-mail_spool_clear: "/var/vmail"
-mail_spool_pw:    "{{vault_crypt_pw}}"
+# Encrypt mail data at rest with EncFS
+mail_spool_pw: "{{vault_crypt_pw}}"
 
 mail_domains:
   - "{{ domain }}"
-  - machineplan.com
+  - second-domain.example
 
 mail_users:
   - email: "{{ admin_email }}"
@@ -116,18 +99,14 @@ mail_users:
   - email: "user2@second-domain.example"
     pw: "{{vault_mbox_user2_pw}}"
 
-mail_aliases:
-  - { src: "root@{{ domain }}",         dst: "{{ admin_email }}" }
-  - { src: "postmaster@{{ domain }}",   dst: "{{ admin_email }}" }
-  - { src: "webmaster@{{ domain }}",    dst: "{{ admin_email }}" }
-  - { src: "security@{{ domain }}",     dst: "{{ admin_email }}" }
-  - { src: "abuse@{{ domain }}",        dst: "{{ admin_email }}" }
-  - { src: "root@second-domain.example",        dst: "{{ admin_email }}" }
-  - { src: "postmaster@second-domain.example",  dst: "{{ admin_email }}" }
-  - { src: "webmaster@second-domain.example",   dst: "{{ admin_email }}" }
-  - { src: "security@second-domain.example",    dst: "{{ admin_email }}" }
-  - { src: "abuse@second-domain.example",       dst: "{{ admin_email }}" }
 
+# mail_aliases is a list of hashes with src/dst pairs for aliases in
+# the virtual users table.  We automatically alias the admin_email to
+# a list of system addresses (given by mail_local_admin_aliases) for
+# each domain.  This includes 'root', 'abuse', 'postmaster', etc.
+#    
+#mail_aliases: 
+#   - { src: "source@domain",         dst: "dest@domain" }
 
 # Will do DKIM signing if the selector is set.  Usually follow a year
 # month pattern (202001) so that we have a predictable pattern when we
@@ -139,14 +118,9 @@ mail_aliases:
 #dkim_selector_next:
 
 
-
-# Encrypt private data at rest with EncFS, and cleartext mountpoint
-private_dir_crypt:  /var/private_crypt
-private_dir_clear:  /var/private
-private_dir_pw:    "{{vault_crypt_pw}}"
-
-
-# Bacula
+#========================================
+# Bacula Client and Server Settings
+#
 bacula_db: sqlite3
 #bacula_db_pw:           "{{ vault_bacula_db_pw }}"
 

@@ -62,11 +62,11 @@ Job {
 }
 
 # List of files to be backed up
+# PARAMETERIZE THIS - the spool and such may not be there
 FileSet {
   Name = "CloudMail"
   Include {
     File = /etc/letsencrypt
-    File = /var/private
     File = /var/spool/postfix/etc/maildb/maildb.sqlite3
     File = /var/vmail
     File = /var/www
