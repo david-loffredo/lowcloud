@@ -20,5 +20,8 @@ if [ ! -f {{ mail_db_dir }}/mounted.txt ]; then
    encfs {{ mail_db_crypt }} {{ mail_db_dir }} --public
 fi
 
+# start the mail services
 /usr/sbin/service postfix start
 /usr/sbin/service dovecot start
+/usr/sbin/service redis-server start
+/usr/sbin/service rspamd start

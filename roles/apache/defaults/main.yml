@@ -13,7 +13,8 @@ web_vhosts:
 
 
 # always need the rewrite and ssl modules for our own use, can set the
-# apache_modules vars to get extras.
+# apache_modules vars to get extras.  Note - ssl is always there but
+# throws error if we try to specify it
 apache_default_modules: [ rewrite, ssl ]
 apache_modules: [ ]
 

@@ -44,7 +44,6 @@
 - name: encrypted mail spool present, mounting existing
   shell: printf '{{ mail_spool_pw }}' | encfs {{mail_spool_crypt}} {{mail_spool_dir}} --public --stdinpass
   when: encfs_spool_check.matched > 0  and encfs_spool_mount.rc != 0
-  register: wtf
 
 - name: encrypted mail spool, verified as mounted
   command: "/bin/mountpoint -q {{mail_spool_dir}}"
@@ -72,7 +71,6 @@
 - name: encrypted mail database present, mounting existing
   shell: printf '{{ mail_spool_pw }}' | encfs {{mail_db_crypt}} {{mail_db_dir}} --public --stdinpass
   when: encfs_db_check.matched > 0  and encfs_db_mount.rc != 0
-  register: wtf
 
 - name: encrypted mail database, verified as mounted
   command: "/bin/mountpoint -q {{mail_db_dir}}"

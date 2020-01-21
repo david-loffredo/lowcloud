@@ -128,8 +128,10 @@
   when: dkim_selector_next_is_set
   tags: dkim
 
+# we do not enable these at boot because they may need data from the
+# encrypted mail directories
 - name: services enabled
-  service: name={{ item }} state=started enabled=yes
+  service: name={{ item }} state=started enabled=no
   with_items:
     - redis-server
     - rspamd

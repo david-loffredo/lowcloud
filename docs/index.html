@@ -44,22 +44,20 @@ like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
 <a href="https://github.com/progmaticltd/homebox">homebox</a> is a
 fine alternative.</p>
 
-<p>I hope this is a useful starting point for <em>your own</em> goals
+<p>I hope this is a useful starting point for <em>your</em> goals
 and choices.</p>
 
 
 <p>TO DO LIST
 <UL>
-<LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, locking you out.
+<LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, preventing further attempts.
 <LI>Look at apticron or unattended-upgrades for keeping patched.
 <LI>Null client switch to cert based auth
 <LI>Null client extend SQL to allow reject mail to relay@ - sendonly support to the SQL and recipient-access
 <LI>Ipset with a variety of Class As to block port 22 and quiet down
 the logs.
 <LI>Sanitize extra headers on outgoing mail?
-<LI>Use LUKS on a whole /data partition rather than EncFS here and
-there, move postfix chroot for the mail queue onto that.  Can set dpkg
-options for install or run dpkg-reconfigure?
+<LI>Use LUKS on a whole /data partition rather than EncFS on dirs.
 </UL>
 
 <!-- ============================== -->

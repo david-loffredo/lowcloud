@@ -1,6 +1,6 @@
 ---
-- import_tasks: apache.yml
 - import_tasks: certbot.yml
+- import_tasks: apache.yml
 
 
 # For quick reimaging, grab local system data (certs).  Afterwards,

@@ -104,3 +104,7 @@ dkim_selector_next_is_set: "{{
 # you can use bacula to restore any user data, like the mail spool.
 #
 snapshot_dir: "{{playbook_dir}}/snapshot/{{inventory_hostname}}"
+
+
+luks_device: /dev/sdb1
+luks_mount_dir: /private

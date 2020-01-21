@@ -72,10 +72,3 @@
     owner: root
     group: root
     mode: 0755
-
-# - name: Add group name ssl-cert for SSL certificates
-#   group: name=ssl-cert state=present
-
-# - name: Modify permissions to allow ssl-cert group access
-#   file: path=/etc/letsencrypt/archive owner=root group=ssl-cert mode=0750
-#   when: ansible_ssh_user != "vagrant"
