@@ -1,0 +1,41 @@
+---
+# Not idempotent, but we put it into its own file and dynamically
+# include it only when we need to initialize an encrypted partition.
+
+# Initialize the block device for luks encruption
+- name: confirm format partition
+  pause:
+    prompt: |-
+      WARNING WARNING WARNING WARNING WARNING WARNING
+      WARNING WARNING WARNING WARNING WARNING WARNING
+      {{cryptdir_luks_dev}} does not contain a LUKS partition
+      
+      Do LUKS format on {{cryptdir_luks_dev}}?
+      This will overwrite all data on {{cryptdir_luks_dev}}
+      
+      Type "yes" to continue, anything else will stop.
+  register: format_confirm_test
+  failed_when: format_confirm_test.user_input != "yes"
+
+# Initializes the partition
+- name: "{{ cryptdir_luks_dev }} initialized as LUKS partition"
+  shell: printf '{{ cryptdir_pw }}' |
+        cryptsetup luksFormat --batch-mode --verbose {{ cryptdir_luks_dev }} - 
+
+# Creates mapping in /dev/mapper/foo
+- name: "{{ cryptdir_luks_dev }} mapped as {{ cryptdir_luks_mapname }}"
+  shell: printf '{{ cryptdir_pw }}' |
+        cryptsetup luksOpen --batch-mode -d - {{cryptdir_luks_dev}} {{cryptdir_luks_mapname}}
+
+# zero out the disk to initialize it  would /dev/urandom be better?
+# dd if=/dev/zero of=/dev/mapper/foo
+- name: "mapped {{ cryptdir_luks_mapname }} zeroed out, may take a while"
+  command: dd if=/dev/zero of=/dev/mapper/{{ cryptdir_luks_mapname }}
+  failed_when: false
+  
+# create the filesystem
+# mkfs.ext4 /dev/mapper/foo
+- name: "mapped {{ cryptdir_luks_mapname }} ext4 filesystem present"
+  command: mkfs.ext4 /dev/mapper/{{ cryptdir_luks_mapname }}
+
+    

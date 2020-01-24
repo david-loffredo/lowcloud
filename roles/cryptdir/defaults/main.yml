@@ -1,0 +1,41 @@
+---
+# Create directory for encrypted data at rest.
+#
+# The encryption technology can be luks, encfs, or none.
+#
+# With LUKS, we need a separate disk partition that will be encrypted
+# at the block level, mounted as cleartext block device through the
+# mapper and then have a normal Ext4 filesystem,
+#
+# With EncFS, a separate directory containing individually encrypted
+# files is mounted loopback as cleartext through FUSE.  It is outdated
+# but simple to drop anywhere.  Useful if you are not in a position to
+# allocate a separate partition.   
+#
+# With none, this role does no encryption.
+#
+cryptdir_type: encfs
+
+cryptdir_root: /vault
+cryptdir_pw:   "{{vault_cryptdir_pw}}"
+
+# For LUKS block level encryption
+cryptdir_luks_dev:      "/dev/replace-with-real-device"
+cryptdir_luks_mapname:  vault-blk
+
+# For EncFS loopback file level encryption
+#
+# EncFS has some limits over things that work at the block level.
+# Dovecot had issues with "Error: Couldn't create mailbox list lock
+# file_create_locked() failed" on the mail spool, but changing
+# lock_method to "dotlock" from the default "fcntl" fixed it.
+#
+cryptdir_encfs_dir:     "{{cryptdir_root}}_crypt"
+
+
+# Do not give a default value because they need to be overridden by
+# including roles.  A default here wins over a default in an including
+# package.
+
+# cryptdir_boot_script: /usr/sbin/cryptdirboot
+# cryptdir_boot_services: []

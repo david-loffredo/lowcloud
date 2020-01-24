@@ -73,11 +73,9 @@ yum.  <a href="ansible.html">Why Ansible</a>?</p>
 
 <p>I avoid extra packages, which means fewer things to understand, a
 smaller attack surface, and lower machine requirements.  For example,
-the virtual mail accounts are managed with SQLite rather than a full
-MySQL install, which works just fine for a dozen accounts, has zero
-moving parts, and simplifies database security to just file
-permissions.</p>
-
+instead of a full MySQL install, the virtual mail accounts are managed
+with SQLite, which has ample performance, zero moving parts, and is
+easily secured with just file permissions.</p>
 
 <p>The playbooks cover the following areas: 
 

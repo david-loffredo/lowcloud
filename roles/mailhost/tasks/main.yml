@@ -1,17 +1,6 @@
 ---
 # Mail server components
 
-# As noted for rspamd, Ansible 2.5 does not flow include_tasks tags
-# properly.  Do not tag these separately.
-#
-- name: mail data encrypt with EncFS
-  include_tasks: encfs.yml
-  when: mail_crypt == 'encfs'
-  
-- name: mail data encrypt with LUKS
-  include_tasks: luks.yml
-  when: mail_crypt == 'luks'
-
 - { import_tasks: postfix.yml,  tags: postfix }
 - { import_tasks: dovecot.yml,  tags: dovecot }
 - { import_tasks: rspamd.yml,   tags: rspamd }

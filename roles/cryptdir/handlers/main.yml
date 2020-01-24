@@ -1,0 +1,20 @@
+---
+# Defines handlers applicable across all machines in the infrastructure.
+
+# This should run "sudo update-rc.d postfix disable" and remove the
+# postfix links from rc3.d/ and rc5.d/S01postfix.  Verify.
+- name: restart postfix
+  service: name=postfix state=restarted
+
+- name: restart dovecot
+  service: name=dovecot state=restarted
+
+- name: restart rspamd
+  service: name=rspamd state=restarted
+
+- name: restart redis
+  service: name=redis-server state=restarted
+  
+- name: remove default postfix queue
+  file: path={{mail_queue_default_dir}} state=absent
+  when: mail_queue_dir != mail_queue_default_dir

@@ -13,23 +13,34 @@
 <p>
 <li><a href="#certbot">Certbot / LetsEncrypt</a>
 <li><a href="#certbot_vars">Certbot Variables</a>
+<li><a href="#cryptdir">Disk Encryption</a>
+<li><a href="#cryptdir_vars">Disk Encryption Variables</a>
 <li><a href="#why">Why These Packages?</a>
 </UL>
 </UL>
 </div>
 
 <div class=main>
-<H1><A NAME=encrypt></A>Encryption</H1>
+<H1><A NAME=overview></A>Encryption</H1>
 
-<p>We set up communication encryption for mail (STARTTLS and IMAPS)
-and web (HTTPS) to
-protect <a href="https://en.wikipedia.org/wiki/Data_in_transit">data
-in transit</a>.  We identify ourselves for these connections using
-certificates issued by <a href="#certbot">LetsEncrypt</a>.  To
-protect the
-<a href="https://en.wikipedia.org/wiki/Data_at_rest">data at rest</a>,
-we encrypt certain directories with EncFS for private data like the
-mail spool.</p>
+<p>When talking about encryption, people usually distinguish between
+<a href="https://en.wikipedia.org/wiki/Data_in_transit">data in
+transit</a> and
+<a href="https://en.wikipedia.org/wiki/Data_at_rest">data at rest</a>.
+To protect data in transit, we encrypt communication links for mail
+(STARTTLS and IMAPS) and web (HTTPS).  To give the other party
+confidence that we are who we claim to be, we identify ourself using
+certificates issued by <a href="#certbot">Certbot /
+LetsEncrypt</a>.</p>
+
+<p>To protect data at rest, we place sensitive data like the mail
+spool, DKIM keys, and mail user database into
+a <a href="#cryptdir">central encrypted directory</a>.  When the
+machine is rebooted, everything starts normally except mail.  We must
+ssh in and run the <code>mailboot</code> script and type in the
+encryption password to unlock the directories and start the mail
+daemon.  Any incoming mail should remain queued by the sending system
+until the mail daemon is up again.</p>
 
 <p>Keeping the communication secure is an ongoing effort, as various
 protocols are strengthened and deprecated in response to ever more
@@ -132,6 +143,84 @@ web_vhosts:
       - www.foobar.com
 </PRE>
 
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=cryptdir></A>Disk Encryption</H2>
+
+<p><b>ROLE</b> cryptdir
+
+<p>We create one directory for all data that should be encrypted at
+rest.  The encryption technology can be LUKS, EncFS, or none.  With
+none, this role does no encryption.</p>
+
+<p>LUKS uses a separate disk partition that is be encrypted at the
+block level, then mounted as cleartext block device through the
+mapper.  The cleartext block device is then given a normal Ext4
+filesystem and mounted normally.</p>
+
+<p>With EncFS, a separate directory containing individually encrypted
+files is mounted loopback as cleartext through FUSE.  It is outdated
+but simple to put anywhere.  Useful if you are not in a position to
+allocate a separate partition.</p>
+
+<P>The directory can not be mounted at boot because the password is
+not anywhere on the machine.  Services that depend on this directory
+should not start at boot.  We generate a script
+(called <code>mailboot</code> for our mailserver) that prompts for the
+password, mounts the directory, then starts the services.  After a
+reboot, ssh in and run this script.</p>
+
+<p>We keep the mail spool, mail user database, DKIM keys, and sieve
+files in this directory.  The mail queue is in there when using LUKS
+(EncFS probably wouldn't work with the sockets in the postfix chroot).
+Web data is not there because that is public information and we want
+the web server to come up at boot.</p>
+
+<p>This role is a dependency for the <code>mailhost</code> role.  You
+can add it to the playbook for other machines, if, for example, you
+wanted to keep your bacula pools in an encrypted directory.</p>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=cryptdir_vars></A>Disk Encryption Variables</H2>
+
+<p>You must set the password, usually through the
+<code>vault_cryptdir_pw</code> value in the hosts.example.
+Set <code>cryptdir_type</code> to 'encfs', 'luks', or 'none' to change
+the technology.  The default is EncFS and does not need any other
+settings.</p>
+
+<PRE class=code>
+# EncFS encryption, no other settings needed.
+# Data in /vault, ciphertext version in /vault_crypt
+</PRE>
+
+<p>
+With LUKS, you must set <code>cryptdir_luks_dev</code> to the
+partition for your encrypted data. LUKS encryption <b>completely
+overwrites that partition</b>, so make sure that you don't have
+anything important there!</p>
+
+<PRE class=code>
+# LUKS encryption, must specify partition
+# Data in /vault
+# Cleartext block device /dev/mapper/vault-blk
+# Ciphertext block device /dev/replace-with-real-device
+
+cryptdir_type: luks
+cryptdir_luks_dev: "/dev/replace-with-real-device"
+</PRE>
+
+<p>You can turn off encryption if you have reasons.</p>
+
+<PRE class=code>
+# None, /vault unencrypted
+cryptdir_type: none
+</PRE>
+
+<p>The name of the central directory is given
+by <code>cryptdir_root</code>.  This defaults to <code>/vault</code>.
+
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -139,41 +228,52 @@ web_vhosts:
 
 <p>Any cert can enable encrypted communication, even a self-signed
 one, but only a cert from a trusted certificate authority (CA) makes a
-statement about your identity.  LetsEncrypt is the baseline for that.
-They make a statement that you control a particular domain.  Other
-paid options exist, and can be used if you need something that has a
-stronger declaration of identity.  For simple HTTPS on a website and
-IMAPS login for mail, LetsEncrypt is fine.</p>
+statement about your identity.  LetsEncrypt is the baseline that
+states that you control a particular domain.  Other paid options can
+be used if you need a stronger declaration of identity.  For simple
+HTTPS and IMAPS, LetsEncrypt is fine.</p>
 
 <p>A <a href="https://en.wikipedia.org/wiki/Virtual_private_server">virtual
-private server</a> (VPS) in the cloud will never be as private as a
-machine that you physically control.  The hardware and disk resources
-exist within a virtualization layer that your cloud company must
-access to manage their operations.  In particular, the disks could be
-mounted by others, which is exactly how some cloud providers implement
-their backup services.</p>
+private server</a> (VPS) in the cloud will never be as private as your
+own machine.  The cloud company must access the hardware and disk
+resources to manage their operations.  The disks could be mounted by
+others, which is exactly how some cloud providers implement their
+backup services.  If you encrypt the data on disk, it doesn't matter
+who can look at it.</p>
 
 <p>You can set up a VPS with an encrypted boot disk, but it requires a
 fair bit more effort, and then you need something like dropbear to ssh
 in at boot time and unlock the root partition.  If you go this route,
-and manage to set it up with Ansible, I'd like to see how you do it.</p>
+and manage it with Ansible, I'd like to see how you do it.</p>
 
-<p>We take an intermediate path.  There are a few encrypted
-directories for private things (mail spool, mail user database) and
-the rest is left alone.  When the machine is rebooted, everything
-starts normally except mail.  We must ssh in and run
-the <code>mailboot</code> script to unlock the directories and start
-the mail daemon.  Any incoming mail should remain queued by the
-sending system until the mail daemon is up again.</p>
+<p>We take an intermediate path by putting private things (mail spool,
+mail user database, keys) into one encrypted location.  At boot,
+everything starts normally except mail, which waits until we log in
+and unlock the directory.  Any incoming mail should remain queued by
+the sending system until the mail daemon is up again.</p>
 
-<p>We use EncFS for encrypting directories, but it is rather outdated,
-as is eCryptfs, so we may switch to luks or per-directory ext4
-encryption with fscrypt.</p>
+<p>The encryption depends on your situation.  If you can create
+partitions, use LUKS, otherwise EncFS.  If you have physical control
+of your server, you might choose 'none'.</p>
+
+<p>LUKS uses a separate disk partition that is encrypted at the block
+level, then mounted as cleartext block device through the mapper.  The
+cleartext block device is then given a plain Ext4 filesystem and
+mounted normally.</p>
+
+<p>With EncFS, a separate directory containing individually encrypted
+files is mounted loopback as cleartext through FUSE.  EncFS can be
+used anywhere, but it is rather outdated, as is eCryptfs.  It works at
+the file level, so it is not entirely transparent.</p>
+
+<p>Another possibility is per-directory ext4 encryption with fscrypt.
+I don't have much experience with that, but it might do a better job
+than EncFS without needing a separate partition.</p>
 
 <figure>
 <img src="images/sun2.jpg" alt="Sun 2/170 CPU">
 <figcaption>Encryption can be demanding.  You may need to overclock
-the 68010 in your Sun 2/170 beyond the base 10mhz to keep up.
+the 68010 in your Sun 2/170 beyond 10mhz to keep up.
 </figcaption>
 </figure>
 

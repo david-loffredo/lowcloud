@@ -1,0 +1,38 @@
+#!/bin/sh
+# 
+# Postfix is not started automatically at boot because the encrypted
+# spool must first be mounted manually.  Log in and run this script to
+# decrypt the mail spool and start postfix.
+
+# Debian 10 has finished merging /bin and /usr/bin
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+{% if cryptdir_type == 'luks' %}
+# Consider using read to get the password once then echo, but we then
+# need to make sure the crypted volume has first been created.
+# read -s -p "EncFS Password: " PASS
+if /bin/mountpoint -q {{cryptdir_root}}; then
+    echo "Vault: mail vault is mounted"
+else
+   echo "Vault: mounting the mail vault"
+   encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public
+fi
+
+{% elif cryptdir_type == 'encfs' %}
+# Consider using read to get the password once then echo, but we then
+# need to make sure the crypted volume has first been created.
+# read -s -p "EncFS Password: " PASS
+if /bin/mountpoint -q {{cryptdir_root}}; then
+   echo "Vault: encrypted data is mounted"
+else
+   echo "Vault: mounting encrypted data"
+   encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public
+fi
+{% else %}
+# no encryption used for mail vault
+{% endif %}
+
+# start dependent services
+{% for svc in cryptdir_boot_services|default([]) %}
+/usr/sbin/service {{svc}} start
+{% endfor %}

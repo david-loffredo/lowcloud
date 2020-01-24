@@ -2,6 +2,35 @@
 # Debian 10 versions
 # postfix       3.4.7
 
+##
+## VMAIL user/group and permissions
+##
+- name: group vmail present
+  group: name=vmail state=present gid=5000
+
+- name: user vmail present
+  user: name=vmail group=vmail state=present uid=5000
+    home={{mail_spool_dir}} shell=/usr/sbin/nologin
+
+# use mode=02775 to setgid
+- name: mail spool directory and permissions 
+  file: state=directory path={{mail_spool_dir}} group=vmail mode=0775
+
+# The queue directory must be present or else the chroot will not be
+# populated.
+
+# Seeing issue in log, has to do with socket think we were not
+# seeing it because original chroot had something we do not.
+# root@davecloud:/vault# grep "systemd listens" /var/log/mail.log 
+# Jan 23 22:55:52 davecloud dovecot: master: Error: systemd listens on port 143, but it's not configured in Dovecot. Closing.
+# Jan 23 22:55:52 davecloud dovecot: master: Error: systemd listens on port 143, but it's not configured in Dovecot. Closing.
+
+- name: other mail directories and permissions
+  file: state=directory path={{item}} mode=0755
+  with_items:
+    - "{{mail_queue_dir}}"
+    - "{{mail_db_dir}}"
+    
 
 # The virtual user database holds account details.  We use SQLite
 # because this small, simple, and relatively static, but you can use
@@ -65,7 +94,7 @@
   template: src={{ item }}.j2 dest={{ mail_cfg_dir }}/{{ item }}
     owner=root group=root mode=0755
   with_items:
-    - mailboot
+#    - mailboot
     - mailcfg
 
 # Restore snapshot from existing machine if needed

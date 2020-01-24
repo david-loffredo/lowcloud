@@ -1,0 +1,20 @@
+---
+# Encrypted Directory
+
+# Ansible 2.5 does not flow include_tasks tags properly and apply:
+# wasn't added until later.  Do not tag these separately.  
+#
+- name: EncFS encrypted data directory 
+  include_tasks: encfs.yml
+  when: cryptdir_type == 'encfs'
+  
+- name: LUKS encrypted data directory 
+  include_tasks: luks.yml
+  when: cryptdir_type == 'luks'
+
+# Emit Boot Script
+- name: encrypted data boot script {{cryptdir_boot_script|default('[NONE]')}}
+  template: src=cryptdirboot.j2
+    dest={{cryptdir_boot_script}}
+    owner=root group=root mode=0755
+  when: cryptdir_boot_script is defined

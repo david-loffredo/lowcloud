@@ -33,36 +33,32 @@ signing.  The <a href="mailnull.html">mailnull</a> role is used on
 other machines, like the backup server, to relay mail through the
 central server.</p>
 
-<p>All accounts are virtual mailboxes.  The machine only has system
-unix accounts and no mail is delivered to them.  The virtual user
-database holds account details in a set of SQL tables.  Background on
-virtual users can be found
+<p>All accounts are virtual mailboxes described by a set of SQL
+tables.  You can manage users with the <a href="#mailcfg">mailcfg</a>
+script.  Background on virtual users can be found
 at <a href="http://www.postfix.org/VIRTUAL_README.html">postfix.org</a>
-You can manage users with the <a href="#mailcfg">mailcfg</a> script.
-This is a perl script that uses DBI, so you can tweak the connect
-statement and SQL as needed for use with other RDBs.</p>
+Unix accounts are only for system things and no mail is delivered to
+them.</p>
 
-<p>The mail is stored in maildir format and in
+<p>The mail is stored in maildir format in
 an <a href="encrypt.html">encrypted directory or partition</a>.  When
-using EncFS, the encrypted directory is <code>/var/vmail_crypt</code>
-and mounted as cleartext in <code>/var/vmail</code>.  All mail is
-owned by the
-<code>vmail</code> user.</p>
+using EncFS, the encrypted directory is <code>/vault_crypt</code> and
+mounted as cleartext in <code>/vault</code>.  Alternatively, you can
+use a LUKS encrypted partition mounted as <code>/vault</code>.  All
+mail is owned by the <code>vmail</code> user.</p>
 
-<p>We use SQLite for the database because this is small, simple, and
-relatively static, but you can use MySQL, Maria, or Postgres if you
-prefer.  On Debian, smtpd runs chrooted
-to <code>/var/spool/postfix</code>, so we
-store <code>maildb.sqlite3</code> encrypted like the mail in
-<code>/var/spool/postfix/etc/maildb_crypt</code>
-and <code>maildb</code> so that postfix can authenticate against it.
-If you also run dovecot chrooted, you may have to switch to mysql so
-that you can access via network port rather than file.</p>
+<p>We use SQLite for the database because it is small, simple, and
+sufficient, but you can use MySQL, Maria, or Postgres if you prefer.
+On Debian, most postfix daemons described in <code>master.cf</code>
+run in a chroot, but the "local" and "virtual" do not, so we can keep
+<code>maildb.sqlite3</code> anywhere.  We keep it under the
+encrypted <code>/vault</code> directory where it is also accessed by
+dovecot for authenticating passwords.
 
-<p>On reboot, postfix does not start automatically because these
-encrypted directories must first be mounted.  Log in and run
+<p>On reboot, postfix and dovecot do not start automatically because
+the encrypted directories must first be mounted.  Log in and run
 <code>/etc/postfix/mailboot</code> to enter the password, mount the
-cleartext directories, and start postfix.</p>
+cleartext directories, and start the mail processes.</p>
 
 
 <!-- ============================== -->
@@ -73,8 +69,7 @@ cleartext directories, and start postfix.</p>
 identifies itself as and where <a href="mailnull.html machines">client
 machines</a> try to relay their mail.  The <code>mail_spool_pw</code>
 is the password for encryption on the mail spool and is usually kept
-in the vault file.
-
+in the vault.yml file.
 
 <PRE class=code>
 mail_server_hostname: "mail.{{ domain }}"
@@ -131,18 +126,23 @@ dkim_selector_next:
 </PRE>
 
 
-
-
-
-
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=mailcfg></A>Mailcfg</H2>
 
-<p>The virtual user database is initialized as described above but you
-can do additional things with the <b>/etc/postfix/mailcfg</b> perl
-script.  Run it as "mailcfg &lt;command&gt;".  The following commands
-are available:</p>
+<p>The <code>mailcfg</code> script is a simple command-line tool to
+manipulate the virtual user database.  It is installed
+to <code>/etc/postfix/mailcfg</code> and used by the Ansible playbook
+to initialize the database.</p>
+
+<p>Most people seemed to either hand-write SQL queries or install
+elaborate web interfaces like postfixadmin to do this job. I put
+together a simple perl script for the common tasks.  It uses DBI, so
+you can tweak the connect statement and SQL as needed for other
+RDBs.</p>
+
+<p>Run it as "mailcfg &lt;command&gt;".  The following commands are
+available:</p>
 
 <PRE class=code>
  help		Print this message
@@ -164,6 +164,7 @@ are available:</p>
  disable &lt;email&gt;	Marks user as inactive
  enable &lt;email&gt;		Marks user as active
 </PRE>
+
 
 
 <!-- ============================== -->
@@ -267,13 +268,13 @@ which is very nice for rejecting spam early in the connection.</p>
 server.  It seems like Cyrus and Courier are other possibilities but I
 have no familiarity with them.</p>
 
-<p>I currently use EncFS to <a href="encrypt.html">encrypt the
-mailspool</a>.  It works, but I had some problems with "Error:
-Couldn't create mailbox list lock file_create_locked() failed".  This
-is probably an interaction with EncFS and FUSE, and changing
-the <b>lock_method</b> to "dotlock" instead of the default (fcntl)
-seemed to fix the issue.  I would like to eventually switch to luks or
-ext4 encryption and fscrypt, which operate at a block level.</p>
+<p>When using EncFS to <a href="encrypt.html">encrypt the
+mailspool</a>, I had some problems with "Error: Couldn't create
+mailbox list lock file_create_locked() failed".  This is probably an
+interaction with EncFS and FUSE, and changing the <b>lock_method</b>
+to "dotlock" instead of the default (fcntl) fixed the issue.  This
+should not be a problem with a LUKS encrypted partition or fscrypt,
+which operate at a block level.</p>
 
 <figure>
 <img src="images/necronomicon.jpg" alt="Sendmail Book">
