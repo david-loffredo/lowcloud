@@ -1,0 +1,11 @@
+# editor /etc/apt/listchanges.conf
+[apt]
+frontend=mail
+which=both
+email_address={{admin_email}}
+email_format=text
+confirm=false
+headers=true
+reverse=false
+save_seen=/var/lib/apt/listchanges.db
+

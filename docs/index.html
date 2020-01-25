@@ -44,20 +44,8 @@ like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
 <a href="https://github.com/progmaticltd/homebox">homebox</a> is a
 fine alternative.</p>
 
-
-
 <p>I hope this is a useful starting point for <em>your</em> goals
 and choices.</p>
-
-
-<p>TO DO LIST
-<UL>
-<LI>Thunderbird has trouble autoconfiging on virtual domains.   Must set port and passwd type manually.   Also the autoconfiging attempts will trip a fail2ban rule, preventing further attempts.
-<LI>Look at apticron or unattended-upgrades for keeping patched.
-<LI>Ipset with a variety of Class As to block port 22 and quiet down
-the logs.
-<LI>Sanitize extra headers on outgoing mail?
-</UL>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -74,7 +62,8 @@ yum.  <a href="ansible.html">Why Ansible</a>?</p>
 smaller attack surface, and lower machine requirements.  For example,
 instead of MySQL, virtual mail accounts are managed with SQLite, which
 is fast, has zero moving parts, and is easily secured with file
-permissions.</p>
+permissions.  We also run unattended upgrades to install security
+patches once a day.</p>
 
 <p>The playbooks cover the following areas: 
 

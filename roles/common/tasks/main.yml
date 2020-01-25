@@ -8,10 +8,8 @@
 - { import_tasks: locale.yml,           tags: locale }
 - { import_tasks: firewall.yml,         tags: firewall }
 - import_tasks: ntp.yml
+- import_tasks: upgrades.yml
 - import_tasks: editor.yml
-
-## send email when changes available
-# - import_tasks: apticron.yml
 
 # test but probably not what we want
 # - import_tasks: debsums.yml

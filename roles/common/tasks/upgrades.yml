@@ -1,0 +1,48 @@
+---
+# Obviously, this is fairly specific to Debian and its derivitives.
+# For Red Hat, Gentoo, etc. you'll need to figure out how they handle
+# automatic security updates.
+
+- name: unattended upgrades packages installed
+  package:
+    state: present
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+
+# /etc/apt/apt.conf.d/50unattended-upgrades has all of the knobs for
+# customizing what sort of updates you want.  By default you get the
+# latest package for the named release and security patches.
+
+# We may use a few packages from backports, not clear whether adding
+# this will end up upgrading all packages that exist in backports or
+# just the ones that we originally installed from backports.  The
+# former might have unintended side effects, but the latter is fine.
+
+# "o=Debian Backports,a=${distro_codename}-backports,l=Debian Backports";
+
+- name: unattended upgrades notify {{admin_email}}
+  lineinfile:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    # match commented or uncommented
+    regexp: "^(//\\s*)?Unattended-Upgrade::Mail "
+    line: 'Unattended-Upgrade::Mail "{{ admin_email }}";'
+    insertafter: EOF
+    state: present
+  notify:
+    - restart unattended-upgrades
+
+- name: unattended upgrades run every day
+  copy: src=apt-20auto-upgrades
+    dest=/etc/apt/apt.conf.d/20auto-upgrades
+    owner=root group=root mode=0644
+  notify:
+    - restart unattended-upgrades
+
+- name: apt install changelog to {{ admin_email }}
+  template: src=listchanges.conf.j2
+    dest=/etc/apt/listchanges.conf
+    owner=root group=root mode=0644
+    
+- name: unattended upgrades started and enabled
+  service: name=unattended-upgrades state=started enabled=yes

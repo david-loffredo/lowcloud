@@ -58,6 +58,16 @@ the encrypted directory must first be unlocked.  Log in and run
 the cleartext directories, and start the mail processes.</p>
 
 
+
+<p>TO DO LIST
+<UL>
+<LI>Thunderbird has trouble autoconfiging on virtual domains.  Must
+set port and passwd type manually.  Also the multiple autoconfig
+attempts will trip a fail2ban rule, preventing further attempts.  Set
+up the <code>.well-known/autoconfig/mail/config-v1.1.xml</code> file
+that tbird looks for.
+</UL>
+
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=vars></A>Variables</H2>
