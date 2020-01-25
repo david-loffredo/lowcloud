@@ -33,6 +33,7 @@
     group: "{{ deploy_acct_group }}"
     groups: wheel
     append: yes
+    shell: /bin/bash
     state: present
     password: "{{ deploy_acct_pwhash }}"
 

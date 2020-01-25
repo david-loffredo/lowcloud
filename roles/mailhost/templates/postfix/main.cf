@@ -146,6 +146,7 @@ smtp_rcpt_timeout = 15s
 # Spam control: exclude local clients and authenticated clients from
 # checks. RBL checks can go in here.
 smtpd_recipient_restrictions =
+  check_recipient_access hash:/etc/postfix/denied_recipients,
   permit_sasl_authenticated,
   permit_mynetworks,
   reject_unauth_pipelining,

@@ -3,6 +3,12 @@
 
 # This should run "sudo update-rc.d postfix disable" and remove the
 # postfix links from rc3.d/ and rc5.d/S01postfix.  Verify.
+
+- name: postmap files
+  command: postmap {{item}}
+  with_items:
+    - /etc/postfix/denied_recipients
+  
 - name: restart postfix
   service: name=postfix state=restarted
 

@@ -33,10 +33,10 @@ mail_queue_dir: >-
 mail_spool_dir: "{{cryptdir_root}}/vmail"
 
 # Mail database
-mail_db_dir:    "{{cryptdir_root}}/maildb"
 mail_db_name:   maildb.sqlite3
+mail_db_dir:    "{{cryptdir_root}}/maildb"
 mail_db:        "{{ mail_db_dir }}/{{ mail_db_name }}"
-mail_db_util:   "{{ mail_cfg_dir }}/mailcfg"
+mail_db_util:   /usr/bin/mailcfg
 
 # These are local addresses that are aliased to the administrative
 # email address for every domain.

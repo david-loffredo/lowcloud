@@ -64,9 +64,12 @@
     - sqlite-virtual-alias-maps.cf
     - sqlite-virtual-mailbox-domains.cf
     - sqlite-virtual-mailbox-maps.cf
-  notify: restart postfix
+    - denied_recipients
+  notify:
+    - postmap files
+    - restart postfix
   tags: dkim    # main.cf can change with dkim signing
-
+  
 - name: custom postfix queue and default needs cleanup
   stat: path={{mail_queue_default_dir}}
   register: test_dflt_queue
@@ -91,11 +94,8 @@
 #------------------------------
 # Mail user database    
 - name: mail account utilities present
-  template: src={{ item }}.j2 dest={{ mail_cfg_dir }}/{{ item }}
+  template: src=mailcfg.j2 dest={{mail_db_util}}
     owner=root group=root mode=0755
-  with_items:
-#    - mailboot
-    - mailcfg
 
 # Restore snapshot from existing machine if needed
 - name: check for mail database backup
