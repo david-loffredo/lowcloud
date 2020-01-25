@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>LUKS Notes</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+</UL>
+</UL>
+</div>
+
+<div class=main>
+<H1><A NAME=overview></A>LUKS Notes</H1>
+
+<p>Generally, you shoudn't need much beyond the <code>mailboot</code>
+script to unlock and mount the partition, but here are a few notes in
+case you need to do some things manually.</p>
+
+<p>Actions on the LUKS partition are done with
+the <code>cryptsetup</code> tool.  Since you are working with devices,
+most of these things need to be run as root.  The base device contains
+the ciphertext, the <code>/dev/mapper</code> one is a cleartext block
+device, and then you mount a regular filesystem from that.</p>
+
+<p>The <b>luksClose</b> command removes the cleartext block
+device <code>/dev/mapper/vault-blk</code>.  You should kill the mail
+processes and unmount the regular filesystem <code>/vault</code>
+before doing this.</p>
+
+<PRE class=code>
+$ service postfix stop
+$ service dovecot stop
+$ service rspamd stop
+$ service redis-server stop
+
+$ umount /vault
+$ cryptsetup luksClose vault-blk
+</PRE>
+
+<p>The <b>luksChangeKey</b> command changes the passphrase on an
+encrypted device.  LUKS stores a master key, which is random binary
+data that is never seen, in a header block for the device which is
+protected by one or more passphrases.</p>
+
+<PRE class=code>
+$ cryptsetup luksChangeKey /dev/sdABC
+</PRE>
+
+<p>The mailboot script calls <b>luksOpen</b> to create the cleartext,
+unlocked device in <code>/dev/mapper</code> where we can then mount
+the normal file system.</p>
+
+<PRE class=code>
+$ cryptsetup luksOpen /dev/sdABC vault-blk
+$ mount /vault
+</PRE>
+
+<p>The <code>dmsetup</code> command has many other operations on
+encrypted things.</p>
+
+<div class=copyright>
+<p>Copyright &copy; 2020 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+CC BY 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -13,7 +13,7 @@ handle on Ansible.
 
 The [DOCS directory](https://david-loffredo.github.io/davecloud/)
 explains what I learned along the way.  Think of this as a travel
-journal, with funny pictures of my old hardware.  I hope it is a
-useful starting point for your own journey.
+journal, with funny pictures of old hardware.  I hope it is a useful
+starting point for your own journey.
 
 \- Dave

@@ -9,8 +9,7 @@
 <body>
 <div class=toc>
 <UL>
-<LI><A href="index.html">[home]</A>
-<LI><A href="https://github.com/david-loffredo/davecloud">[github repo]</A>
+<LI><A href="https://github.com/david-loffredo/davecloud">Github Repo</A>
 <p>
 <li><a href="#pkgs">Packages</a>
 <li><a href="#start">Getting Started</a>
@@ -36,13 +35,16 @@ on an old machine in your house.  My three goals were:</p>
 </ol>
 
 <p>These pages explain <em>what</em> I learned, <em>how</em> to
-configure it, and <em>why</em> I made the choices that I did for each
-aspect of the setup, plus some fun pictures of my old hardware.  If
-ground-up knowledge is not your priority, a push-button mail server
+configure it, and <em>why</em> I made each choice, plus some fun
+pictures of my old hardware.
+
+If those details don't interest you, a push-button mail server
 like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
 <a href="https://mailinabox.email/">mail-in-a-box</a>, or
 <a href="https://github.com/progmaticltd/homebox">homebox</a> is a
 fine alternative.</p>
+
+
 
 <p>I hope this is a useful starting point for <em>your</em> goals
 and choices.</p>
@@ -57,7 +59,6 @@ and choices.</p>
 <LI>Ipset with a variety of Class As to block port 22 and quiet down
 the logs.
 <LI>Sanitize extra headers on outgoing mail?
-<LI>Use LUKS on a whole /data partition rather than EncFS on dirs.
 </UL>
 
 <!-- ============================== -->
@@ -65,17 +66,17 @@ the logs.
 <A NAME=pkgs></A>Packages</H2>
 
 <p>This setup assumes Debian 10. <a href="debian.html">Why Debian</a>?
-Other distros may be close, but have some differing file locations or
-package versions.  In most places, the Ansible playbooks use
+Other distros could work, but may differ in some package details or
+file locations.  In most places, the Ansible playbooks use
 the <code>package:</code> module rather than <code>apt:</code> for
-installing, so it can work with other package managers like emerge or
+installing, so it can work with emerge or
 yum.  <a href="ansible.html">Why Ansible</a>?</p>
 
 <p>I avoid extra packages, which means fewer things to understand, a
 smaller attack surface, and lower machine requirements.  For example,
-instead of a full MySQL install, the virtual mail accounts are managed
-with SQLite, which has ample performance, zero moving parts, and is
-easily secured with just file permissions.</p>
+instead of MySQL, virtual mail accounts are managed with SQLite, which
+is fast, has zero moving parts, and is easily secured with file
+permissions.</p>
 
 <p>The playbooks cover the following areas: 
 
@@ -83,7 +84,7 @@ easily secured with just file permissions.</p>
 <li><a href="ssh.html">SSH</a>
 <li><a href="firewall.html">Firewall</a>
 <li><a href="mail.html">Mail Server</a>
-<li><a href="mailnull.html">Mail from Client Machines</a>
+<li><a href="mailnull.html">Mail Relay</a>
 <li><a href="apache.html">Web Server</a>
 <li><a href="backup.html">Backup</a>
 <li><a href="encrypt.html">Encryption</a>
@@ -185,15 +186,16 @@ a <code>&lt;group-name&gt;/</code> directory containing any number of
 YML files.  Every machine belongs to the special <code>all</code>
 group, and we use this group for most of our settings.</p>
 
-<p>Within <code>group_vars/all</code>, we put most of our settings in the
-<code>all.yml</code> file.  We put sensitive values like passwords in
-<code>vault.yml</code>, which is an encrypted
-<a href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">Ansible
-vault file</a>.</p>
+<p>Within <code>group_vars/all</code>, most of our settings are in the
+<code>all.yml</code> file.  Look through this file and customize the
+values as appropriate.   
 
-<p>The <code>vault.yml</code> that you copied is not yet encrypted and
-contains placeholders for a bunch of things.  Edit it to contain real
-values and then encrypt it with your own unique password:
+<p>Sensitive values like passwords are in
+<code>vault.yml</code>, which will be an encrypted
+<a href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">Ansible
+vault file</a>.  The <code>vault.yml</code> that you copied is not yet
+encrypted and contains placeholders.  Edit it to contain real values
+and then encrypt it with your own unique password:
 
 <PRE class=code>
 $ ansible-vault encrypt vault.yml	# encrypt plain file
@@ -218,17 +220,18 @@ password might show up as follows:</p>
 something_pw: "{{vault_something_pw}}"   # vault_* is in vault.yml
 </PRE>
 
-<p>Data is encrypted as AES256 and stored as a block of ASCII text,
-similar to ssh keys.  Ansible will decrypt on-the-fly when running
-playbooks.  There are many ways to get the password to Ansible, but we
-use the <code>--ask-vault-pass</code> flag to type it in every
-time.</p>
+<p>Ansible vault files are encrypted as AES256 and stored as a block
+of ASCII text, similar to ssh keys.  Ansible will decrypt on-the-fly
+when running playbooks.  There are many ways to get the password to
+Ansible, but we use the <code>--ask-vault-pass</code> flag to type it
+in every time.</p>
 
 <p>You shouldn't need anything beyond the <code>all.yml</code>
 and <code>vault.yml</code> for this application, but if you extend
 these playbooks for other things, be aware
 that <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html">Ansible
-variables</a> have an absurd amount of flexibility.
+variables</a> have an absurd amount of flexibility.  Each role also
+has a defaults that you can override.
 
 
 
@@ -301,9 +304,9 @@ wiping or migrating a machine.</p>
 <A NAME=reboot></A>Rebooting</H2>
 
 <p>The machine should boot clean and everything will come up except
-mail.  Because the mail spool is encrypted, you must log in,
-run <code>/etc/postfix/mailboot</code> to enter the EncFS password.
-This will mount the cleartext directories and start postfix.</p>
+mail.  Log in and run <code>mailboot</code> as root.  Enter the
+encrypted directory password and the script will mount the cleartext
+data and start the mail daemon.</p>
 
 <figure>
 <img src="images/sparc20.jpg" alt="Sparc 20">

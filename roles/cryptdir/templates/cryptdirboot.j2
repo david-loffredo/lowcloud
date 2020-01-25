@@ -8,31 +8,33 @@
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 {% if cryptdir_type == 'luks' %}
-# Consider using read to get the password once then echo, but we then
-# need to make sure the crypted volume has first been created.
-# read -s -p "EncFS Password: " PASS
-if /bin/mountpoint -q {{cryptdir_root}}; then
-    echo "Vault: mail vault is mounted"
+# Open the encrypted block device
+if dmsetup status /dev/mapper/{{ cryptdir_luks_mapname }}; then
+    echo "cryptdir: encrypted device is opened"
 else
-   echo "Vault: mounting the mail vault"
-   encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public
+    echo "cryptdir: opening encrypted device"
+    cryptsetup luksOpen {{cryptdir_luks_dev}} {{cryptdir_luks_mapname}}
 fi
-
-{% elif cryptdir_type == 'encfs' %}
-# Consider using read to get the password once then echo, but we then
-# need to make sure the crypted volume has first been created.
-# read -s -p "EncFS Password: " PASS
+# Mount the filesystem from the cleartext block device
 if /bin/mountpoint -q {{cryptdir_root}}; then
-   echo "Vault: encrypted data is mounted"
+    echo "cryptdir: encrypted data is mounted"
 else
-   echo "Vault: mounting encrypted data"
-   encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public
+    echo "cryptdir: mounting the mail vault"
+    mount {{ cryptdir_root }}
+fi
+{% elif cryptdir_type == 'encfs' %}
+if /bin/mountpoint -q {{cryptdir_root}}; then
+    echo "cryptdir: encrypted data is mounted"
+else
+    echo "cryptdir: mounting encrypted data"
+    encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public
 fi
 {% else %}
 # no encryption used for mail vault
 {% endif %}
 
 # start dependent services
+echo "cryptdir: starting dependent services"
 {% for svc in cryptdir_boot_services|default([]) %}
 /usr/sbin/service {{svc}} start
 {% endfor %}

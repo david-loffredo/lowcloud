@@ -30,6 +30,21 @@
 - name: "{{ cryptdir_luks_mapname }} mount point present"
   file: state=directory path="{{cryptdir_root}}"
 
+# Unmount if needed by killing all of the mail processes, then
+# umount /vault; cryptsetup luksClose vault-blk
+  
+# Add the partition to crypttab, but do not try to mount at boot.
+# Unfortunately, this does not auto open when we mount cryptdir_root.
+# 
+# - name: "{{ cryptdir_luks_mapname }} configured noauto in crypttab"
+#   crypttab:
+#     name: "{{ cryptdir_luks_mapname }}"
+#     backing_device: "{{cryptdir_luks_dev}}"
+#     password: none
+#     opts: noauto
+#     state: present
+
+  
 # mount the partition rw, nosuid, but not nodev because we keep the
 # postfix chroot on there.  No automatic mount at boot because it wont
 # really be there.

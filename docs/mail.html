@@ -33,32 +33,29 @@ signing.  The <a href="mailnull.html">mailnull</a> role is used on
 other machines, like the backup server, to relay mail through the
 central server.</p>
 
-<p>All accounts are virtual mailboxes described by a set of SQL
-tables.  You can manage users with the <a href="#mailcfg">mailcfg</a>
-script.  Background on virtual users can be found
-at <a href="http://www.postfix.org/VIRTUAL_README.html">postfix.org</a>
+<p>All mail is owned by the <code>vmail</code> user and stored in
+an <a href="encrypt.html">encrypted directory</a> using maildir
+format.  The mail user database, DKIM keys, and other data are kept in
+this encrypted location, usually <code>/vault</code>, for privacy.</p>
+
+<p>All accounts are virtual mailboxes described by an SQL database.
+Manage this database with the <a href="#mailcfg">mailcfg</a> script.
+Background on virtual users can be found
+at <a href="http://www.postfix.org/VIRTUAL_README.html">postfix.org</a>.
 Unix accounts are only for system things and no mail is delivered to
 them.</p>
 
-<p>The mail is stored in maildir format in
-an <a href="encrypt.html">encrypted directory or partition</a>.  When
-using EncFS, the encrypted directory is <code>/vault_crypt</code> and
-mounted as cleartext in <code>/vault</code>.  Alternatively, you can
-use a LUKS encrypted partition mounted as <code>/vault</code>.  All
-mail is owned by the <code>vmail</code> user.</p>
-
 <p>We use SQLite for the database because it is small, simple, and
-sufficient, but you can use MySQL, Maria, or Postgres if you prefer.
-On Debian, most postfix daemons described in <code>master.cf</code>
-run in a chroot, but the "local" and "virtual" do not, so we can keep
-<code>maildb.sqlite3</code> anywhere.  We keep it under the
-encrypted <code>/vault</code> directory where it is also accessed by
-dovecot for authenticating passwords.
+sufficient, but MySQL, Maria, or Postgres can also work.  On Debian,
+most postfix daemons described in <code>master.cf</code> run in a
+chroot, but the "local" and "virtual" do not, so we can keep the
+database in a central location where it is also used by dovecot to
+authenticate passwords.</p>
 
 <p>On reboot, postfix and dovecot do not start automatically because
-the encrypted directories must first be mounted.  Log in and run
-<code>/etc/postfix/mailboot</code> to enter the password, mount the
-cleartext directories, and start the mail processes.</p>
+the encrypted directory must first be unlocked.  Log in and run
+<code>/usr/sbin/mailboot</code> as root to enter the password, mount
+the cleartext directories, and start the mail processes.</p>
 
 
 <!-- ============================== -->
@@ -67,14 +64,14 @@ cleartext directories, and start the mail processes.</p>
 
 <p>The <code>mail_server_hostname</code> is what the machine
 identifies itself as and where <a href="mailnull.html machines">client
-machines</a> try to relay their mail.  The <code>mail_spool_pw</code>
-is the password for encryption on the mail spool and is usually kept
-in the vault.yml file.
+machines</a> try to relay their mail.  The <code>cryptdir_pw</code> is
+the password for the <a href="encrypt.html">encrypted mail spool</a>.
 
 <PRE class=code>
 mail_server_hostname: "mail.{{ domain }}"
 
-mail_spool_pw: "{{vault_crypt_pw}}"
+# password for encrypted mail spool
+cryptdir_pw: "{{vault_cryptdir_pw}}"
 </PRE>
 
 <p>The <code>mail_domains</code> and <code>mail_users</code> lists
@@ -96,7 +93,6 @@ mail_users:
   - email: "user2@second.example"
     pw: "{{vault_mbox_user2_pw}}"
 </PRE>
-
 
 <p>Define your mail aliases with the <code>mail_aliases</code> list of
 src/dst pairs.  We automatically add aliases to
@@ -131,15 +127,16 @@ dkim_selector_next:
 <A NAME=mailcfg></A>Mailcfg</H2>
 
 <p>The <code>mailcfg</code> script is a simple command-line tool to
-manipulate the virtual user database.  It is installed
-to <code>/etc/postfix/mailcfg</code> and used by the Ansible playbook
-to initialize the database.</p>
+manipulate the virtual user database.  It is used by the Ansible
+playbook to initialize and populate the database.  We install it to
+<code>/usr/bin/mailcfg</code> and you must have write access to the
+mail database file to use it.</p>
 
-<p>Most people seemed to either hand-write SQL queries or install
-elaborate web interfaces like postfixadmin to do this job. I put
-together a simple perl script for the common tasks.  It uses DBI, so
-you can tweak the connect statement and SQL as needed for other
-RDBs.</p>
+<p>Most people either hand-write SQL queries or install elaborate web
+interfaces like postfixadmin to do this job. I didn't care for either
+option, so I put together a simple perl script for the common tasks.
+It uses DBI, so you can tweak the connect statement and SQL as needed
+for other RDBs.</p>
 
 <p>Run it as "mailcfg &lt;command&gt;".  The following commands are
 available:</p>
@@ -186,20 +183,19 @@ out of the Junk folder.  The sieve scripts are near the mail spool in
 the location given by the <code>sieve_root</code> variable.  You can
 also add your own personal sieve scripts.
 
-<p>Statistics and fine-grain control are available on the rspamd web
-console at <code>http://localhost:11334</code>.  That port is normally
-blocked and the server only allows connections from localhost.  Set up
-an SSH tunnel to use it.  Either do it from the command line or you
-can add the following to the ssh config file for that machine.</p>
+<p>the rspamd web console at <code>http://localhost:11334</code> has
+statistics and fine-grain controls.  That port is normally blocked and
+the server only allows connections from localhost.  Set up an SSH
+tunnel to use it.  Either do it from the command line or you can add
+the following to the ssh config file for that machine.</p>
 
 <PRE class=code>
 LocalForward 11334 localhost:11334
 </PRE>
 
-<p>We keep per-user Bayes training data, because everyone has a
-different definition of spam.  Right now we do everything during
-milting and rspamd picks the first of multiple recipients for the
-statistics.</p>
+<p>We keep per-user Bayes training data, because everyone has
+different opinions on spam.  We do everything during milting and
+rspamd picks the first of multiple recipients for the statistics.</p>
 
 <p>It would be better to disable Bayes during milting, then classify
 during delivery, when we have one recipient.  However, we should carry
@@ -208,9 +204,9 @@ in <code>settings.conf</code>, but haven't figured out how to carry
 over the score.  Probably needs to be done in a Lua plugin.  For the
 future.</p>
 
-<p>This also has the nice property that we only reject on objective
-criteria found during the milter pass, and can at most quarantine
-based on the subjective criteria of the Bayes.</p>
+<p>This would also have the nice property that we only reject on
+objective criteria found during the milter pass, and can at most
+quarantine based on the subjective criteria of the Bayes.</p>
 
 
 <!-- ============================== -->
@@ -253,9 +249,9 @@ system around Sendmail.  I could do that and it still works well, but
 great options exist that don't predate the fall of N&uacute;menor.</p>
 
 <p>As of this writing, the top three MTAs by number of servers are
-Exim (580k), Postfix (328k), and Sendmail (80k).  Of course, that says
-nothing about the volume of mail passing through each server, but it
-does give an idea of the general level of support.</p>
+Exim (580k), Postfix (328k), and Sendmail (80k).  That says nothing
+about the volume of mail passing through each server, but it does give
+an idea of the general level of support.</p>
 
 <p>The default MTA for Debian is exim4, and it is capable.  I did some
 tests setting it up as a null client.  Ultimately, I chose Postfix.
@@ -268,13 +264,9 @@ which is very nice for rejecting spam early in the connection.</p>
 server.  It seems like Cyrus and Courier are other possibilities but I
 have no familiarity with them.</p>
 
-<p>When using EncFS to <a href="encrypt.html">encrypt the
-mailspool</a>, I had some problems with "Error: Couldn't create
-mailbox list lock file_create_locked() failed".  This is probably an
-interaction with EncFS and FUSE, and changing the <b>lock_method</b>
-to "dotlock" instead of the default (fcntl) fixed the issue.  This
-should not be a problem with a LUKS encrypted partition or fscrypt,
-which operate at a block level.</p>
+<p>Rspamd is a relative newcomer to the spam fighting arena but has
+made its name by combining the functions of SpamAssassin, Dspam, and
+OpenDKIM into one fast package.</p>
 
 <figure>
 <img src="images/necronomicon.jpg" alt="Sendmail Book">
