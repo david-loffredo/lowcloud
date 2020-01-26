@@ -1,6 +1,7 @@
 ---
-# Bacula defaults 
-
+#==============================
+# DEFAULTS NEEDED BY MANY ROLES
+#
 # The client role needs information from 'hostvars' for all of the
 # directors, and the director role needs information from 'hostvars'
 # for all of the clients.

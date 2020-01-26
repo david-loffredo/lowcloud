@@ -1,7 +1,17 @@
 ---
-#========================================
-# Webserver Settings
+#==============================
+# DEFAULTS NEEDED BY MANY ROLES
 #
+# Directories and such used by other roles (backup, etc) so set by the
+# separate mail-dflts role.
+#
+#webdata_root:
+
+
+#==============================
+# DEFAULTS NEEDED BY ONLY THIS ROLE
+#
+
 # Values to populate the Apache host configuration files.  Dictionary
 # contains name (ServerName required), aliases (list of ServerAlias
 # values), admin (ServerAdmin, defaults to webmaster@{{main.name}})
@@ -40,6 +50,13 @@ certbot_certs: >-
   {%- endfor -%}
   {{- ns.ids -}}
   
+# Consider --must-staple to add OCSP Must Staple to the cert.  We are
+# running apache 2.4+ so it should support that.  Unfortunately, we
+# need a separate no-staple cert for SMTP and IMAP because neither
+# dovecot nor postfix will do OCSP stapling.  Also not clear what
+# needs to happen to refresh the timestamp when using with apache.
+# Does certbot build it in to its own renewal process?
+#
 certbot_create_command: >-
   {{ certbot_script }} certonly --standalone --noninteractive --agree-tos
   --email {{ cert_item.email | default(certbot_admin_email) }}

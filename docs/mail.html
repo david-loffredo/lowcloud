@@ -12,7 +12,8 @@
 <LI><A href=index.html>[home]</A>
 <p>
 <li><a href="#vars">Variables</a>
-<li><a href="#mailcfg">Mailcfg</a>
+<li><a href="#mailclient">Mail Clients</a>
+<li><a href="#mailcfg">Mailcfg Script</a>
 <li><a href="#rspamd">Spam Filtering</a>
 <li><a href="#mailq">Managing the Mail Queue</a>
 <li><a href="#why">Why These Packages?</a>
@@ -59,27 +60,14 @@ the cleartext directories, and start the mail processes.</p>
 
 
 
-<p>TO DO LIST
-<UL>
-<LI>Thunderbird has trouble autoconfiging on virtual domains.  Must
-set port and passwd type manually.  Also the multiple autoconfig
-attempts will trip a fail2ban rule, preventing further attempts.  Set
-up the <code>.well-known/autoconfig/mail/config-v1.1.xml</code> file
-that tbird looks for.
-</UL>
-
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=vars></A>Variables</H2>
 
-<p>The <code>mail_server_hostname</code> is what the machine
-identifies itself as and where <a href="mailnull.html machines">client
-machines</a> try to relay their mail.  The <code>cryptdir_pw</code> is
-the password for the <a href="encrypt.html">encrypted mail spool</a>.
+<p>The <code>cryptdir_pw</code> is the password for
+the <a href="encrypt.html">encrypted mail spool</a>.</p>
 
 <PRE class=code>
-mail_server_hostname: "mail.{{ domain }}"
-
 # password for encrypted mail spool
 cryptdir_pw: "{{vault_cryptdir_pw}}"
 </PRE>
@@ -119,8 +107,9 @@ mail_aliases:
 following a year month pattern (202001) so that we have a predictable
 pattern when we rotate them.  This enables signing and generates the
 keys in the <code>dkim_keyroot</code> directory, which defaults to
-being under the mail spool.  The .txt files there contain the entries
-to add to the DNS zones.</p>
+being under the mail spool.  <b>Add the DNS TXT records found in the
+.txt files to the DNS zones</b>, so that people who recieve your mail
+can verify that you signed it.</p>
 
 <p>When near rotation time, we can set <code>dkim_selector_next</code>
 to pre-generate the keys, but not use them.  This gives us a chance to
@@ -131,10 +120,62 @@ dkim_selector: 202001
 dkim_selector_next:
 </PRE>
 
+<p>The <code>mail_server_hostname</code> is what the machine
+identifies itself as and where <a href="mailnull.html machines">client
+machines</a> try to relay their mail.  The default value for this is
+"mail." on the primary domain.</p>
+
+<PRE class=code>
+# defaults to mail+primary domain.
+# mail_server_hostname: "mail.{{ domain }}"
+</PRE>
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=mailcfg></A>Mailcfg</H2>
+<A NAME=mailclient></A>Mail Clients</H2>
+
+<p>The IMAP and SMTP server for clients
+is <code>mail_server_hostname</code>, usually "mail." plus the primary
+domain name.  We run IMAP over SSL on port 993, and outgoing mail to
+port 587 with STARTTLS and plain password.  The account name is the
+entire email address (foo@example.com).
+
+<PRE class=code>
+incoming server:	mail.example.com
+imaps port:		993
+connection security:	SSL/TLS
+user name:		somebody@second-domain.example
+authentication:		plain password
+
+outgoing server:	mail.example.com
+smtp port:		587
+connection security:	STARTTLS
+user name:		somebody@second-domain.example
+authentication:		plain password
+</PRE>
+
+<p>We publish a Thunderbird autoconfig XML record on the websites for
+each domain, so configuring a new account with that should be
+seamless.  This is
+under <code>.well-known/autoconfig/mail/config-v1.1.xml</code>.  Other
+clients may need manual setup.  The <a href="dns.html">DNS
+settings</a> show how to set SRV records, but I'm not sure how many
+clients use them.</p>
+
+<p>If a client tries to figure out the settings by hitting the server
+with multiple variations, it may trip a fail2ban rule, preventing
+further attempts.</p>
+
+<p>You can change user passwords with the <code>mailcfg</code> script,
+but users can not currently change them remotely.  Obviously, this
+only works if you have a personal connection with your users, but it
+can cut out a whole class of password-related mischief.  Feel free to
+do something more sophisticated if you need it.</p>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=mailcfg></A>Mailcfg Script</H2>
 
 <p>The <code>mailcfg</code> script is a simple command-line tool to
 manipulate the virtual user database.  It is used by the Ansible
@@ -277,6 +318,13 @@ have no familiarity with them.</p>
 <p>Rspamd is a relative newcomer to the spam fighting arena but has
 made its name by combining the functions of SpamAssassin, Dspam, and
 OpenDKIM into one fast package.</p>
+
+<p>We do not install any webmail, but if this becomes necessary,
+roundcube is a pretty good choice.  I prefer roundcube over rainloop
+because it seems to have twice as many active developers and does a
+better job addressing issues.  The new reactive UI is nice, although
+as of this writing, it is still too new for debian backports.</p>
+
 
 <figure>
 <img src="images/necronomicon.jpg" alt="Sendmail Book">

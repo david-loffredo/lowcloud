@@ -1,0 +1,14 @@
+---
+
+# This assumes that we have a website for each mail root
+- name: mail autoconfiguration directory
+  file: state=directory
+    path="{{webdata_root}}/{{ item }}/.well-known/autoconfig/mail"
+    owner=root group=root mode=0755
+  with_items: "{{ mail_domains }}"
+
+- name: mail autoconfiguration xml
+  template: src="config-v1.1.xml.j2"
+    dest="{{webdata_root}}/{{ item }}/.well-known/autoconfig/mail/config-v1.1.xml"
+    owner=root group=root mode=0644
+  with_items: "{{ mail_domains }}"

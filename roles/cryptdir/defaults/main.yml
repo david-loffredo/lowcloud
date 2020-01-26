@@ -1,5 +1,15 @@
 ---
-# Create directory for encrypted data at rest.
+#==============================
+# DEFAULTS NEEDED BY MANY ROLES
+#
+# Cleartext directory for encrypted data.  May be used by other roles
+# (mail, web, backup) so set by the separate cryptdir-dflts role.
+#
+# cryptdir_root: /vault
+
+
+#==============================
+# DEFAULTS NEEDED BY ONLY THIS ROLE
 #
 # The encryption technology can be luks, encfs, or none.
 #
@@ -15,8 +25,6 @@
 # With none, this role does no encryption.
 #
 cryptdir_type: encfs
-
-cryptdir_root: /vault
 cryptdir_pw:   "{{vault_cryptdir_pw}}"
 
 # For LUKS block level encryption

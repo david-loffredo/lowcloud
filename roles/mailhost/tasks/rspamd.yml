@@ -66,14 +66,14 @@
 
 
 - name: sieves for pre-filter present
-  copy: src={{ item }} dest={{sieve_root}}/before.d/{{ item }}
+  copy: src={{ item }} dest={{mail_sieve_root}}/before.d/{{ item }}
     owner=vmail group=vmail mode=640
   with_items:
     - separate_spam.sieve
   notify: restart dovecot
 
 - name: sieves for training present
-  copy: src={{ item }} dest={{sieve_root}}/global/{{ item }}
+  copy: src={{ item }} dest={{mail_sieve_root}}/global/{{ item }}
     owner=vmail group=vmail mode=640
   with_items:
     - learn_ham.sieve
@@ -89,41 +89,41 @@
   register: dkim_key_backup
   tags: dkim
 
-- name: restore local dkim key backup to {{dkim_keyroot|dirname}}
+- name: restore local dkim key backup to {{mail_dkim_root|dirname}}
   unarchive:
     src: "{{snapshot_dir}}/dkim_keys.tgz"
-    dest: "{{dkim_keyroot|dirname}}"
+    dest: "{{mail_dkim_root|dirname}}"
     owner: root
     group: root
   when: dkim_key_backup.stat.exists == true
   tags: dkim
 
 - name: DKIM key directory present
-  file: path={{dkim_keyroot}} state=directory
+  file: path={{mail_dkim_root}} state=directory
         owner=_rspamd group=_rspamd mode=0755
   tags: dkim
 
 - name: DKIM keys generated
-  shell: rspamadm dkim_keygen -b 2048
+  shell: rspamadm dkim_keygen -b {{dkim_keysize}}
         -d {{item}} -s {{dkim_selector}}
         -k {{item}}.{{dkim_selector}}.key >
         {{item}}.{{dkim_selector}}.txt
   args:
-    creates: "{{dkim_keyroot}}/{{item}}.{{dkim_selector}}.key"
-    chdir: "{{dkim_keyroot}}"
+    creates: "{{mail_dkim_root}}/{{item}}.{{dkim_selector}}.key"
+    chdir: "{{mail_dkim_root}}"
   with_items: "{{ mail_domains }}"
   when: dkim_selector_is_set
   notify: restart rspamd
   tags: dkim
 
 - name: upcoming DKIM keys generated
-  shell: rspamadm dkim_keygen -b 2048
+  shell: rspamadm dkim_keygen -b {{dkim_keysize}}
         -d {{item}} -s {{dkim_selector_next}}
         -k {{item}}.{{dkim_selector_next}}.key >
         {{item}}.{{dkim_selector_next}}.txt
   args:
-    creates: "{{dkim_keyroot}}/{{item}}.{{dkim_selector_next}}.key"
-    chdir: "{{dkim_keyroot}}"
+    creates: "{{mail_dkim_root}}/{{item}}.{{dkim_selector_next}}.key"
+    chdir: "{{mail_dkim_root}}"
   with_items: "{{ mail_domains }}"
   when: dkim_selector_next_is_set
   tags: dkim

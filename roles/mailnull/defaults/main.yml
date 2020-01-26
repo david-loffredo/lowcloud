@@ -1,4 +1,16 @@
 ---
+#==============================
+# DEFAULTS NEEDED BY MANY ROLES
+#
+# Directories and such used by other roles (backup, etc) so set by the
+# separate mail-dflts role.
+#
+#mail_server_hostname:
+
+
+#==============================
+# DEFAULTS NEEDED BY ONLY THIS ROLE
+#
 # Relay all mail through a smarthost with authentication using the
 # given account and password.
 

@@ -16,12 +16,16 @@
 <div class=main>
 <H1>DNS Configuration</H1>
 
-<p>For the moment I just use my registrars DNS service and add records
-using their web form.  This works fine but means a bit more work when
-it comes time to advertize DKIM records, since best practice says they
-should be rotated periodically.  Future work will set up bind and make
-the machine the DNS master for all domains, then automate DKIM
-rotation.</p>
+<p>For the moment I use my registrars DNS service and add records
+using their web form.  This is fine, but requires some manual work
+when it comes time to advertize DKIM records, since best practice says
+they should be rotated periodically.</p>
+
+<p>Future work will set up bind and make the machine the DNS master
+for all domains, then automate DKIM rotation.  Some caution needs to
+be applied though, because having everything on one machine might
+complicate matters if it is ever compromised, since the attacker also
+has DNS and can push bad zones.</p>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -76,7 +80,7 @@ imap, pop3, and pop3s are not supported.
 
 <PRE class=code>
 _imap._tcp     SRV  0 0 0   .
-_imaps._tcp    SRV  0 1 993 imap.example.com.
+_imaps._tcp    SRV  0 1 993 mail.example.com.
 _pop3._tcp     SRV  0 0 0   .
 _pop3s._tcp    SRV  0 0 0   .
 

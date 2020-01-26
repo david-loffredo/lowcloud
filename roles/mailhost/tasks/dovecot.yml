@@ -24,7 +24,7 @@
   service: name=dovecot enabled=no 
 
 - name: spool directories for mail domain are present
-  file: state=directory path="{{mail_spool_dir}}/{{ item }}"
+  file: state=directory path="{{mail_spool_root}}/{{ item }}"
     owner=vmail group=vmail mode=0770
   with_items: "{{ mail_domains }}"
 
@@ -61,7 +61,7 @@
 # can automatically compile them.
 #
 - name: sieve directories are present
-  file: state=directory path="{{sieve_root}}/{{ item }}"
+  file: state=directory path="{{mail_sieve_root}}/{{ item }}"
     owner=vmail group=vmail mode=0770 
   with_items: "{{ mail_domains + ['after.d', 'before.d', 'global'] }}"
 

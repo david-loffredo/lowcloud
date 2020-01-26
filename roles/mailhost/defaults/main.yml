@@ -1,4 +1,20 @@
 ---
+#==============================
+# DEFAULTS NEEDED BY MANY ROLES
+#
+# Directories and such used by other roles (backup, etc) so set by the
+# separate mail-dflts role.
+#
+#mail_server_hostname:
+#mail_spool_root:
+#mail_db_root:
+#mail_sieve_root:
+#mail_dkim_root:
+
+
+#==============================
+# DEFAULTS NEEDED BY ONLY THIS ROLE
+#
 # Networks with relaxed checking, ignored by fail2ban, allowed to
 # relay mail, etc
 friendly_networks: []
@@ -29,14 +45,10 @@ mail_queue_dir: >-
   {{mail_queue_default_dir}}
   {%- endif -%}
 
-# Mail spool and user database should be in the encrypted directory.
-mail_spool_dir: "{{cryptdir_root}}/vmail"
-
 # Mail database
-mail_db_name:   maildb.sqlite3
-mail_db_dir:    "{{cryptdir_root}}/maildb"
-mail_db:        "{{ mail_db_dir }}/{{ mail_db_name }}"
 mail_db_util:   /usr/bin/mailcfg
+mail_db_name:   maildb.sqlite3
+mail_db:        "{{ mail_db_root }}/{{ mail_db_name }}"
 
 # These are local addresses that are aliased to the administrative
 # email address for every domain.
@@ -62,9 +74,6 @@ mail_admin_aliases: >-
 
 mail_aliases: []
   
-# Sieve scripts, both global and per user if any.
-sieve_root: "{{cryptdir_root}}/sieve"
-
 # Normally rspamd, but can disable by setting to empty
 spam_filter: rspamd
 spam_per_user_bayes: yes
@@ -88,8 +97,6 @@ redis_maxmen: 500mb
 # var to pre-generate the keys, but do not use them.  This gives us a
 # chance to get the public keys into DNS and let them propogate.
 #
-# Keep under encrypted directory
-dkim_keyroot: "{{cryptdir_root}}/dkim"
 dkim_selector:
 dkim_selector_next:
 
@@ -102,6 +109,7 @@ dkim_selector_next_is_set: "{{
   dkim_selector_next|default(none) is not none and 
   dkim_selector_next|string|length > 0 }}"
 
+dkim_keysize: 2048
 
 #========================================
 # For quick reimaging, the 'snapshot' tag will copy locally unique

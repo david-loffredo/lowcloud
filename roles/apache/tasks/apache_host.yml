@@ -1,12 +1,11 @@
 ---
-
 - debug:
     msg: APACHE HOST configure {{ host.name }}
 
 - name: defaults calculated
   set_fact:
     host_dflt:
-      root: /var/www/{{ host.name }}
+      root: "{{webdata_root}}/{{ host.name }}"
       admin: "{{ admin_email }}"
 
 - name: document root present

@@ -5,7 +5,7 @@
 #
 - name: backup dkim keys
   archive:
-    path: "{{ dkim_keyroot }}"
+    path: "{{ mail_dkim_root }}"
     format: gz
     dest: /tmp/dkim_keys.tgz
   tags: [snapshot, mail-snapshot]

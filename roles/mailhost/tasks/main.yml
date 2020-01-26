@@ -4,6 +4,7 @@
 - { import_tasks: postfix.yml,  tags: postfix }
 - { import_tasks: dovecot.yml,  tags: dovecot }
 - { import_tasks: rspamd.yml,   tags: rspamd }
+- { import_tasks: autoconfig.yml, tags: autoconfig }
 
 # Just comment out the import if you are disabling rspamd.  Tried to
 # make it conditional, but ansible 2.5 doesn't flow tags down to

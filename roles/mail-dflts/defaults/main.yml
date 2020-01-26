@@ -1,0 +1,15 @@
+---
+#==============================
+# DEFAULTS NEEDED BY MANY ROLES
+#
+# Directory for encrypted data at rest.  This might be used across
+# many other roles (mail, web, backup) so it is broken out into this
+# separate defaults-only role
+#
+mail_server_hostname: "mail.{{ domain }}"
+
+# Mail spool and user database should be in the encrypted directory.
+mail_spool_root:        "{{cryptdir_root}}/vmail"
+mail_db_root:           "{{cryptdir_root}}/maildb"
+mail_sieve_root:        "{{cryptdir_root}}/sieve"
+mail_dkim_root:         "{{cryptdir_root}}/dkim"

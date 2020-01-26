@@ -10,11 +10,11 @@
 
 - name: user vmail present
   user: name=vmail group=vmail state=present uid=5000
-    home={{mail_spool_dir}} shell=/usr/sbin/nologin
+    home={{mail_spool_root}} shell=/usr/sbin/nologin
 
 # use mode=02775 to setgid
 - name: mail spool directory and permissions 
-  file: state=directory path={{mail_spool_dir}} group=vmail mode=0775
+  file: state=directory path={{mail_spool_root}} group=vmail mode=0775
 
 # The queue directory must be present or else the chroot will not be
 # populated.
@@ -29,7 +29,7 @@
   file: state=directory path={{item}} mode=0755
   with_items:
     - "{{mail_queue_dir}}"
-    - "{{mail_db_dir}}"
+    - "{{mail_db_root}}"
     
 
 # The virtual user database holds account details.  We use SQLite
