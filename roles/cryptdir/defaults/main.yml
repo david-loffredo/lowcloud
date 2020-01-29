@@ -1,16 +1,7 @@
 ---
-#==============================
-# DEFAULTS NEEDED BY MANY ROLES
-#
-# Cleartext directory for encrypted data.  May be used by other roles
-# (mail, web, backup) so set by the separate cryptdir-dflts role.
-#
-# cryptdir_root: /vault
+# Cleartext directory for encrypted data.
+cryptdir_root: /vault
 
-
-#==============================
-# DEFAULTS NEEDED BY ONLY THIS ROLE
-#
 # The encryption technology can be luks, encfs, or none.
 #
 # With LUKS, we need a separate disk partition that will be encrypted
@@ -40,10 +31,6 @@ cryptdir_luks_mapname:  vault-blk
 #
 cryptdir_encfs_dir:     "{{cryptdir_root}}_crypt"
 
-
-# Do not give a default value because they need to be overridden by
-# including roles.  A default here wins over a default in an including
-# package.
-
-# cryptdir_boot_script: /usr/sbin/cryptdirboot
-# cryptdir_boot_services: []
+# Script to mount the directory.   Can also start services
+cryptdir_boot_script: /usr/sbin/cryptdirboot
+cryptdir_boot_services: []

@@ -2,4 +2,3 @@
 dependencies:
   - web-dflts  
   - mail-dflts  
-  - cryptdir

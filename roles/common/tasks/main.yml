@@ -1,15 +1,10 @@
 ---
-# - name: apt package cache up-to-date
-#   apt:
-#     update_cache: yes
-#     cache_valid_time: "{{ pkg_cache_life }}"
-
 - { import_tasks: hostname.yml,         tags: hostname }
 - { import_tasks: locale.yml,           tags: locale }
 - { import_tasks: firewall.yml,         tags: firewall }
-- import_tasks: ntp.yml
-- import_tasks: upgrades.yml
-- import_tasks: editor.yml
+- { import_tasks: ntp.yml,              tags: ntp }
+- { import_tasks: upgrades.yml,         tags: unattended-upgrades }
+- { import_tasks: editor.yml,           tags: editor }
 
 # test but probably not what we want
 # - import_tasks: debsums.yml

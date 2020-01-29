@@ -33,7 +33,7 @@ Job {
   Name = "{{fd.inventory_hostname_short}}"
   Type = Backup
   Client = {{ fd_name }}
-  FileSet="CloudMail"
+  FileSet="{{fd.inventory_hostname_short}}-files"
   Schedule = "MonthlyCycle"
   Storage = File
   Messages = Standard
@@ -51,7 +51,7 @@ Job {
   Name = "restore-{{fd.inventory_hostname_short}}"
   Type = Restore
   Client = {{ fd_name }}
-  FileSet="CloudMail"
+  FileSet="{{fd.inventory_hostname_short}}-files"
   Where = /tmp/bacula-restores
   Messages = Standard
   Pool = Default
@@ -64,7 +64,7 @@ Job {
 # List of files to be backed up
 # PARAMETERIZE THIS - the spool and such may not be there
 FileSet {
-  Name = "CloudMail"
+  Name = "{{fd.inventory_hostname_short}}-files"
   Include {
     File = /etc/letsencrypt
     File = /var/spool/postfix/etc/maildb/maildb.sqlite3

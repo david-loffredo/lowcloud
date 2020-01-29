@@ -99,31 +99,16 @@ davecloud  myhosts
 
 <p>The new <code>myhosts</code> directory contains
 a <code>hosts</code> file and a <code>group_vars</code> directory.
-After customizing these as described in the following sections, I
-recommend putting this directory under source control.  You can do
-that however you like because it is not connected to
-the <code>davecloud</code> repo.
+After customizing these as described below, I recommend putting this
+directory under source control.  You can do that however you like
+because it is not connected to the <code>davecloud</code> repo.
 
-<p>If you keep <code>myhosts</code> on Github, I recommend a private
-repo.  Passwords will be encrypted in the <code>vault.yml</code> file,
-but you probably don't want other inventory detail like IPs, email
-addresses and domain names broadly viewable.
-
-<PRE class=code>
-$ls -R myhosts/
-myhosts/:
-group_vars  hosts
-
-myhosts/group_vars:
-all
-
-myhosts/group_vars/all:
-all.yml  vault.yml
-</PRE>
-
-<p>Since all of your settings are kept in a separate, external
-directory, you only need to fork <code>davecloud</code> if you plan to
-edit the playbooks to do new things.</p>
+<p>Use a private repo if you keep <code>myhosts</code> on Github.
+Passwords will be encrypted in <code>vault.yml</code>, but you
+probably don't want IPs, emails, and domain names world viewable.
+Your settings are in a separate directory, so you only need to
+fork <code>davecloud</code> if you edit playbooks to do new
+things.</p>
 
 
 <!-- ============================== -->
@@ -166,19 +151,20 @@ still getting that sorted out.</p>
 <H2 class=rule>
 <A NAME=vars></A>Variables</H2>
 
-<p>The <code>myhosts/group_vars</code> directory contains settings
-that apply to the groups of machines in the hosts file.  Ansible looks
-for a <code>&lt;group-name&gt;.yml</code> file or
-a <code>&lt;group-name&gt;/</code> directory containing any number of
-YML files.  Every machine belongs to the special <code>all</code>
-group, and we use this group for most of our settings.</p>
+<p>The <code>myhosts/group_vars</code> directory contains settings for
+the groups of machines in the hosts file.  Ansible looks for
+a <code>&lt;group-name&gt;.yml</code> file or
+a <code>&lt;group-name&gt;/</code> directory containing YML files.
+Every machine belongs to the special <code>all</code> group.</p>
 
-<p>Within <code>group_vars/all</code>, most of our settings are in the
-<code>all.yml</code> file.  Look through this file and customize the
-values as appropriate.   
+<p>Most of our settings are in <code>group_vars/all/all.yml</code>.
+Look through this file and customize the values as appropriate.  Some
+things that are unique to the mail and web server, and that we do not
+want to apply to the backup server, are
+in <code>group_vars/cloud.yml</code>.
 
 <p>Sensitive values like passwords are in
-<code>vault.yml</code>, which will be an encrypted
+<code>group_vars/all/vault.yml</code>, which will be an encrypted
 <a href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">Ansible
 vault file</a>.  The <code>vault.yml</code> that you copied is not yet
 encrypted and contains placeholders.  Edit it to contain real values
@@ -200,8 +186,8 @@ $ ansible-vault rekey vault.yml		# change password on file
 
 <p>To make it easier to find variables, we prefix each value in 
 <code>vault.yml</code> with "vault_" and then declare a version
-without the prefix in the <code>all.yml</code> file.  For example, a
-password might show up as follows:</p>
+without the prefix in the other files.  For example, a password might
+show up as follows:</p>
 
 <PRE class=code>
 something_pw: "{{vault_something_pw}}"   # vault_* is in vault.yml
@@ -213,12 +199,12 @@ when running playbooks.  There are many ways to get the password to
 Ansible, but we use the <code>--ask-vault-pass</code> flag to type it
 in every time.</p>
 
-<p>You shouldn't need anything beyond the <code>all.yml</code>
-and <code>vault.yml</code> for this application, but if you extend
-these playbooks for other things, be aware
+<p>You shouldn't need anything beyond these files for this
+application, but if you extend these playbooks for other things, be
+aware
 that <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html">Ansible
 variables</a> have an absurd amount of flexibility.  Each role also
-has a defaults that you can override.
+has settings in <code>&lt;ROLE&gt;/defaults/main.yml</code> that you can override.
 
 
 

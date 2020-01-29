@@ -36,8 +36,9 @@ vault_bacula_console_pw: [change me to very long gibberish]
 vault_cryptdir_pw: [change me to cleartext password]
 vault_relay_pw:    [change me to cleartext password]
 
-# Mailbox passwords.  Add as needed to initialize for your users.
-# These can be changed later with the mailcfg tool.
+# Mailbox passwords.  Add as needed for your users.  These can be
+# changed later with the mailcfg tool.  You might want to move the
+# entire mail_users var here to keep the email addresses private.
 vault_mbox_admin_pw: [change me to cleartext password]
 vault_mbox_user1_pw: [change me to cleartext password]
 vault_mbox_user2_pw: [change me to cleartext password]

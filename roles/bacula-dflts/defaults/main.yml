@@ -69,6 +69,10 @@ bacula_default_storage_pw: changeme
 bacula_default_console_pw: changeme
 
 
+bacula_default_client_fileset:
+  include: []
+  exclude: []
+
 
 ##
 ## DEFAULT FOR CURRENT HOSTVAR - These are what you should override

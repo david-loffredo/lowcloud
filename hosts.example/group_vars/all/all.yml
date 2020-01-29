@@ -7,13 +7,13 @@
 # Sensitive values with the "vault_" prefix are in the encrypted
 # vault.yml file. Use "ansible-vault edit vault.yml" to look at it.
 
-# An hour is good enough for packages where we want the latest 
-pkg_cache_life: 3600
-
+# Your "main" domain.  This will be the domain used for the email
+# server, as mail.example.com, and all other sites will be virtual
+# hosts.
 domain: example.com
-    
+
 #========================================
-# Common credentials for root and deploy accounts.
+# Common Deploy Credentials
 #
 # Account used to create the deploy account and lock down ssh. Usually
 # root, but may be the 'pi' account on a raspberry pi
@@ -26,7 +26,7 @@ deploy_acct_sshpub: "{{ vault_deploy_sshpub }}"
 deploy_acct_sshkey: "{{ vault_deploy_sshkey }}"
 deploy_acct_pwhash: "{{ vault_deploy_pwhash }}"
 
-# admin email - reports will be sent to this address
+# Administrative Email - reports will be sent to this address
 admin_email: "admin@{{ domain }}"
 
 
@@ -40,23 +40,6 @@ admin_email: "admin@{{ domain }}"
 # if you want something finer grained.
 #host_locale:    en_US.UTF-8
 #host_language:  en_US.UTF-8
-
-#========================================
-# Network and Firewall settings
-#
-# Appropriate ports will be opened for named services (mail=submission
-# and imaps, apache=http/https, etc).  SSH is always open.  Any extra
-# ports go in the lists below.  Fail2ban also checks the services list
-# to see what jails to use.
-#
-firewall_services: [ 'mail', 'web' ]
-#firewall_opentcp: [any extra ports]
-#firewall_openudp: [any extra ports]
-
-#firewall_opentcp: [9101, 9102, 9103]
-
-# fail2ban will ignore these networks
-# firewall_friendly_networks:
 
 
 #========================================
@@ -80,16 +63,12 @@ web_vhosts:
 # Mail Server Settings
 #
 
-# Encrypt data at rest for the mail spool 
-cryptdir_pw: "{{vault_cryptdir_pw}}"
-
-# Default is EncFS, use LUKS if we have a separate partition
-#cryptdir_type: luks
-#cryptdir_luks_dev: "/dev/replace-with-real-device"
-
-
-mail_server_hostname: "mail.{{ domain }}"
-mail_autoconfig_hostname: "autoconfig.{{ domain }}"
+# Hostname for the mail server.  This is what the MX record for your
+# main domain and all secondary domains will refer to.  Usually "mail"
+# but you can use a different name.  If you do, make sure that you add
+# it to the web_vhosts above so that it gets included in the cert for
+# the domain.
+# mail_server_hostname: "mail.{{ domain }}"
 
 mail_domains:
   - "{{ domain }}"
@@ -124,8 +103,15 @@ mail_users:
 #dkim_selector_next:
 
 
+  
 #========================================
-# Bacula Client and Server Settings
+# Encrypted Directory Password
+#
+cryptdir_pw: "{{vault_cryptdir_pw}}"
+
+
+#========================================
+# Bacula Client and Server Passwords
 #
 bacula_db: sqlite3
 #bacula_db_pw:           "{{ vault_bacula_db_pw }}"

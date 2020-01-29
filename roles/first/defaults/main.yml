@@ -2,6 +2,9 @@
 # Debian 10 versions
 # openssh-server 1:7.9p1-10
 
+# An hour is good enough for packages where we want the latest 
+pkg_cache_life: 3600
+
 # Hardening SSH by disabling weak protocols.  Scan occasionally.
 # https://www.ssh-audit.com/hardening_guides.html
 # https://github.com/jtesta/ssh-audit

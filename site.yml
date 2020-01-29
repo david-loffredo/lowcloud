@@ -13,6 +13,7 @@
     ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
   roles:
     - { role: common, tags: common }
+    - { role: cryptdir, tags: cryptdir }
     - { role: apache, tags: web }
     - { role: mailhost, tags: mail }
     - { role: bacula-client, tags: bacula-client }
@@ -24,7 +25,6 @@
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
     ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
-    firewall_services: []
   roles:
     - { role: common, tags: common }
     - { role: mailnull, tags: mail }
