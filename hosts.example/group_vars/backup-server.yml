@@ -1,0 +1,6 @@
+---
+# BACKUP SERVER MACHINE
+
+# We install the bacula client on the director machine too, because we
+# need to back up our own file catalog, but we do not need the tunnel.
+bacula_client_tunnel: no

@@ -14,10 +14,10 @@
 # groups/hosts.
 #
 # Since we look for these values in hostvars for other machines than
-# what we are running our task on, we use a separate bacula_default
-# prefix to so that we get the actual default when a hosts value is
-# not set rather than the local, possibly overridden, value on the
-# host we are running the task on.
+# the one we run our task on, we use a separate bacula_default prefix
+# so that we can get the true default when a hosts value is not set
+# rather than the local, possibly overridden, value on the host that
+# is running the task.
 #
 
 ##
@@ -36,8 +36,15 @@ bacula_default_client_fdport: 9102
 bacula_default_client_workdir: /var/lib/bacula
 bacula_default_client_piddir: /run/bacula
 bacula_default_client_max_jobs: 20
-bacula_default_client_tunnel: True      # The director set up an ssh tunnel
-  
+bacula_default_client_tunnel: True
+bacula_default_client_schedule: MonthlyCycle
+bacula_default_client_fileset:
+  options:
+    - Signature = SHA1
+    - Compression = gzip
+  include: []
+  exclude: []
+
 bacula_default_tunnel_acct: bacula-tun
 bacula_default_tunnel_group: users
 bacula_default_tunnel_sshpub:
@@ -54,10 +61,10 @@ bacula_default_director_workdir: /var/lib/bacula
 bacula_default_director_piddir: /run/bacula
 bacula_default_director_max_jobs: 1
 
-# This is symbolic name passed by the director to the client that
-# needs to resolve to the storage machine.  When we are working over
-# a tunnel this must not resolve to anything real so we put an entry
-# in /etc/hosts to map it to 127.0.0.1
+# The storage_host is a symbolic name passed from the director to the
+# client that the client must resolve to the storage machine.  When we
+# are working over a tunnel this must not resolve to anything real so
+# we put an entry in /etc/hosts to map it to 127.0.0.1
 bacula_default_storage_host: bacula-sd.local
 bacula_default_storage_port: 9103
 bacula_default_storage_workdir: /var/lib/bacula
@@ -67,11 +74,6 @@ bacula_default_storage_datadir: /backup/bacula
 bacula_default_storage_pw: changeme
 
 bacula_default_console_pw: changeme
-
-
-bacula_default_client_fileset:
-  include: []
-  exclude: []
 
 
 ##
@@ -87,8 +89,10 @@ bacula_client_workdir:          "{{ bacula_default_client_workdir }}"
 bacula_client_piddir:           "{{ bacula_default_client_piddir }}"
 bacula_client_max_jobs:         "{{ bacula_default_client_max_jobs }}"
 bacula_client_tunnel:           "{{ bacula_default_client_tunnel }}"
+bacula_client_schedule:         "{{ bacula_default_client_schedule }}"
+bacula_client_fileset:          "{{ bacula_default_client_fileset }}"
 
-# if client_tunnel is yes, create a restricted account on the client
+# If client_tunnel is yes, create a restricted account on the client
 # so that the director can ssh in set up a tunnel for FD/DIR/SD ports.
 # With this, the client only needs port 22 open to the world and the
 # director can be behind a NATed firewall.   

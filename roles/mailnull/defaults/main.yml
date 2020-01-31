@@ -7,12 +7,12 @@
 #
 #mail_server_hostname:
 
-
 #==============================
 # DEFAULTS NEEDED BY ONLY THIS ROLE
 #
 # Relay all mail through a smarthost with authentication using the
 # given account and password.
+mail_cfg_dir: /etc/postfix
 
 mail_relay_acct:   "relay@{{ domain }}"
 mail_relay_pw:     "{{ vault_relay_pw }}"

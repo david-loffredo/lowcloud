@@ -71,9 +71,6 @@
     
 # RedHat and Suse would also need stuff in sysconfig
 
-- name: bacula client service enabled
-  service: name=bacula-fd enabled=yes
-
-- name: bacula client service started
-  service: name=bacula-fd state=started
+- name: bacula client service enabled and started
+  service: name=bacula-fd enabled=yes state=started
     

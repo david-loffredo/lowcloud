@@ -17,7 +17,9 @@
     - { role: apache, tags: web }
     - { role: mailhost, tags: mail }
     - { role: bacula-client, tags: bacula-client }
- 
+
+# On the director machine we also need the client because we are doing
+# a local backup of the catalog.
 - hosts: backup-server
   remote_user: "{{ deploy_acct }}"
   become: True
@@ -28,6 +30,7 @@
   roles:
     - { role: common, tags: common }
     - { role: mailnull, tags: mail }
+    - { role: bacula-client, tags: bacula-client }
     - { role: bacula-director, tags: bacula-director }
     
 

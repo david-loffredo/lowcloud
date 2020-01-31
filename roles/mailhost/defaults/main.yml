@@ -15,7 +15,6 @@
 friendly_networks: []
 
 mail_cfg_dir: /etc/postfix
-
  
 # Postfix runs in a chroot to this directory, which houses the mail
 # queue.  If we use LUKS for an encrypted data disk, move the queue

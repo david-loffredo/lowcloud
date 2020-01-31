@@ -6,7 +6,7 @@
 # cloud group, but we may add some PCs later.  If we ever have more
 # than one director, they will probably have different clients.
 #
-bacula_clients: "{{ groups['cloud'] }}"
+bacula_clients: "{{ (groups['cloud'] + groups['backup-server']) | unique}}"
 
 # Select database backend: mysql, pgsql or sqlite3.  Mysql and
 # Postgress need a password but Sqlite does not.
@@ -20,4 +20,5 @@ bacula_db_pkg:
   pgsql: bacula-director-pgsql
   sqlite3: bacula-director-sqlite3
 
-  
+# ok for sqlite, research the settings for mysql/postgres
+bacula_db_dump_args: bacula

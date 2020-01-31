@@ -1,6 +1,7 @@
 {# figure out he defaults in one place to make the body clearer -#}
 {%- set fd = hostvars[item] -%}
-{%- set fd_name = fd.bacula_client_name | default(fd.inventory_hostname_short + '-fd') -%}
+{%- set fd_short = fd.inventory_hostname_short -%}
+{%- set fd_name = fd.bacula_client_name | default(fd_short + '-fd') -%}
 {%- set fd_host = fd.bacula_client_host | default(fd.inventory_hostname) -%}
 {%- set fd_pw = fd.bacula_client_pw | default(bacula_default_client_pw) -%}
 {%- set fd_fdport = fd.bacula_client_fdport | default(bacula_default_client_fdport) -%}
@@ -9,6 +10,11 @@
 {%- set fd_tunkey = fd.bacula_tunnel_sshkeyname | default(bacula_default_tunnel_sshkeyname) -%}
 {%- set fd_tunnel = fd.bacula_client_tunnel | default(bacula_default_client_tunnel) -%}
 {%- set fd_tunnel_args = fd_tunacct+'@'+fd_host+' /etc/bacula/tunnel/'+fd_tunkey+' '+(fd_tunport|string) -%}
+{%- set fd_schedule = fd.bacula_client_schedule | default(bacula_default_client_schedule) -%}
+{%- set fd_fileset = fd.bacula_client_fileset | default({}) -%}
+{%- set fd_fileopts = fd_fileset.options | default(bacula_default_client_fileset.options) -%}
+{%- set fd_include = fd_fileset.include | default(bacula_default_client_fileset.include) -%}
+{%- set fd_exclude = fd_fileset.exclude | default(bacula_default_client_fileset.exclude) -%}
 
 # CLOUD CLIENT: {{ fd.inventory_hostname_short }} ========================================
 #
@@ -25,22 +31,22 @@ Client {
   Catalog = MyCatalog
 }
 
+{# Only define a job if we have files for this client -#}
+{% if fd_include %}
 # Look at the Reschedule Interval to keep trying a job until it
 # succeeds, like pinging a laptop until it shows up or bumblebee until
 # it is turned on.
+#
+#  Reschedule on Error = yes
+#  Reschedule Interval = 1 h
+#  Reschedule times = 12
 
 Job {
-  Name = "{{fd.inventory_hostname_short}}"
-  Type = Backup
+  Name = "{{fd_short}}"
+  JobDefs = "BackupJob"
   Client = {{ fd_name }}
-  FileSet="{{fd.inventory_hostname_short}}-files"
-  Schedule = "MonthlyCycle"
-  Storage = File
-  Messages = Standard
-  Max Full Interval = 1 month     # upgrade to full when older than a month
-  Pool = Monthly
-  Priority = 10
-#  Write Bootstrap = "/home/backup/bacula/wdir/%c.bsr"
+  FileSet = "{{fd_short}}-files"
+  Schedule = "{{fd_schedule}}"
 {% if fd_tunnel %}
   Run Before Job = "/etc/bacula/ssh-tunnel.sh {{fd_tunnel_args}}"
 #  Run After Job = tunnel auto closes
@@ -48,10 +54,10 @@ Job {
 }
 
 Job {
-  Name = "restore-{{fd.inventory_hostname_short}}"
+  Name = "restore-{{fd_short}}"
   Type = Restore
   Client = {{ fd_name }}
-  FileSet="{{fd.inventory_hostname_short}}-files"
+  FileSet = "{{fd_short}}-files"
   Where = /tmp/bacula-restores
   Messages = Standard
   Pool = Default
@@ -61,19 +67,30 @@ Job {
 {% endif %}
 }
 
-# List of files to be backed up
-# PARAMETERIZE THIS - the spool and such may not be there
 FileSet {
-  Name = "{{fd.inventory_hostname_short}}-files"
+  Name = "{{fd_short}}-files"
+{% if fd_fileset.vss | default(false) %}
+  Enable VSS = yes
+{% endif %}
   Include {
-    File = /etc/letsencrypt
-    File = /var/spool/postfix/etc/maildb/maildb.sqlite3
-    File = /var/vmail
-    File = /var/www
-    Options {signature=SHA1}
+{% if fd_fileopts %}
+    Options {
+{% for i in fd_fileopts %}
+      {{i}}
+{% endfor %}
+    }
+{% endif %}
+{% for i in fd_include %}
+    File = {{i}}
+{% endfor %}
   }
+{% if fd_exclude %}
   Exclude {
-    File = /var/private/mounted.txt
-    File = /var/vmail/mounted.txt
+{% for i in fd_exclude %}
+    File = {{i}}
+{% endfor %}
   }
+{% endif %}
 }
+
+{% endif %}
