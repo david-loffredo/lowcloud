@@ -28,6 +28,7 @@ vault_bacula_tunnel_sshkey: ~/.ssh/davebacula
 vault_bacula_client_pw:  [change me to very long gibberish]
 vault_bacula_storage_pw: [change me to very long gibberish]
 vault_bacula_console_pw: [change me to very long gibberish]
+#vault_bacula_db_pw: [if using pgsql or mysql]
 
 # Various mail passwords.  The crypt password is for mounting the
 # encrypted directory that contains the mail spool.  The relay

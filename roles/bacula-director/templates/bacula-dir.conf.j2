@@ -42,6 +42,7 @@ Catalog {
 {% else %}
   dbuser = "bacula"
   dbpassword = "{{bacula_db_pw}}"
+  dbaddress = localhost
 {% endif %}
 }
 
@@ -166,7 +167,7 @@ Job {
   Level = Full
   Pool = Catalog
   FileSet = "Catalog"
-  RunBeforeJob = "/etc/bacula/scripts/make_catalog_backup {{bacula_db_dump_args}}"
+  RunBeforeJob = "/etc/bacula/scripts/make_catalog_backup.pl MyCatalog"
   RunAfterJob  = "/etc/bacula/scripts/delete_catalog_backup"
   Write Bootstrap = "/var/lib/bacula/%n.bsr"
   Priority = 11  # after main backup

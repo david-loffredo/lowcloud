@@ -38,12 +38,18 @@ bacula_default_client_piddir: /run/bacula
 bacula_default_client_max_jobs: 20
 bacula_default_client_tunnel: True
 bacula_default_client_schedule: MonthlyCycle
+
+# Each of these is used if the equivalent is not defined in the local
+# version.  If the include list is empty, the Jobs and FileSet will be
+# omitted.  An Exclude block is generated only if the exclude list is
+# not empty.  Any text in the freeform: string is dumped in verbatim.
 bacula_default_client_fileset:
   options:
     - Signature = SHA1
     - Compression = gzip
   include: []
   exclude: []
+#  freeform: raw text for your own jobs and filesets
 
 bacula_default_tunnel_acct: bacula-tun
 bacula_default_tunnel_group: users

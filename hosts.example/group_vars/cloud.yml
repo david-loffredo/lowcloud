@@ -49,20 +49,17 @@ dovecot_use_dotlock: "{{ cryptdir_type|default('encfs') == 'encfs' }}"
 # under the encrypted root if you want to.  Add apache to the mailboot
 # services above if you do.
 #
+webdata_root:           /var/www
 #webdata_root:          "{{cryptdir_root}}/www"
 
 
 #==============================
 # Backup Directories - for mail and web server
 #
-bacula_default_client_fileset:
+bacula_client_fileset:
   include:
     - /etc/letsencrypt
     - "{{mail_db_root}}"
     - "{{mail_dkim_root}}"
     - "{{mail_spool_root}}"
     - "{{webdata_root}}"
-  exclude: []
-
-
-
