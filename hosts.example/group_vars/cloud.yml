@@ -56,6 +56,9 @@ webdata_root:           /var/www
 #==============================
 # Backup Directories - for mail and web server
 #
+# Should we include the rspamd dbdir /var/lib/rspamd
+# What about /var/log?
+#
 bacula_client_fileset:
   include:
     - /etc/letsencrypt

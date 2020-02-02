@@ -5,6 +5,12 @@
 # Dovecot for local mail delivery and IMAP access.  Do not install the
 # dovecot-pop3 package, because we will only use IMAP.
 
+# Saw the following in /var/log, might be a leftover from the default
+# install that had 143 enabled.  Only seems to show up once.  dovecot:
+# master: Error: systemd listens on port 143, but it's not configured
+# in Dovecot. Closing.
+ 
+
 - name: dovecot and related packages present
   package:
     state: present

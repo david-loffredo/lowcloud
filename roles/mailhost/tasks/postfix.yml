@@ -18,13 +18,6 @@
 
 # The queue directory must be present or else the chroot will not be
 # populated.
-
-# Seeing issue in log, has to do with socket think we were not
-# seeing it because original chroot had something we do not.
-# root@davecloud:/vault# grep "systemd listens" /var/log/mail.log 
-# Jan 23 22:55:52 davecloud dovecot: master: Error: systemd listens on port 143, but it's not configured in Dovecot. Closing.
-# Jan 23 22:55:52 davecloud dovecot: master: Error: systemd listens on port 143, but it's not configured in Dovecot. Closing.
-
 - name: other mail directories and permissions
   file: state=directory path={{item}} mode=0755
   with_items:
@@ -33,11 +26,10 @@
     
 
 # The virtual user database holds account details.  We use SQLite
-# because this small, simple, and relatively static, but you can use
-# MySQL, Maria, or Postgres if you prefer.  I've written the mailcfg
-# perl utility to manage the database.  It uses DBI and might just
-# need minor changes to the connect statement and SQL for use with
-# other RDBs.
+# because this small, simple, and relatively static, but MySQL, Maria,
+# or Postgres would also work.  I wrote the mailcfg perl script to
+# manage the database.  It uses DBI and might just need minor changes
+# to the connect statement and SQL for the other RDBs.
 - name: postfix and related packages present
   package:
     state: present
@@ -61,10 +53,11 @@
   with_items:
     - main.cf
     - master.cf
+    - denied_recipients
+    - sqlite-sender-login-maps.cf
     - sqlite-virtual-alias-maps.cf
     - sqlite-virtual-mailbox-domains.cf
     - sqlite-virtual-mailbox-maps.cf
-    - denied_recipients
   notify:
     - postmap files
     - restart postfix

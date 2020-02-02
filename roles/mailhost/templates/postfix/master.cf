@@ -15,6 +15,8 @@ smtp      inet  n       -       y       -       -       smtpd
 #smtpd     pass  -       -       y       -       -       smtpd
 #dnsblog   unix  -       -       y       -       0       dnsblog
 #tlsproxy  unix  -       -       y       -       0       tlsproxy
+
+# SMTP with STARTTLS on port 587.   Only with AUTH
 submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
@@ -23,15 +25,15 @@ submission inet n       -       y       -       -       smtpd
   -o smtpd_sasl_path=private/auth
   -o smtpd_reject_unlisted_recipient=no
   -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_sender_restrictions=reject_sender_login_mismatch
   -o milter_macro_daemon_name=ORIGINATING
-#  -o smtpd_client_restrictions=$mua_client_restrictions
+# client_restrictions say only allow authenticated clients to connect
+# sender_restrictions say auth must own that address to use it.  Sql lookup
 #  -o smtpd_helo_restrictions=$mua_helo_restrictions
-#  -o smtpd_sender_restrictions=$mua_sender_restrictions
 #  -o smtpd_recipient_restrictions=
 #  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-#  -o milter_macro_daemon_name=ORIGINATING
 
-# SMTP over SSL/TLS on port 465.
+# SMTP over SSL/TLS on port 465.   Only with AUTH
 smtps     inet  n       -       y       -       -       smtpd
   -o syslog_name=postfix/smtps
   -o smtpd_tls_wrappermode=yes
@@ -39,14 +41,13 @@ smtps     inet  n       -       y       -       -       smtpd
   -o smtpd_sasl_type=dovecot
   -o smtpd_sasl_path=private/auth
   -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_sender_restrictions=reject_sender_login_mismatch
   -o milter_macro_daemon_name=ORIGINATING
   # -o smtpd_reject_unlisted_recipient=no
-  # -o smtpd_client_restrictions=$mua_client_restrictions
   # -o smtpd_helo_restrictions=$mua_helo_restrictions
-  # -o smtpd_sender_restrictions=$mua_sender_restrictions
   # -o smtpd_recipient_restrictions=
   # -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-  # -o milter_macro_daemon_name=ORIGINATING
+
 #628       inet  n       -       y       -       -       qmqpd
 pickup    unix  n       -       y       60      1       pickup
 cleanup   unix  n       -       y       -       0       cleanup

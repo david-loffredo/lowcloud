@@ -1,0 +1,9 @@
+
+# Simple SQLite query for sender/login map.  Returns list of AUTH
+# logins that are allowed to send as a given address.  For a given
+# address, this includes the address (if an auth user), the alias
+# destination (if an alias), and the relay user if the address is one
+# that we handle mail for.
+
+dbpath = {{ mail_db }}
+query = SELECT email FROM users WHERE email='%s' AND active=1 UNION SELECT dst FROM aliases WHERE src='%s' UNION SELECT 'relay@{{domain}}' FROM domains WHERE name='%d'

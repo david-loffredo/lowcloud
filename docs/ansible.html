@@ -55,30 +55,6 @@ control, and reproduce it as needed.  Ansible works remotely over ssh
 and can operate in parallel on lists of hosts, so you can configure or
 reproduce whole networks of machines.</p>
 
-<h2>Ansible Notes</h2>
-
-<p>If you need to specify some parameters before a batch install, you
-can use the debconf module.  Typically we install then configure, but
-this might be useful in certain situations.</p>
-
-<PRE>
-#dbconfig-common/bacula-director-mysql.conf:dbc_dbpass='whereami' #
-dbconfig-common
-
-# from debconf-show
-#  bacula-director-pgsql/pgsql/app-pass: (password omitted)
-#  bacula-director-pgsql/app-password-confirm: (password omitted)
-#  bacula-director-pgsql/pgsql/admin-pass: (password omitted)
-#  bacula-director-pgsql/password-confirm: (password omitted)
-
-# - name: Set MySQL root password before installing
-#   debconf: name='mysql-server' question='mysql-server/root_password' value='{{mysql_root_pass | quote}}' vtype='password'
-
-# - name: Confirm MySQL root password before installing
-#   debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{mysql_root_pass | quote}}' vtype='password'
-
-</PRE>
-
 <div class=copyright>
 <p>Copyright &copy; 2020 David Loffredo, licensed under
 <a rel="license" href="https://creativecommons.org/licenses/by/4.0/">

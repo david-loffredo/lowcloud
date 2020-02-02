@@ -64,8 +64,6 @@ virtual_alias_maps = sqlite:/etc/postfix/sqlite-virtual-alias-maps.cf
 local_recipient_maps = $virtual_mailbox_maps
 
 
-
-
 # ==============================
 # TLS parameters
 
@@ -159,7 +157,7 @@ smtpd_recipient_restrictions =
   reject_non_fqdn_recipient,
   reject_unknown_recipient_domain
 
-#Some DNS BL's - high availability:
+#Some DNS BL's - high availability:  HANDLED BY RSPAMD
 #    reject_rbl_client zen.spamhaus.org,
 #    reject_rbl_client bl.spamcop.net,
 #    reject_rbl_client dul.dnsbl.sorbs.net,
@@ -179,6 +177,11 @@ smtpd_sender_restrictions =
   permit_sasl_authenticated,
   reject_unknown_reverse_client_hostname
 #  reject_unknown_address
+
+# Declare owners for each FROM mail address, AUTH user can send as
+# self or an alias, relay can send as anyone.  Enforced for submission
+# and smtps in master.cf
+smtpd_sender_login_maps = sqlite:/etc/postfix/sqlite-sender-login-maps.cf
 
 # Deny any useful feedback to abusing systems by changing all errors
 # to 554: Transaction Failed

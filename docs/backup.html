@@ -89,15 +89,27 @@ bacula_tunnel_sshpub:   "{{ lookup('file', '~/.ssh/tunnel.auth') }}"
 bacula_tunnel_sshkeypath: ~/.ssh/tunnel.key
 </PRE>
 
-<p>The client does not need many settings.  We will eventually have a
-variable for the file lists to back up.
-
-INCLUDE THE RSPAMD DBDIR /var/lib/rspamd
-
+<p>The client does not need many settings.
+The <code>bacula_client_fileset</code> variable describes the
+directories you want backed up.  There are many knobs other knobs to
+play with if you want to do something fancy.
 
 <PRE class=code>
-# Eventual list of files
+bacula_client_fileset:
+  include:
+    - /etc/letsencrypt
+    - "{{mail_db_root}}"
+    - "{{mail_dkim_root}}"
+    - "{{mail_spool_root}}"
+    - "{{webdata_root}}"
 </PRE>
+
+<p>If you have detailed knowledge of Bacula, you can add
+<code>options</code> and <code>exclude</code> entries to
+the <code>bacula_client_fileset</code> dictionary.  These translate to
+the equivalent Bacula FileSet sub-blocks.  You can also include
+a <code>freeform</code> entry with raw text for your own jobs and
+filesets.
 
 <p>If a client does not need an ssh tunnel,
 set <code>bacula_client_tunnel</code> to false in variables <em>for
@@ -116,9 +128,9 @@ need to be open so they can contact each other - add 'bacula' to
 variables.  Most roles need settings for just one machine at a time.
 The Bacula roles need settings over a network of machines, like each
 client of a director.  Defaults makes it even more interesting.
-The <code>bacula-common</code> role is used by the client and director
-roles to coordinate these settings.  The comments in that role has
-more discussion on defaults and hostvars.
+The <code>bacula-dflts</code> role is used by the client and director
+roles to coordinate these settings.  The source files for that role
+contain more discussion on defaults and hostvars.
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -127,7 +139,6 @@ more discussion on defaults and hostvars.
 <p>Backups are usually automatic, and an status email will be sent to
 the admin account when they are done.  All other interaction is done
 on the director machine using the Bacula console <code>bconsole</code>.
-
 
 <p>I recommend firing up the console and getting familiar with it
 before you need to.  Try to manually run a backup ("run") and try to

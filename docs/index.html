@@ -9,7 +9,7 @@
 <body>
 <div class=toc>
 <UL>
-<LI><A href="https://github.com/david-loffredo/davecloud">Github Repo</A>
+<LI><A href="https://github.com/david-loffredo/davecloud">GitHub Repo</A>
 <p>
 <li><a href="#pkgs">Packages</a>
 <li><a href="#start">Getting Started</a>
@@ -34,18 +34,15 @@ on an old machine in your house.  My three goals were:</p>
 <li>A ground-up understanding of what is on the machine and why.
 </ol>
 
-<p>These pages explain <em>what</em> I learned, <em>how</em> to
-configure it, and <em>why</em> I made each choice, plus some fun
+<p>These pages cover <em>what</em> I learned, <em>how</em> to
+configure it, and <em>why</em> I made each choice, with some fun
 pictures of my old hardware.
 
-If those details don't interest you, a push-button mail server
-like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
-<a href="https://mailinabox.email/">mail-in-a-box</a>, or
-<a href="https://github.com/progmaticltd/homebox">homebox</a> is a
-fine alternative.</p>
 
 <p>I hope this is a useful starting point for <em>your</em> goals
 and choices.</p>
+
+
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -78,6 +75,11 @@ patches once a day.</p>
 <li><a href="dns.html">DNS</a>
 </ul>
 
+<p>If these details don't interest you, a push-button mail server
+like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
+<a href="https://mailinabox.email/">mail-in-a-box</a>, or
+<a href="https://github.com/progmaticltd/homebox">homebox</a> is a
+fine alternative.</p>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -117,14 +119,13 @@ things.</p>
 
 
 <p>The <code>myhosts/hosts</code> file
-identifies <a href="machines.html">the machines that you are
-managing</a>, and organizes them into groups.  The playbooks describe
-tasks and roles that apply to the machines in each group.  We use two
-groups: <code>cloud</code> and <code>backup-server</code>.</p>
+identifies <a href="machines.html">your machines</a>, and organizes
+them into groups.  We use two groups: <code>cloud</code>
+and <code>backup-server</code>.  The playbooks apply tasks to the
+machines in each group.  </p>
 
-<p>The machines are listed by fully qualified domain name (FQDN) and
-IP address, so the machine does not need to show up in DNS yet.
-Ansible uses the <code>ansible_host</code> variable to connect, and
+<p>Machines are listed by fully qualified domain name (FQDN) and IP
+address.  Ansible uses the <code>ansible_host</code> to connect, and
 sets the <code>inventory_hostname</code> variable to the FQDN for use
 in the scripts.</p>
 
@@ -141,10 +142,9 @@ example.com		ansible_host=1.2.3.4
 guardian.example.com	ansible_host=5.6.7.8
 </PRE>
 
-<p>After you have provisioned the machines, <a href="dns.html">create
-DNS entries for them</a> using your registrar or other service.  We
-may eventually run Bind and make the cloud machine the DNS master, but
-still getting that sorted out.</p>
+<p>Once you have machines, <a href="dns.html">create DNS entries for
+them</a> using your registrar or other service.  We may eventually run
+Bind on the cloud machine, but still getting that sorted out.</p>
 
 
 <!-- ============================== -->
@@ -152,23 +152,22 @@ still getting that sorted out.</p>
 <A NAME=vars></A>Variables</H2>
 
 <p>The <code>myhosts/group_vars</code> directory contains settings for
-the groups of machines in the hosts file.  Ansible looks for
+the machine groups in the hosts file.  Ansible looks for
 a <code>&lt;group-name&gt;.yml</code> file or
 a <code>&lt;group-name&gt;/</code> directory containing YML files.
 Every machine belongs to the special <code>all</code> group.</p>
 
-<p>Most of our settings are in <code>group_vars/all/all.yml</code>.
-Look through this file and customize the values as appropriate.  Some
-things that are unique to the mail and web server, and that we do not
-want to apply to the backup server, are
-in <code>group_vars/cloud.yml</code>.
+<p>Most settings are in <code>all/all.yml</code>.  Look through this
+file and customize the values as appropriate.  A few things unique to
+each machine are kept in <code>cloud.yml</code>
+and <code>backup-server.yml</code>.
 
 <p>Sensitive values like passwords are in
-<code>group_vars/all/vault.yml</code>, which will be an encrypted
+<code>all/vault.yml</code>, which will be an encrypted
 <a href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">Ansible
 vault file</a>.  The <code>vault.yml</code> that you copied is not yet
-encrypted and contains placeholders.  Edit it to contain real values
-and then encrypt it with your own unique password:
+encrypted and contains placeholders.  Edit it to contain real values,
+then encrypt it with your own unique password:
 
 <PRE class=code>
 $ ansible-vault encrypt vault.yml	# encrypt plain file
@@ -221,11 +220,12 @@ lowercase <code>-k</code> flag is a shorthand
 for <code>--ask-pass</code>.  This is the only time a password-based
 login ever happens.  Ansible needs the <code>sshpass</code> package on
 your local machine to do password-based login to a remote machine.  If
-you can pre-install an ssh key for root, you could change this
-logic.</p>
+you can pre-install an ssh key for root, you could use
+the <code>--private-key</code> flag instead.</p>
 
 <PRE class=code>
-$ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit machinename
+$ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit cloud
+$ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit backup-server
 </PRE>
 
 <p>After this, remote password login is disabled and everything
