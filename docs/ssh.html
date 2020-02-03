@@ -10,6 +10,9 @@
 <div class=toc>
 <UL>
 <LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#keys">SSH Keys</a>
+<li><a href="#play">Other Notes</a>
 </UL>
 </div>
 
@@ -49,6 +52,34 @@ the <a href="encrypt.html">encryption configuration</a>.</p>
 
 <!-- ============================== -->
 <H2 class=rule>
+<A NAME=keys></A>SSH Keys</H2>
+
+<p>These playbooks expect a SSH keys for the deploy account and the
+Bacula tunnel.  The tunnel key should not have a passphrase because it
+will be used by scripts, but it is your choice whether to use one for
+the deploy account key.</p>
+
+<p>I recommend using
+modern <a href="https://en.wikipedia.org/wiki/EdDSA">Ed25519 keys</a>
+unless you need to support really old SSH clients.</p>
+
+<PRE class=code>
+$ ssh-keygen -t ed25519 -f davedeploy -C deploy-yourhost -N ''
+$ ssh-keygen -t ed25519 -f davebacula -C bacula-tunnel-yourhost -N ''
+</PRE>
+
+
+<p>The public key needs to be in openssh form.  If you happen to use
+putty to generate a key, you can convert it as follows.  Install the
+<code>putty-utils</code> package and do:</p>
+
+<PRE class=code>
+$ puttygen davedeploy.ppk -O public-openssh -o davedeploy.pub
+$ puttygen davedeploy.ppk -O private-openssh -o davedeploy
+</PRE>
+
+<!-- ============================== -->
+<H2 class=rule>
 <A NAME=play></A>Other Notes</H2>
 
 <p>If you happen to change host keys, like when rebuilding a machine,
@@ -61,15 +92,6 @@ $ ssh-keygen -f "/home/foo/.ssh/known_hosts" -R "example.com"
 $ ssh-keygen -f "/home/foo/.ssh/known_hosts" -R "11.22.33.44"
 </PRE>
 
-
-<p>The public key needs to be in openssh form.  If you happen to use
-putty to generate a key, you can convert it as follows.  Install the
-<code>putty-utils</code> package and do:</p>
-
-<PRE class=code>
-$ puttygen foobar.ppk -O public-openssh -o foobar.pub
-$ puttygen foobar.ppk -O private-openssh -o foobar.key
-</PRE>
 <figure>
 <img src="images/model-m.jpg" alt="Model M">
 <figcaption>When equipped with a Model M keyboard, using a public key

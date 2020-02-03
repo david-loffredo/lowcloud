@@ -12,11 +12,13 @@
 # file can stay encrypted while less sensitive settings are cleartext
 # in the all.yml file.  Everything can be kept under source control.
 
-# Common credentials for root and deploy accounts.  
-# Generate modern SSH keys with
-# ssh-keygen -t ed25519 -N '' -C comment -f private
-
+# Generate modern SSH keys for deploy and the bacula tunnel:
+#
+# ssh-keygen -t ed25519 -f davedeploy -C deploy-yourhost -N ''
+# ssh-keygen -t ed25519 -f davebacula -C bacula-tunnel-yourhost -N ''
+#
 # Create the pwhash for passwords with "mkpasswd --method=sha-512"
+#
 vault_deploy_sshpub: ~/.ssh/davedeploy.pub
 vault_deploy_sshkey: ~/.ssh/davedeploy
 vault_deploy_pwhash: [change me to hash like $6$verylongcryptstring]
@@ -30,10 +32,9 @@ vault_bacula_storage_pw: [change me to very long gibberish]
 vault_bacula_console_pw: [change me to very long gibberish]
 #vault_bacula_db_pw: [if using pgsql or mysql]
 
-# Various mail passwords.  The crypt password is for mounting the
-# encrypted directory that contains the mail spool.  The relay
-# password is for client machines to authenticate to the mailhost so
-# they can send local system mail.
+# The cryptdir password is for mounting the encrypted directory that
+# contains the mail spool.  The relay password is for client machines
+# to authenticate to the mailhost so they can send local system mail.
 vault_cryptdir_pw: [change me to cleartext password]
 vault_relay_pw:    [change me to cleartext password]
 

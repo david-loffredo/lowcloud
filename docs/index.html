@@ -167,7 +167,8 @@ and <code>backup-server.yml</code>.
 <a href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">Ansible
 vault file</a>.  The <code>vault.yml</code> that you copied is not yet
 encrypted and contains placeholders.  Edit it to contain real values,
-then encrypt it with your own unique password:
+<a href="ssh.html#keys">generate some ssh keys</a>, then encrypt it
+with your own unique password:
 
 <PRE class=code>
 $ ansible-vault encrypt vault.yml	# encrypt plain file
