@@ -130,7 +130,7 @@
 
 # we do not enable these at boot because they may need data from the
 # encrypted mail directories
-- name: spam services start at boot: {{mail_services_bootstart}}
+- name: spam services start at boot - {{mail_services_bootstart}}
   service: name={{ item }} state=started enabled={{mail_services_bootstart}}
   with_items:
     - redis-server

@@ -44,7 +44,7 @@
 # "sudo update-rc.d postfix disable" and change the postfix links from
 # rc3.d/ and rc5.d/S01postfix to the equivalent K links.
 #
-- name: postfix start at boot: {{mail_services_bootstart}}
+- name: postfix start at boot - {{mail_services_bootstart}}
   service: name=postfix enabled={{mail_services_bootstart}}
 
 - name: postfix configuration present

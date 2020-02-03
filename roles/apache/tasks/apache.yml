@@ -65,5 +65,5 @@
 #  - rotatelogs (Periodically stop writing to a logfile and open a new one)
 #  - split-logfile (Split a single log including multiple vhosts)
 
-- name: apache start at boot: {{web_services_bootstart}}
+- name: apache start at boot - {{web_services_bootstart}}
   service: name=apache2 enabled={{web_services_bootstart}}

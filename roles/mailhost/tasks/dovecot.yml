@@ -26,7 +26,7 @@
 # Do not start dovecot at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  
 #
-- name: dovecot start at boot: {{mail_services_bootstart}}
+- name: dovecot start at boot - {{mail_services_bootstart}}
   service: name=dovecot enabled={{mail_services_bootstart}}
 
 - name: spool directories for mail domain are present
