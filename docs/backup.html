@@ -87,6 +87,9 @@ bacula_console_pw: "{{ vault_bacula_console_pw }}"
 
 bacula_tunnel_sshpub:   "{{ lookup('file', '~/.ssh/tunnel.auth') }}"
 bacula_tunnel_sshkeypath: ~/.ssh/tunnel.key
+
+# put the backups where you prefer.
+bacula_storage_datadir: /backup/bacula
 </PRE>
 
 <p>The client does not need many settings.

@@ -4,3 +4,17 @@
 # We install the bacula client on the director machine too, used when
 # backing up the file catalog.  It is local, so no tunnel needed.
 bacula_client_tunnel: no
+
+# start service at boot unless using encrypted dirs
+bacula_director_bootstart: "{{ cryptdir_type == 'none' }}"
+
+# If you want to store the backed up data on an encrypted partition,
+# you could set up luks on a volume.  
+cryptdir_type: none
+
+#cryptdir_type: luks
+#cryptdir_luks_dev: "/dev/replace-with-real-device"
+#cryptdir_boot_script: /usr/sbin/bootcrypt
+#cryptdir_boot_services:
+#  - bacula-dir
+#  - bacula-sd

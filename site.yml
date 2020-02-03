@@ -30,6 +30,7 @@
   roles:
     - { role: common, tags: common }
     - { role: mailnull, tags: mail }
+    - { role: cryptdir, tags: cryptdir }
     - { role: bacula-client, tags: bacula-client }
     - { role: bacula-director, tags: bacula-director }
     

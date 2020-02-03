@@ -1,0 +1,7 @@
+---
+# On Raspberry Pis, root has a starred password and the only account
+# that can log in is 'pi'.
+
+# Tried defining in the INI under [raspberry-pi:vars] but the value
+# did not seem to get picked up.
+first_acct: pi 

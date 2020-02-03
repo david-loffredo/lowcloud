@@ -17,4 +17,4 @@
   template: src=cryptdirboot.j2
     dest={{cryptdir_boot_script}}
     owner=root group=root mode=0755
-  when: cryptdir_boot_script is defined
+  when: cryptdir_type != 'none'

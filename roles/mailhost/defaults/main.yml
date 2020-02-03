@@ -15,6 +15,9 @@
 friendly_networks: []
 
 mail_cfg_dir: /etc/postfix
+
+# start services at boot unless using encrypted dirs
+mail_services_bootstart: yes
  
 # Postfix runs in a chroot to this directory, which houses the mail
 # queue.  If we use LUKS for an encrypted data disk, move the queue

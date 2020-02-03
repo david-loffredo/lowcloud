@@ -1,12 +1,17 @@
 ---
-# Initial config of a server to lock down ssh.
+# Initial config of a server to lock down ssh and to create the
+# 'deploy' user for all further work.  Run as the user given by the
+# first_acct variable, which is usually root, but may be the 'pi'
+# account on RPi
+
 # LIMIT THE PLAY to the just the machine that you want set up.
-# ansible-playbook site.yml --limit foobar --tags first
+# ansible-playbook first.yml --limit foobar
 
 - name: first setup of new server
   hosts: all
   gather_facts: no
-  remote_user: "{{ first_acct }}"
+  remote_user: "{{ first_acct|default('root') }}"
+  become: yes
   port: 22
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

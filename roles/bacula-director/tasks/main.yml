@@ -116,7 +116,7 @@
 # RedHat and Suse would also need stuff in sysconfig
 
 - name: bacula services enabled and running
-  service: name={{item}} enabled=yes state=started
+  service: name={{item}} enabled={{bacula_director_bootstart}} state=started
   with_items:
     - bacula-dir
     - bacula-sd

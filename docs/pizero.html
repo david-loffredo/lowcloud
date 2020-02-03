@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Setting up a Pi Zero</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+</UL>
+</div>
+
+<div class=main>
+
+<H1>Setting up a Pi Zero</H1>
+
+<p>These are just some notes on installing Raspbian and setting up a
+Pi Zero from scratch.  It assumes that you work from a Linux machine,
+which you already need to use Ansible.  There is more information on
+the <a href="https://www.raspberrypi.org/documentation/installation/installing-images/README.md">Raspberry Pi site</a>.</p>
+
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=sdcard></A>The SD Card</H2>
+
+<p>Download
+the <a href="https://www.raspberrypi.org/downloads/raspbian/">latest
+Raspbian image</a>.  The Lite minimal image is fine, because it will
+be running headless.  Verify it with <code>sha256sum</code> to make
+sure that you have a good download.
+
+<PRE class=code>
+# compare output with the SHA-256 on the downloads page
+$ sha256sum 2019-09-26-raspbian-buster-lite.zip
+</PRE>
+
+<p>Next, push the image to the SD card.  Run <code>lsblk -p</code>
+before and after inserting the SD card to find the device name.  It is
+often <code>/dev/mmcblk0</code>.  Umount any partitions from the SD
+card.
+
+<PRE class=code>
+$ umount /dev/mmcblk0p1
+$ umount /dev/mmcblk0p2
+</PRE>
+
+<p>Write the image with DD, unzip it to stream if zipped.  Sync to
+flush the write cache and then unmount your SD card.</p>
+    
+<PRE class=code>
+# if unzipped
+$ dd bs=4M if=2019-09-26-raspbian-buster-lite.img of=/dev/mmcblk0 conv=fsync
+
+# if zipped
+$ unzip -p 2019-09-26-raspbian-buster-lite.zip | sudo dd of=/dev/mmcblk0 bs=4M conv=fsync status=progress
+
+$ sync 
+$ umount /dev/mmcblk0
+</PRE>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=firstboot></A>First Boot</H2>
+
+<p>Put the SD card into the Pi, power it up, and then login as
+pi/raspberry.  Root has a starred password and pi is the only account
+that can log in.</p>
+
+<p>Run <code>sudo raspi-config</code> and set up wifi under "Network
+Options".  Exit and verify that you have a good connection by running
+<code>ifconfig</code> and checking the <code>wlan0</code> interface.
+Under "Boot Options" make sure you are using Text console, no
+autologin.</p>
+
+<p>SSH is not enabled or running by default, so start it.  Change the
+password for pi if you are not going to immediately run
+the <code>first.yml</code> playbook.</p>
+
+<PRE class=code>
+$ sudo service ssh start
+</PRE>
+
+<p>When running the first.yml playbook on a Pi, it might die when
+doing a dist upgrade just from packages timing out.  Just try again.
+After running the first playbook, you can log in as 'deploy' and
+remove the pi account with:</p>
+
+<PRE class=code>
+$ sudo deluser --remove-home pi
+</PRE>
+
+<p>Disabling swap can also avoid memory card corruption.  Check
+with <code>free -m</code>.</p>
+
+<PRE class=code>
+$ sudo dphys-swapfile swapoff
+$ sudo dphys-swapfile uninstall
+$ sudo update-rc.d dphys-swapfile remove
+</PRE>
+
+<p>To mount exfat USB drives, you need the exfat utilities.
+
+<PRE class=code>
+sudo apt-get install exfat-fuse exfat-utils
+</PRE>
+
+
+<div class=copyright>
+<p>Copyright &copy; 2020 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+CC BY 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>
+

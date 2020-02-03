@@ -33,6 +33,9 @@ cryptdir_boot_services:
   - redis-server
   - rspamd
 
+# start services at boot unless using encrypted dirs
+mail_services_bootstart: "{{ cryptdir_type == 'none' }}"
+
 # Keep mail spool, user database and keys in the encrypted directory.
 # You can move the mail queue there if using luks, but not with encfs.
 mail_spool_root:        "{{cryptdir_root}}/vmail"

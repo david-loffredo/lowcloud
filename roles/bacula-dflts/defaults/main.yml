@@ -64,8 +64,11 @@ bacula_default_tunnel_fdport: 9112
 bacula_default_director_port: 9101
 bacula_default_director_query_file: /etc/bacula/scripts/query.sql
 bacula_default_director_workdir: /var/lib/bacula
+bacula_default_director_bsrdir: '{{bacula_default_director_workdir}}'
 bacula_default_director_piddir: /run/bacula
 bacula_default_director_max_jobs: 1
+bacula_default_director_bootstart: yes
+
 
 # The storage_host is a symbolic name passed from the director to the
 # client that the client must resolve to the storage machine.  When we
@@ -114,8 +117,10 @@ bacula_director_name:           "{{ inventory_hostname_short }}-dir"
 bacula_director_port:           "{{ bacula_default_director_port }}"
 bacula_director_query_file:     "{{ bacula_default_director_query_file }}"
 bacula_director_workdir:        "{{ bacula_default_director_workdir }}"
+bacula_director_bsrdir:         "{{ bacula_default_director_bsrdir }}"
 bacula_director_piddir:         "{{ bacula_default_director_piddir }}"
 bacula_director_max_jobs:       "{{ bacula_default_director_max_jobs }}"
+bacula_director_bootstart:      "{{ bacula_default_director_bootstart }}"
 
 # This is symbolic name passed by the director to the client that
 # needs to resolve to the storage machine.  When we are working over

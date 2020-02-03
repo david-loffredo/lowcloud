@@ -130,6 +130,9 @@
     - /etc/ssh/ssh_host_rsa_key
     - /etc/ssh/ssh_host_rsa_key.pub
 
+# Just make sure, RPis do not enable by default.
+- name: ssh enabled at boot
+  service: name=ssh enabled=yes
 
 # add line Admin-Email: {{admin_email}} to /etc/debconf.conf
 # lineinfile for /etc/nssswitch.conf

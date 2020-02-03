@@ -7,3 +7,6 @@
 # backup, etc) so broken out into this separate defaults-only role.
 #
 webdata_root: /var/www
+
+# start services at boot unless using encrypted dirs
+web_services_bootstart: yes

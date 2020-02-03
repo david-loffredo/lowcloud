@@ -22,8 +22,8 @@
 <p>These playbooks assume that you will be setting up two machines.
 Typically, the mail and web server is in the cloud while backups are
 run by a machine that you physically control (old PC in a corner).  I
-have run the setup with a $5/mo cloud machine and a Raspberry Pi Zero
-on a shelf.</p>
+have run the setup with a $5/mo cloud machine and
+a <a href="pizero.html">Raspberry Pi Zero</a> on a shelf.</p>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -34,28 +34,27 @@ to all ports.  Residential ISP connections have a semi-dynamic IP
 address and typically block incoming connections to port 25, so they
 are useless for running a public mail server.</p>
 
-<p>There are two ways to get this: Use your own hardware with a
-business class ISP connection, or use someone else's hardware provided
-as a Virtual Private Server (VPS) in the cloud.  It doesn't matter
-which you do for the purposes of these playbooks.</p>
+<p>There are two ways to get this: your own hardware with a business
+class ISP connection, or someone else's hardware provided as a Virtual
+Private Server (VPS) in the cloud.  It doesn't matter which you do for
+the purposes of these playbooks.</p>
 
 <p>There are many VPS providers.  In the USA, Linode (founded 2003),
 Amazon EC2 (launched 2006), Microsoft Azure (launched 2010), or
 DigitalOcean (founded 2011) are all solid choices.  Linode and
 DigitalOcean have similar pricing with $5/10/20/etc. packages that
 include CPU, memory, disk, and network bandwidth.  Amazon and
-Microsoft charge for everything separately with different rate classes
-(on-demand vs reserved) and you assemble your own.</p>
+Microsoft charge for everything separately.</p>
 
-<p>For the simple mail host and static web site that these scripts set
-up, a small (1GB nanode, t3.micro, Av2 A1, 1GB droplet) host is fine.
-You might need something bigger if you add other services, or a
-database-heavy dynamic website like Wordpress.  The providers usually
-let you migrate to a larger instance later on.</p>
+<p>For a simple mail host and static web site, a small (1GB nanode,
+t3.micro, Av2 A1, 1GB droplet) host is fine.  You might need something
+bigger if you add other services, or a database-heavy dynamic website
+like Wordpress.  The providers usually let you migrate to a larger
+instance later on.</p>
 
-<p>I prefer Linode because they have a long history, a solid focus, well
-managed network, and keep things simple.  If you choose them, it would
-be nice if you signed up using
+<p>I prefer Linode because they have a long history, well managed
+network, and keep things simple.  If you choose them, it would be nice
+if you signed up using
 <a href="https://www.linode.com/?r=e74c06bee7a764232b36ae63d0cebd3b8287fd4c">my
 referral code</a> (they give me few bucks off my bill if you stick
 around for three months).</p>
@@ -81,10 +80,9 @@ machines to fetch backups and send outgoing status mail.  Nothing on
 the internet needs to find it, so it can live happily behind a
 residential ISP connection.</p>
 
-<p>Literally anything that runs Linux will work fine, even a Raspberry
-Pi Zero.  Just make sure it has some disk space for the backup data.
-For just personal email and some system files, even a good-sized USB
-key is probably sufficient.</p>
+<p>Literally anything that runs Linux will work fine, as long as it
+has some disk space for the backup data.  For personal email and some
+system files, even a good-sized USB key is probably sufficient.</p>
 
 <p>The playbooks assume that you are using a fresh machine.  If you
 use a NAS that is already running other things,

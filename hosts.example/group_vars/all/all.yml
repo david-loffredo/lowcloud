@@ -13,13 +13,8 @@
 domain: example.com
 
 #========================================
-# Common Deploy Credentials
+# Common credentials for deployment account.
 #
-# Account used to create the deploy account and lock down ssh. Usually
-# root, but may be the 'pi' account on a raspberry pi
-first_acct: root 
-
-# Deploy account is the only login 
 deploy_acct: deploy
 deploy_acct_group: users
 deploy_acct_sshpub: "{{ vault_deploy_sshpub }}"
@@ -122,5 +117,8 @@ bacula_console_pw:      "{{ vault_bacula_console_pw }}"
 bacula_tunnel_sshpub:   "{{ vault_bacula_tunnel_sshpub }}"
 bacula_tunnel_sshkey:   "{{ vault_bacula_tunnel_sshkey }}"
 # bacula_clients defaults to cloud group, set if extra machines
+
+# put the backups where you want
+bacula_storage_datadir: /backup/bacula
 
 #bacula_client_tunnel: no

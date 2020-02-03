@@ -151,7 +151,7 @@ JobDefs {
   Priority = 10
   Max Full Interval = 1 month     # upgrade to full when older than a month
   Rerun failed levels = yes
-  Write Bootstrap = "/var/lib/bacula/%c.bsr"
+  Write Bootstrap = "{{bacula_director_bsrdir}}/%c.bsr"
 }
 
 # CATALOG BACKUP ========================================
@@ -169,7 +169,7 @@ Job {
   FileSet = "Catalog"
   RunBeforeJob = "/etc/bacula/scripts/make_catalog_backup.pl MyCatalog"
   RunAfterJob  = "/etc/bacula/scripts/delete_catalog_backup"
-  Write Bootstrap = "/var/lib/bacula/%n.bsr"
+  Write Bootstrap = "{{bacula_director_bsrdir}}/%n.bsr"
   Priority = 11  # after main backup
 }
 

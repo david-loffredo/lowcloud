@@ -1,0 +1,22 @@
+
+## [Unreleased]
+
+- backup-server play now brings in the cryptdir role.  Encryption type
+  is 'none' by default, set to luks to encrypt the backups at rest.
+
+- bacula_director_bootstart controls whether director starts at boot.
+  Starts normally when encryption type is 'none'.
+  
+- mail_services_bootstart controls whether mail starts at boot.
+  Starts normally when encryption type is 'none'.
+
+- web_services_bootstart controls whether apache starts at boot.
+  Starts normally but can be overridden if using encryption for the
+  document root.
+
+- The first.yml playbook now does sudo on raspberry pis.
+
+## [1.0] - 2020-02-02
+
+- Baseline release.  Mail, web, and backup all working, although there
+  may be rough spots here and there
