@@ -3,15 +3,14 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>DaveCloud Mail and Backup</title>
+<title>LowCloud Mail, Web, and Backup</title>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 <div class=toc>
 <UL>
-<LI><A href="https://github.com/david-loffredo/davecloud">GitHub Repo</A>
+<LI><A href="https://github.com/david-loffredo/lowcloud">GitHub Repo</A>
 <p>
-<li><a href="#pkgs">Packages</a>
 <li><a href="#start">Getting Started</a>
 <li><a href="#hosts">Hosts</a>
 <li><a href="#vars">Variables</a>
@@ -22,49 +21,31 @@
 </div>
 
 <div class=main>
-<H1>DaveCloud Mail, Web, and Backup</H1>
+<H1>LowCloud Mail, Web, and Backup</H1>
 
-<p>These Ansible scripts set up mail and web service, with regular
-backups to a second machine.  Typically, the server is on
-a <a href="machines.html">machine in the cloud</a> while backups are
-on an old machine in your house.  My three goals were:</p>
+<p>
+These Ansible roles set up mail and web service, usually in the cloud,
+with backups from a second private machine.  The low machine
+requirements should appeal to anyone used to computing with stone
+knives and bearskins.  My three goals for this exercise were:</p>
+
 <ol>
 <li>Basic mail and web for one or more domains, 
 <li>Built securely with modern packages, and proper backups,
-<li>A ground-up understanding of what is on the machine and why.
+<li>A clear description of what is on the machine and why.
 </ol>
 
-<p>These pages cover <em>what</em> I learned, <em>how</em> to
-configure it, and <em>why</em> I made each choice, with some fun
-pictures of my old hardware.
+<p>These Ansible playbooks assume Debian 10 and configure the
+following areas. For each one, I describe <em>what</em> is
+there, <em>how</em> to configure it, and <em>why</em> I chose it, with
+some fun pictures of my old hardware at the bottom of each page.</p>
 
-
-<p>I hope this is a useful starting point for <em>your</em> goals
-and choices.</p>
-
-
-
-<!-- ============================== -->
-<H2 class=rule>
-<A NAME=pkgs></A>Packages</H2>
-
-<p>This setup assumes Debian 10. <a href="debian.html">Why Debian</a>?
-Other distros could work, but may differ in some package details or
-file locations.  In most places, the Ansible playbooks use
-the <code>package:</code> module rather than <code>apt:</code> for
-installing, so it can work with emerge or
-yum.  <a href="ansible.html">Why Ansible</a>?</p>
-
-<p>I avoid extra packages, which means fewer things to understand, a
-smaller attack surface, and lower machine requirements.  For example,
-instead of MySQL, virtual mail accounts are managed with SQLite, which
-is fast, has zero moving parts, and is easily secured with file
-permissions.  We also run unattended upgrades to install security
-patches once a day.</p>
-
-<p>The playbooks cover the following areas: 
 
 <ul>
+<li><a href="ansible.html">Why Ansible</a>?
+<li><a href="debian.html">Why Debian</a>?
+<li><a href="machines.html">The Machines</a>
+<p>
 <li><a href="ssh.html">SSH</a>
 <li><a href="firewall.html">Firewall</a>
 <li><a href="mail.html">Mail Server</a>
@@ -75,7 +56,9 @@ patches once a day.</p>
 <li><a href="dns.html">DNS</a>
 </ul>
 
-<p>If these details don't interest you, a push-button mail server
+
+<p>I hope this can serve as a starting point for your own project.  If
+these details don't interest you, a push-button mail server
 like <a href="https://github.com/modoboa/modoboa">Modoboa</a>,
 <a href="https://mailinabox.email/">mail-in-a-box</a>, or
 <a href="https://github.com/progmaticltd/homebox">homebox</a> is a
@@ -85,32 +68,29 @@ fine alternative.</p>
 <H2 class=rule>
 <A NAME=start></A>Getting Started</H2>
 
-<p>Check out the <code>davecloud</code> repo.  Make a separate
+<p>Check out the <code>lowcloud</code> repo.  Make a separate
 directory for your settings by recursively copying
 <code>hosts.example</code> to someplace <u>outside</u> of the repo.
 We call it <code>myhosts</code> here, but any name is fine.
 
 <PRE class=code>
-$ https://github.com/david-loffredo/davecloud.git
-
-$ cp -r davecloud/hosts.example myhosts
+$ cp -r lowcloud/hosts.example myhosts
 
 $ ls
-davecloud  myhosts
+lowcloud  myhosts
 </PRE>
 
 <p>The new <code>myhosts</code> directory contains
 a <code>hosts</code> file and a <code>group_vars</code> directory.
 After customizing these as described below, I recommend putting this
 directory under source control.  You can do that however you like
-because it is not connected to the <code>davecloud</code> repo.
+because it is not connected to the <code>davecoloud</code> repo.
 
 <p>Use a private repo if you keep <code>myhosts</code> on Github.
 Passwords will be encrypted in <code>vault.yml</code>, but you
 probably don't want IPs, emails, and domain names world viewable.
 Your settings are in a separate directory, so you only need to
-fork <code>davecloud</code> if you edit playbooks to do new
-things.</p>
+fork <code>lowcloud</code> if you edit playbooks to do new things.</p>
 
 
 <!-- ============================== -->
@@ -292,8 +272,8 @@ as that is a little old.
 
 <div class=copyright>
 <p>Copyright &copy; 2020 David Loffredo, licensed under
-<a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
-CC BY 4.0</a>.
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
 </p>
 </div>
 </div>

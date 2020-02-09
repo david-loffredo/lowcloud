@@ -19,52 +19,52 @@
 <div class=main>
 <H1>Choosing Your Machines</H1>
 
-<p>These playbooks assume that you will be setting up two machines.
-Typically, the mail and web server is in the cloud while backups are
-run by a machine that you physically control (old PC in a corner).  I
-have run the setup with a $5/mo cloud machine and
-a <a href="pizero.html">Raspberry Pi Zero</a> on a shelf.</p>
+<p>These playbooks set up two machines.  Typically, the mail and web
+server is in the cloud while backups are done by a machine that you
+physically control (old PC in a corner).  I have run the setup with a
+$5/mo cloud machine and a <a href="pizero.html">Raspberry Pi Zero</a>
+on a shelf.</p>
 
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=mail></A>Mail and Web Server</H2>
 
 <p>A mail and web server needs a public IP address with connectivity
-to all ports.  Residential ISP connections have a semi-dynamic IP
-address and typically block incoming connections to port 25, so they
-are useless for running a public mail server.</p>
-
-<p>There are two ways to get this: your own hardware with a business
-class ISP connection, or someone else's hardware provided as a Virtual
-Private Server (VPS) in the cloud.  It doesn't matter which you do for
-the purposes of these playbooks.</p>
+to all ports.  There are two ways to get this: your own hardware with
+a business class ISP connection, or someone else's hardware provided
+as a Virtual Private Server (VPS) in the cloud.  Residential ISP
+connections have a semi-dynamic IP address and block port 25, so they
+are unusable for a mail server.</p>
 
 <p>There are many VPS providers.  In the USA, Linode (founded 2003),
-Amazon EC2 (launched 2006), Microsoft Azure (launched 2010), or
-DigitalOcean (founded 2011) are all solid choices.  Linode and
-DigitalOcean have similar pricing with $5/10/20/etc. packages that
-include CPU, memory, disk, and network bandwidth.  Amazon and
-Microsoft charge for everything separately.</p>
+Amazon EC2 (launched 2006), Microsoft Azure (launched 2010),
+DigitalOcean (founded 2011), or Vultr (founded 2014) are popular
+choices.  Amazon and Microsoft charge for CPU, memory, disk, and
+network separately, while the others have bundled packages at various
+prices.</p>
+
+<p>To deter spammers, most VPS providers block outgoing email traffic
+on new accounts.  They will open the ports on request but you'll
+usually need to set up proper DNS and then open a support ticket to
+let them know that you are running a mail server.</p>
 
 <p>For a simple mail host and static web site, a small (1GB nanode,
 t3.micro, Av2 A1, 1GB droplet) host is fine.  You might need something
 bigger if you add other services, or a database-heavy dynamic website
-like Wordpress.  The providers usually let you migrate to a larger
-instance later on.</p>
+like Wordpress.  You can usually migrate to a larger instance later
+on.</p>
 
-<p>I prefer Linode because they have a long history, well managed
-network, and keep things simple.  If you choose them, it would be nice
-if you signed up using
+<p>I use Linode and have found them to be well run and simple.  If you
+choose them, it would be nice if you signed up using
 <a href="https://www.linode.com/?r=e74c06bee7a764232b36ae63d0cebd3b8287fd4c">my
-referral code</a> (they give me few bucks off my bill if you stick
-around for three months).</p>
+referral code</a>.  They give me few bucks off my bill if you stick
+around for three months.
 
-<p>In any case, once you allocate a machine, make sure that the IP
+<p>In any case, once you allocate a machine, verify that the IP
 address is not on any of the spam blacklists.  That would be the
 internet equivalent of like getting a telephone number that used to
 belong to a deadbeat.  Some cloud providers have had more problems
-than others in keeping their networks clean.
-Many sites like
+than others in keeping their networks clean.  Many sites like
 <a href="https://www.dnsbl.info">https://www.dnsbl.info</a>
 can check dozens of lists at once.
 
@@ -88,7 +88,9 @@ system files, even a good-sized USB key is probably sufficient.</p>
 use a NAS that is already running other things,
 the <code>bacula-director</code> role should be fairly self-contained,
 but the <code>common</code> and <code>mailnull</code> roles might
-interfere with existing things on the machine.</p>
+interfere with existing things on the machine.  I see that FreeNAS
+advertizes a Bacula plugin, so you might be able to use this role as
+the starting point to configure that.</p>
 
 <figure>
 <img src="images/backup.jpg" alt="Backup Server">
@@ -99,8 +101,8 @@ interfere with existing things on the machine.</p>
 
 <div class=copyright>
 <p>Copyright &copy; 2020 David Loffredo, licensed under
-<a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
-CC BY 4.0</a>.
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
 </p>
 </div>
 </div>

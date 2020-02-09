@@ -1,6 +1,15 @@
 
 ## [Unreleased]
 
+- Certbot handling now broken out into a separate role, the renewal
+  hooks are now configurable and handled by a few simple variables.
+  Now requesting a separate certificate for the mail server.  This
+  makes it possible to build a mail-only or web-only server without
+  having to rework certbot.
+
+- Simplified HTTPS handling, tightened up SLL parameters, and Apache
+  directory permissions.
+
 - backup-server play now brings in the cryptdir role.  Encryption type
   is 'none' by default, set to luks to encrypt the backups at rest.
 

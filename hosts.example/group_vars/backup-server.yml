@@ -14,7 +14,7 @@ cryptdir_type: none
 
 #cryptdir_type: luks
 #cryptdir_luks_dev: "/dev/replace-with-real-device"
-#cryptdir_boot_script: /usr/sbin/bootcrypt
+#cryptdir_boot_script: /usr/sbin/baculaboot
 #cryptdir_boot_services:
 #  - bacula-dir
 #  - bacula-sd

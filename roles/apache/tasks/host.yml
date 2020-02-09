@@ -1,0 +1,41 @@
+---
+- debug:
+    msg: APACHE HOST configure {{ host.name }}
+
+- name: defaults calculated
+  set_fact:
+    host_dflt_root: "{{webdata_root}}/{{ host.name }}"
+
+- name: document root present {{apache_host_dflt_root}}
+  file:
+    path: "{{ host.root | default(apache_host_dflt_root) }}"
+    state: directory
+    mode: 0755
+  
+- name: site content present
+  template:
+    src: host.html.j2
+    dest: "{{ host.root | default(host_dflt_root) }}/index.html"
+    # owner: root
+    # group: root
+    # mode: 0644
+    force: no    # only add if it does not exist
+
+- name: http config present
+  template:
+    src: host.conf.j2
+    dest: /etc/apache2/sites-available/{{ host.name }}.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart apache
+
+- name: "{{ host.name }} enabled"
+  command: a2ensite {{ host.name }}
+  args:
+    creates: /etc/apache2/sites-enabled/{{ host.name }}.conf
+  notify:
+    - restart apache
+
+    

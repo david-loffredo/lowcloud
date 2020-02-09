@@ -1,0 +1,66 @@
+---
+#========================================
+# Certbot Settings
+#
+certbot_script: certbot
+certbot_admin_email: "{{ admin_email }}"
+
+certbot_test_util: /etc/letsencrypt/testcertnames
+
+# List of certificates that we should request.  This includes a list
+# of domains and an email.  An individual record looks like:
+#
+# - domains: [ maindom, aliasdom1, aliasdom2 ]
+#   email: 'addr' (default admin_email)
+#
+certbot_certs: '{{ certbot_vhost_certs + certbot_extra_certs }}'
+
+# Use jinja2 to build list of name+aliases for each host
+certbot_vhost_certs: >-
+  {%- set ns = namespace(ids=[]) -%}
+  {%- for i in web_vhosts -%}
+  {{- ns.ids.append({ 'domains': [ i.name ] + i.aliases }) -}}
+  {%- endfor -%}
+  {{- ns.ids -}}
+
+# The cert for SMTP and IMAP must be no-staple because neither Dovecot
+# nor Postfix will do OCSP stapling.
+certbot_mail_certs:
+  - { domains: ["{{ mail_server_hostname }}"] }
+        
+certbot_extra_certs: []
+  
+# Consider --must-staple to add OCSP Must Staple to the web certs.  We
+# are running apache 2.4+ so it should support that.
+certbot_create_command: >-
+  {{ certbot_script }} certonly --standalone --noninteractive --agree-tos
+  --email {{ cert_item.email | default(certbot_admin_email) }}
+  -d {{ cert_item.domains | join(',') }}
+
+certbot_modify_command: >-
+  {{ certbot_script }} certonly --standalone --noninteractive
+  --cert-name {{ cert_item.domains | first | replace('*.', '') }}
+  -d {{ cert_item.domains | join(',') }}
+
+# In the pre/post hooks, add actions to open/close the http ports in
+# iptables, stop and start certain services, or reload sevices in the
+# post action.
+certbot_open_firewall: no
+certbot_service_stop: []
+certbot_service_reload: []
+
+certbot_need_deploy_hook: "{{ 
+        certbot_open_firewall or
+        certbot_service_stop | length > 0 
+        }}"
+certbot_need_prepost_hook: "{{ 
+        certbot_service_reload | length > 0 
+        }}"
+
+#========================================
+# For quick reimaging, the 'snapshot' tag will copy locally unique
+# system data (like keys and certs) to the following directory, where
+# it will be restored if present as part of a normal run. Afterwards,
+# you can use bacula to restore any user data, like the mail spool.
+#
+snapshot_dir: "{{playbook_dir}}/snapshot/{{inventory_hostname}}"

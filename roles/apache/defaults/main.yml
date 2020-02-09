@@ -3,79 +3,33 @@
 # DEFAULTS NEEDED BY MANY ROLES
 #
 # Directories and such used by other roles (backup, etc) so set by the
-# separate mail-dflts role.
+# separate web-dflts role.
 #
 #webdata_root:
-
+#web_vhosts:
 
 #==============================
 # DEFAULTS NEEDED BY ONLY THIS ROLE
 #
 
-# Values to populate the Apache host configuration files.  Dictionary
-# contains name (ServerName required), aliases (list of ServerAlias
-# values), admin (ServerAdmin, defaults to webmaster@{{main.name}})
-# and root (DocumentRoot, defaults to /var/www/{{host}})
-
-web_vhosts:
-  - name: "{{ domain }}"
-    aliases: [ "www.{{ domain }}" ] 
-
-
 # always need the rewrite and ssl modules for our own use, can set the
 # apache_modules vars to get extras.  Note - ssl is always there but
 # throws error if we try to specify it
-apache_default_modules: [ rewrite, ssl ]
+apache_default_modules: [ rewrite, ssl, headers ]
 apache_modules: [ ]
 
 # permanent redirect from http to https
+apache_use_https: yes
 apache_force_https: yes
 
-
-#========================================
-# Certbot Settings
-#
-
-certbot_script: certbot
-certbot_admin_email: "{{ admin_email }}"
-
-certbot_test_util: /etc/letsencrypt/testcertnames
-
-# Use jinja2 to build list of name+aliases for each host
-# domains: "{{ [ web_vhosts.[i].name ] + web_vhosts.[i].aliases }}"
-certbot_certs: >-
-  {%- set ns = namespace(ids=[]) -%}
-  {%- for i in web_vhosts -%}
-  {{- ns.ids.append({ 'domains': [ i.name ] + i.aliases }) -}}
-  {%- endfor -%}
-  {{- ns.ids -}}
-  
-# Consider --must-staple to add OCSP Must Staple to the cert.  We are
-# running apache 2.4+ so it should support that.  Unfortunately, we
-# need a separate no-staple cert for SMTP and IMAP because neither
-# dovecot nor postfix will do OCSP stapling.  Also not clear what
-# needs to happen to refresh the timestamp when using with apache.
-# Does certbot build it in to its own renewal process?
-#
-certbot_create_command: >-
-  {{ certbot_script }} certonly --standalone --noninteractive --agree-tos
-  --email {{ cert_item.email | default(certbot_admin_email) }}
-  -d {{ cert_item.domains | join(',') }}
-
-certbot_modify_command: >-
-  {{ certbot_script }} certonly --standalone --noninteractive
-  --cert-name {{ cert_item.domains | first | replace('*.', '') }}
-  -d {{ cert_item.domains | join(',') }}
+# OCSP Stapling
+# http://httpd.apache.org/docs/2.4/ssl/ssl_howto.html#ocspstapling
+# Add mod_socache_shmcb to mod enabled.  The 32k shared memory cache
+# that is used by default is good for a few certs, but each cert can
+# require up to 10k cache so bump it up if you are running many
+# vhosts.
+apache_staple_sz: 32768
+apache_staple_on: no
 
 
-certbot_create_standalone_stop_services:
-  - apache2
-
-
-#========================================
-# For quick reimaging, the 'snapshot' tag will copy locally unique
-# system data (like keys and certs) to the following directory, where
-# it will be restored if present as part of a normal run. Afterwards,
-# you can use bacula to restore any user data, like the mail spool.
-#
-snapshot_dir: "{{playbook_dir}}/snapshot/{{inventory_hostname}}"
+apache_host_dflt_root: "{{webdata_root}}/{{ host.name }}"

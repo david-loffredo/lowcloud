@@ -4,7 +4,7 @@
 # domains encoded in the cert with "openssl x509 -text < cert.pem" and
 # then grep the output for names prefixed with DNS:
 #
-#               DNS:davecloud.net, DNS:www.davecloud.net
+#       DNS:example.com, DNS:www.example.com
 #
 # We use a custom perl script "testcertnames" to do this analysis.
 #
@@ -22,7 +22,7 @@
     name: "{{ item }}"
     state: stopped
   when: cert_result.rc != 0
-  with_items: "{{ certbot_create_standalone_stop_services }}"
+  with_items: "{{ certbot_service_stop }}"
 
 - name: "{{cert_item.domains[0]}} certbot create new certificate"
   command: "{{ certbot_create_command }}"
@@ -37,5 +37,5 @@
     name: "{{ item }}"
     state: started
   when: cert_result.rc != 0
-  with_items: "{{ certbot_create_standalone_stop_services }}"
+  with_items: "{{ certbot_service_stop }}"
 

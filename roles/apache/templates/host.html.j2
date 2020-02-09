@@ -1,3 +1,5 @@
+{# move jinja computation to one place to make the body clearer -#}
+{%- set host_admin = host.admin | default(admin_email) -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +13,7 @@
 turmoil of the web. You are happy. You don't want to leave. You can't
 imagine any other place.
 
-<p>Contact {{ host.admin | default(host_dflt.admin) }} for any issues.
+<p>Contact {{ host_admin }} for any issues.
 
 </body>
 </html>

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+{% for n in certbot_service_reload %}
+service {{n}} reload
+{% endfor %}

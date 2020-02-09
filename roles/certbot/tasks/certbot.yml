@@ -1,0 +1,71 @@
+---
+# Letsencrypt package was renamed to CERTBOT
+# https://certbot.eff.org/
+#
+# The certbot package installs a cron.d script that calls renew every
+# twelve hours.  This only updates the cert if it is near expiration
+# so it can be called frequently.
+#
+- name: certbot packages are installed
+  package:
+    state: present
+    name:
+      - certbot
+
+# Restore snapshot from existing machine if needed
+- name: Check for certbot local key backup
+  become: False
+  local_action:
+    stat path="{{snapshot_dir}}/letsencrypt_keys.tgz"
+  register: certbot_key_backup
+
+- name: restore certbot local key backup
+  unarchive:
+    src: "{{snapshot_dir}}/letsencrypt_keys.tgz"
+    dest: /etc
+    owner: root
+    group: root
+  when: certbot_key_backup.stat.exists == true
+
+- name: certificate testing script present
+  copy: src=testcertnames dest={{certbot_test_util}}
+    owner=root group=root mode=0755
+
+- include_tasks: certbot_create.yml
+  with_items: "{{ certbot_certs }}"
+  loop_control:
+    loop_var: cert_item
+
+# remove hooks that are no longer needed
+- name: remove unneeded certbot pre-post hook
+  file: dest={{item}} state=absent
+  items:
+    - /etc/letsencrypt/renewal-hooks/pre/pre-hook
+    - /etc/letsencrypt/renewal-hooks/post/post-hook
+  when: not certbot_need_prepost_hook
+
+- name: remove unneeded certbot deploy hook
+  file: dest={{item}} state=absent
+  items:
+    - /etc/letsencrypt/renewal-hooks/deploy/deploy-hook
+  when: not certbot_need_deploy_hook
+    
+# add new hooks that are needed
+- name: add pre-renew hook to stop services
+  template: src=pre-hook.j2
+    dest=/etc/letsencrypt/renewal-hooks/pre/pre-hook
+    owner=root group=root mode=0755
+  when: certbot_need_prepost_hook
+
+- name: add post-renew hook to start services
+  template: src=post-hook.j2
+    dest=/etc/letsencrypt/renewal-hooks/post/post-hook
+    owner=root group=root mode=0755
+  when: certbot_need_prepost_hook
+
+- name: add deploy hook to reload services
+  template: src=deploy-hook.j2
+    dest=/etc/letsencrypt/renewal-hooks/deploy/deploy-hook
+    owner=root group=root mode=0755
+  when: certbot_need_deploy_hook
+

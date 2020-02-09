@@ -1,40 +1,106 @@
+{# move jinja computation to one place to make the body clearer -#}
+{%- set host_logname = host.name | replace('.', '_') -%}
+{%- set host_admin = host.admin | default(admin_email) -%}
+{%- set host_root = host.root | default(webdata_root+'/'+host.name) -%}
 <VirtualHost *:80>
-   # The ServerName directive sets the request scheme, hostname and
-   # port that the server uses to identify itself. This is used when
-   # creating redirection URLs. In the context of virtual hosts, the
-   # ServerName specifies what hostname must appear in the request's
-   # Host: header to match this virtual host. For the default virtual
-   # host (this file) this value is not decisive as it is used as a
-   # last resort host regardless.  However, you must set it for any
-   # further virtual host explicitly.
-   #ServerName www.example.com
-   ServerName {{ host.name }}
+    # The ServerName directive sets the request scheme, hostname and
+    # port that the server uses to identify itself. This is used when
+    # creating redirection URLs. In the context of virtual hosts, the
+    # ServerName specifies what hostname must appear in the request's
+    # Host: header to match this virtual host. 
+    ServerName {{ host.name }}
 {% for alias in host.aliases %}
-   ServerAlias {{ alias }}
+    ServerAlias {{ alias }}
 {% endfor %}
 
-   ServerAdmin {{ host.admin | default(host_dflt.admin) }}
-   DocumentRoot {{ host.root | default(host_dflt.root) }}
+    ServerAdmin {{ host_admin }}
+    DocumentRoot {{ host_root }}
 
-   # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
-   # error, crit, alert, emerg.
-   # It is also possible to configure the loglevel for particular
-   # modules, e.g.
-   #LogLevel info ssl:warn
+    # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+    # error, crit, alert, emerg.
+    # It is also possible to configure the loglevel for particular
+    # modules, e.g.
+    #LogLevel info ssl:warn
 
-   ErrorLog ${APACHE_LOG_DIR}/{{host.name | replace('.', '_')}}_error.log
-   CustomLog ${APACHE_LOG_DIR}/{{host.name | replace('.', '_')}}_access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/{{ host_logname }}_error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ host_logname }}_access.log combined
 
-   # For most configuration files from conf-available/, which are
-   # enabled or disabled at a global level, it is possible to
-   # include a line for only one particular virtual host. For example the
-   # following line enables the CGI configuration for this host only
-   # after it has been globally disabled with "a2disconf".
-   #Include conf-available/serve-cgi-bin.conf
+    # For most configuration files from conf-available/, which are
+    # enabled or disabled at a global level, it is possible to
+    # include a line for only one particular virtual host. For example the
+    # following line enables the CGI configuration for this host only
+    # after it has been globally disabled with "a2disconf".
+    #Include conf-available/serve-cgi-bin.conf
 
 {% if apache_force_https %}
-   # Force everything to HTTPS
-   Redirect permanent / https://{{ host.name }}/
+    # Force everything to HTTPS.  A redirect updates the client to the
+    # new URL.
+    Redirect permanent / https://{{ host.name }}/
+
+    # Another way to get the same
+    # RewriteEngine On
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]    
+{% endif %}
+</VirtualHost>
+
+{% if apache_use_https %}
+<VirtualHost *:443>
+    ServerName {{ host.name }}
+{% for alias in host.aliases %}
+    ServerAlias {{ alias }}
+{% endfor %}
+
+    ServerAdmin {{ host_admin }}
+    DocumentRoot {{ host_root }}
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ host_logname }}_error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ host_logname }}_access.log combined
+
+    # Recommended SSL intermediate configuration
+    # See https://ssl-config.mozilla.org
+
+    # enable HTTP/2, if available
+    Protocols h2 http/1.1
+    
+    SSLEngine on
+
+    # HTTP Strict Transport Security (need mod_headers, 2years in seconds)
+    Header always set Strict-Transport-Security "max-age=63072000"
+
+    # Content-Security-Policy
+    SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite          ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+    SSLHonorCipherOrder     off
+    SSLSessionTickets       off
+
+    SSLCertificateFile /etc/letsencrypt/live/{{host.name}}/cert.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{host.name}}/privkey.pem
+    SSLCertificateChainFile /etc/letsencrypt/live/{{host.name}}/chain.pem
+
+{% if apache_staple_on %}
+    # Stapling is usually done globally, in the mod/ssl.conf
+    # APACHE_RUN_DIR is /var/run/apache2
+    SSLUseStapling On
+    SSLStaplingCache shmcb:${APACHE_RUN_DIR}/ssl_stapling({{apache_staple_sz}})
 {% endif %}
 
+    #   SSL Engine Options:
+    #   o StdEnvVars:
+    #	 Exports the standard SSL/TLS related `SSL_*' environment variables.
+    #	 Per default this exportation is switched off for performance reasons,
+    #	 because the extraction step is an expensive operation and is usually
+    #	 useless for serving static content. So one usually enables the
+    #	 exportation for CGI and SSI requests only.
+    #   o OptRenegotiate:
+    #	 This enables optimized SSL connection renegotiation handling when SSL
+    #	 directives are used in per-directory context.
+    #SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+    SSLOptions +StrictRequire
+    <FilesMatch "\.(cgi|shtml|phtml|php)$">
+	SSLOptions +StdEnvVars +StrictRequire
+    </FilesMatch>
+    <Directory /usr/lib/cgi-bin>
+	SSLOptions +StdEnvVars +StrictRequire
+    </Directory>
 </VirtualHost>
+{% endif %}

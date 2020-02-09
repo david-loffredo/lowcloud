@@ -55,6 +55,14 @@ dovecot_use_dotlock: "{{ cryptdir_type|default('encfs') == 'encfs' }}"
 webdata_root:           /var/www
 #webdata_root:          "{{cryptdir_root}}/www"
 
+# stop/start these during the challenge response period
+certbot_service_stop:
+  - apache2
+
+# also reload these when we get a new cert.
+certbot_service_reload:
+  - postfix
+  - dovecot
 
 #==============================
 # Backup Directories - for mail and web server

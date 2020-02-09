@@ -1,0 +1,8 @@
+#!/bin/bash
+
+{% if certbot_open_firewall %}
+iptables -A INPUT -p tcp --dport 80,443 -j ACCEPT
+{% endif %}
+{% for n in certbot_service_stop %}
+service {{n}} stop
+{% endfor %}

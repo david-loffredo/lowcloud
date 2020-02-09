@@ -1,18 +1,92 @@
 ---
-- import_tasks: certbot.yml
-- import_tasks: apache.yml
+# Debian 10 versions
+# apache2        2.4.38
+
+- name: apache packages are installed
+  package:
+    state: present
+    name:
+      - apache2
 
 
-# For quick reimaging, grab local system data (certs).  Afterwards,
-# you can use bacula to restore the user data (web roots). The when
-# rule is needed to restrict to only these explicit tags, otherwise it
-# fires on any inherited tags (like 'mail') too.
-#
-# Unfortunately, the combo of tag/never+when always prints skipped,
-# unlike tag/never which is silent unless it fires.  We load this
-# dynamically so it just prints skipped for the include_tasks action
-# rather than skipped for each task within an import_tasks.
-- name: create snapshot of system data
-  include_tasks: snapshot.yml
-  when: ansible_run_tags | intersect(['snapshot', 'web-snapshot']) | length
-  tags: [never, snapshot, web-snapshot]
+
+- name: apache global configurations present
+  template: src={{ item.src }}.j2
+    dest=/etc/apache2/{{ item.dst }}
+    owner=root group=root mode=0644
+  with_items:
+    - { src: apache2.conf, dst: apache2.conf }
+    - { src: conf-security.conf, dst: conf-available/security.conf }
+  notify:
+    - restart apache
+
+      
+# Must do before we enable the configs for the sites, because it
+# parses the configs, which results in a chicken-and-egg situation if
+# we need a particular module and it is not yet installed.
+- name: apache modules present
+  apache2_module: name={{item}} state=present
+  with_items: "{{ (apache_modules + apache_default_modules) | unique }}"
+  notify:
+    - restart apache
+
+# Should already be present on Debian.  Use for the web management
+# user accounts for each website.
+- name: Create 'www-data' group
+  group: name=www-data state=present
+
+- name: configurations present for each host
+  include_tasks: host.yml
+  with_items:
+    - "{{ web_vhosts }}"
+  loop_control:
+    loop_var: host
+
+- name: apache default site removed
+  file: path={{item}} state=absent
+  with_items:
+    - /etc/apache2/sites-available/000-default.conf
+    - /etc/apache2/sites-enabled/000-default.conf
+    - /var/www/html
+  notify:
+    - restart apache
+
+# Stapling is usually done globally, in the mod/ssl.conf
+# SSLUseStapling On
+# SSLStaplingCache shmcb:${APACHE_RUN_DIR}/ssl_stapling(32768)
+
+    
+## The default Apache config enables gzip compression, and it is not
+## recommended to turn it off.  If your website uses cookies, strongly
+## advise using the SameSite flag to mitigate BREACH (CVE-2013-3587)
+
+## Consider adding the dateext directive to the apache logrotate
+## config in /etc/logrotate.d/apache2
+
+## Standard ports 80/443 are fine.  If you want to change that, you
+## may need to change the Listen defs in /etc/ports.conf
+
+## Joe has a 01_wildcard.conf that uses a rewrite rule to throw
+## anything else to steptools.com
+## apachetop is a monitoring tool
+
+## apache2-utils appears to be installed with the main 
+# rovides some add-on programs useful for any web server. These include:
+
+#  - ab (Apache benchmark tool)
+#  - fcgistarter (Start a FastCGI program)
+#  - logresolve (Resolve IP addresses to hostnames in logfiles)
+#  - htpasswd (Manipulate basic authentication files)
+#  - htdigest (Manipulate digest authentication files)
+#  - htdbm (Manipulate basic authentication files in DBM format, using APR)
+#  - htcacheclean (Clean up the disk cache)
+#  - checkgid (Checks whether the caller can setgid to the specified group)
+#  - check_forensic (Extract mod_log_forensic output from Apache log files)
+#  - httxt2dbm (Generate dbm files for use with RewriteMap)
+    
+# logrotate is already installed 
+#  - rotatelogs (Periodically stop writing to a logfile and open a new one)
+#  - split-logfile (Split a single log including multiple vhosts)
+
+- name: apache start at boot - {{web_services_bootstart}}
+  service: name=apache2 enabled={{web_services_bootstart}}

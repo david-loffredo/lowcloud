@@ -1,19 +1,14 @@
-# DaveCloud Mail, Web, and Backup
+# LowCloud Mail, Web, and Backup
 
-These Ansible roles set up web service, email, and regular backups.
-Typically, mail and web are in the cloud while backups are run by a
-machine in your physical posession.
+These Ansible roles set up mail and web service, usually in the cloud,
+with backups from a second private machine.  The low machine
+requirements should appeal to anyone used to computing with stone
+knives and bearskins.  My three goals for this exercise were:
 
-I've been around since bits were big, but let my sysadmin skills get a
-bit stale as others handled those duties.  It was time to refresh.
-Cargo-cult recipes are quick, but rarely lead to knowledge.  I took a
-slower path, working through each area to craft something that I
-understood and reflected my own priorities.  Also got a pretty good
-handle on Ansible.
+- Basic mail and web for one or more domains, 
+- Built securely with modern packages, and proper backups,
+- A clear description of what is on the machine and why.
 
-The [DOCS directory](https://david-loffredo.github.io/davecloud/)
-explains what I learned along the way.  Think of this as a travel
-journal, with funny pictures of old hardware.  I hope it is a useful
-starting point for your own journey.
-
-\- Dave
+The [DOCS directory](https://david-loffredo.github.io/lowcloud/)
+describes what is there, how to configure it, and why I chose it, with
+some fun pictures of my old hardware at the bottom of each page.

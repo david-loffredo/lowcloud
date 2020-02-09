@@ -72,15 +72,3 @@
   with_items: "{{ mail_domains + ['after.d', 'before.d', 'global'] }}"
 
 # sieve scripts are installed by rspamd
-
-
-#------------------------------
-# CERTBOT
-#
-- name: certbot post-renew hook to reload dovecot
-  copy:
-    content: "#!/bin/bash\n\nservice dovecot reload\n"
-    dest: /etc/letsencrypt/renewal-hooks/post/dovecot
-    owner: root
-    group: root
-    mode: 0755

@@ -75,15 +75,6 @@
     - remove default postfix queue
 
 
-- name: certbot post-renew hook to reload postfix
-  copy:
-    content: "#!/bin/bash\n\nservice postfix reload\n"
-    dest: /etc/letsencrypt/renewal-hooks/post/postfix
-    owner: root
-    group: root
-    mode: 0755
-
-
 #------------------------------
 # Mail user database    
 - name: mail account utilities present

@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # 
-# Copyright (c) 2018-2019 by David Loffredo. 
+# Copyright (c) 2018-2020 by David Loffredo. 
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ sub check_cert {
     my %known;
     my $base = $_[0];
     $base =~ s/^\*\.//;   # might be a wildcard cert
-
+    
     my $cert = '/etc/letsencrypt/live/' . $base . '/cert.pem';
     if (not -e $cert) {
 	print "No cert file $cert exists\n";
@@ -57,7 +57,7 @@ sub check_cert {
     }
 
     # Extract the known DNS entries in the cert.  These are printed in
-    # a list like DNS:davecloud.net, DNS:www.davecloud.net
+    # a list like DNS:example.com, DNS:www.example.com
     #
     foreach (`openssl x509 -text < $cert`) {
 	next if not /DNS:/;
@@ -68,10 +68,18 @@ sub check_cert {
     # match requested against known
     my $err = 0;
     foreach (@_) {
-	if (not exists $known{$_}) {
+	if (exists $known{$_}) {
+	    delete $known{$_};   # matched, remove
+	}
+	else {
+	    # if (not exists $known{$_}) {
 	    print "cert missing $_\n";
 	    $err = 1;
 	}
+    }
+    foreach (sort keys %known) {
+	print "extra cert $_\n";
+	$err = 1;
     }
     return $err;
 }

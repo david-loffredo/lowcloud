@@ -8,5 +8,17 @@
 #
 webdata_root: /var/www
 
+# Values to populate host configuration.  The dictionary can contain
+# the following values
+# - name: "ServerName"  (required)
+#   aliases: [list of ServerAlias]  (optional, usually www.{{name}})
+#   admin: "ServerAdmin"  (defaults to webmaster@{{name}})
+#   root: "DocumentRoot" (defaults to {{webdata_root}}/{{name}})
+#
+web_vhosts:
+  - name: "{{ domain }}"
+    aliases: [ "www.{{ domain }}" ] 
+
+
 # start services at boot unless using encrypted dirs
 web_services_bootstart: yes
