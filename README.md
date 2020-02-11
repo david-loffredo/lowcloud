@@ -12,3 +12,5 @@ bearskins.  My three goals for this exercise were:
 The [DOCS directory](https://david-loffredo.github.io/lowcloud/)
 describes what is there, how to configure it, and why I chose it, with
 some fun pictures of my old hardware at the bottom of each page.
+
+![A fine Sparc20](docs/images/sparc20.jpg "A Sparc20 is a fine choice for a server in 2020")
