@@ -1,9 +1,9 @@
 # LowCloud Mail, Web, and Backup
 
-These Ansible roles set up mail and web service, usually in the cloud,
-with backups from a second private machine.  The low machine
-requirements should appeal to anyone used to computing with stone
-knives and bearskins.  My three goals for this exercise were:
+These Ansible roles set up mail and web service in the cloud, with
+backups from a separate machine. Requirements are low, with few extra
+frills, and should appeal to anyone comfortable with stone knives and
+bearskins.  My three goals for this exercise were:
 
 - Basic mail and web for one or more domains, 
 - Built securely with modern packages, and proper backups,
