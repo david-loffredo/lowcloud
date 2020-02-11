@@ -64,8 +64,8 @@ modern <a href="https://en.wikipedia.org/wiki/EdDSA">Ed25519 keys</a>
 unless you need to support really old SSH clients.</p>
 
 <PRE class=code>
-$ ssh-keygen -t ed25519 -f davedeploy -C deploy-yourhost -N ''
-$ ssh-keygen -t ed25519 -f davebacula -C bacula-tunnel-yourhost -N ''
+$ ssh-keygen -t ed25519 -f deploy -C deploy-yourhost -N ''
+$ ssh-keygen -t ed25519 -f bacula -C bacula-tunnel-yourhost -N ''
 </PRE>
 
 
@@ -74,8 +74,8 @@ putty to generate a key, you can convert it as follows.  Install the
 <code>putty-utils</code> package and do:</p>
 
 <PRE class=code>
-$ puttygen davedeploy.ppk -O public-openssh -o davedeploy.pub
-$ puttygen davedeploy.ppk -O private-openssh -o davedeploy
+$ puttygen deploy.ppk -O public-openssh -o deploy.pub
+$ puttygen deploy.ppk -O private-openssh -o deploy
 </PRE>
 
 <!-- ============================== -->

@@ -1,5 +1,5 @@
 
-# DAVECLOUD - Tighten up security settings
+# LOWCLOUD - Tighten up security settings
 
 #
 # Disable access to the entire file system except for the directories that
@@ -24,7 +24,7 @@
 # and compiled in modules.
 # Set to one of:  Full | OS | Minimal | Minor | Major | Prod
 # where Full conveys the most information, and Prod the least.
-# DAVECLOUD -- Use Minimal rather than the default OS
+# LOWCLOUD -- Use Minimal rather than the default OS
 ServerTokens Minimal
 #ServerTokens OS
 #ServerTokens Full
@@ -36,7 +36,7 @@ ServerTokens Minimal
 # documents or custom error documents).
 # Set to "EMail" to also include a mailto: link to the ServerAdmin.
 # Set to one of:  On | Off | EMail
-# DAVECLOUD -- Use Off rather than the default On
+# LOWCLOUD -- Use Off rather than the default On
 ServerSignature Off
 #ServerSignature On
 
@@ -60,7 +60,7 @@ TraceEnable Off
 #   Require all denied
 #</DirectoryMatch>
 
-# DAVECLOUD -- Block all .git directories, .gitignore, .gitattributes,
+# LOWCLOUD -- Block all .git directories, .gitignore, .gitattributes,
 #   .gitmodules, or a mailmap file.
 <DirectoryMatch "/\.git">
    Require all denied

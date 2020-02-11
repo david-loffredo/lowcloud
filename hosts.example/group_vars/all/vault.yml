@@ -14,19 +14,19 @@
 
 # Generate modern SSH keys for deploy and the bacula tunnel:
 #
-# ssh-keygen -t ed25519 -f davedeploy -C deploy-yourhost -N ''
-# ssh-keygen -t ed25519 -f davebacula -C bacula-tunnel-yourhost -N ''
+# ssh-keygen -t ed25519 -f deploy -C deploy-yourhost -N ''
+# ssh-keygen -t ed25519 -f bacula -C bacula-tunnel-yourhost -N ''
 #
 # Create the pwhash for passwords with "mkpasswd --method=sha-512"
 #
-vault_deploy_sshpub: ~/.ssh/davedeploy.pub
-vault_deploy_sshkey: ~/.ssh/davedeploy
+vault_deploy_sshpub: ~/.ssh/deploy.pub
+vault_deploy_sshkey: ~/.ssh/deploy
 vault_deploy_pwhash: [change me to hash like $6$verylongcryptstring]
 
 # Bacula passwords coordinate between director and the daemons.  You
 # can just make these 50-60 char long strings of gibberish.
-vault_bacula_tunnel_sshpub: ~/.ssh/davebacula.pub
-vault_bacula_tunnel_sshkey: ~/.ssh/davebacula
+vault_bacula_tunnel_sshpub: ~/.ssh/bacula.pub
+vault_bacula_tunnel_sshkey: ~/.ssh/bacula
 vault_bacula_client_pw:  [change me to very long gibberish]
 vault_bacula_storage_pw: [change me to very long gibberish]
 vault_bacula_console_pw: [change me to very long gibberish]

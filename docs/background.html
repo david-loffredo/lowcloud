@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Background</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#ansible">Why Ansible?</a>
+<li><a href="#debian">Why Debian?</a>
+<li><a href="#debnotes">Debian Notes</a>
+
+</UL>
+</div>
+
+<div class=main>
+<H1>Background</H1>
+
+<p>I've been around since before HTTP was a thing, but moving some
+mail and web services to a VPS in the cloud recently gave me a chance
+to look at the setup with fresh eyes.  I wanted to do the
+configuration entirely with Ansible, and the result is familiar,
+Postfix, Dovecot, and Apache running on Debian, but with differences
+in the details.</p>
+
+<p>All who lived through the dark times, when bits were hewn from the
+living rock and 640k was enough for anyone, developed a natural
+aversion to waste.  Each package omitted means fewer things to
+understand, a smaller attack surface, and lower machine requirements.
+The <em>LowCloud</em> name is a reflection of this.</p>
+
+<p>For example, many people install MySQL, with 8.5 million lines of
+code, to return account names from a single static table of with a
+dozen rows.  Still, SQL makes the job easier, so we use SQLite, which
+is fast, has zero moving parts, and is easily secured with file
+permissions.</p>
+
+<p>Rather than a mail administration client like postfixadmin, I put
+together a perl script to handle the common tasks, like adding new
+accounts and changing passwords, from the command line.</p>
+
+<p>Not having physical posession of a cloud machine motivated me to
+spend some time on several options for disk encryption, mostly for the
+mail spool and user database, although you could apply it more
+broadly.
+
+<p>Backups also differ from common examples.  We use Bacula, and
+control the backups from a separate machine, ideally isolated behind a
+NATed firewall.  This was more difficult to develop Ansible roles for,
+but keeps your backups safe, even if the cloud machine is compromised.
+
+<p>Following a recipe is quick, but does not lead to knowledge.  I've
+tried to document my choices and priorities here, so that you can
+evaluate them for your own situation, and perhaps make other choices
+that reflect <em>your</em> priorities.
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=ansible></A>Why Ansible?</H2>
+
+<p>Back in the day, you deployed a new machine by hand editing an
+endless series of config files while sitting at the console, or
+perhaps via telnet.  A few hours or days later, the machine was
+declared good and left alone.</p>
+
+<p>After doing it a few times, you might copy config files from other
+machines as a starting point.  After many times, you might write a few
+shell scripts.  Big sites had enterprise deployment tools.  But after
+a long gap, you forgot much and had to relearn, iterating as you
+missed things.  Over time, machines accumulated unique tweaks and
+extra packages.</p>
+
+<p>That is no way to run a railroad.
+
+<p>In software development, we stopped manually calling the C compiler
+years ago.  Today we describe the desired state - source files, object
+files, executables - and let a tool like <code>make</code>
+or <code>msbuild</code> figure out which actions to use to place the
+code into that state.</p>
+
+<p>Ansible is <code>make</code> for machines. Playbooks and roles are
+the <code>Makefiles</code> and describe "idempotent" tasks that leave
+the machine in the same state no matter how many times you run them.
+For example, a config file needs a line "foo=bar".  It is added if
+missing.  If "foo=zap" is present, it is changed to "foo=bar".  If
+present and correct, it is left alone.  At the end, that config file
+will have one copy of the value and it will be "foo=bar".</p>
+
+<p>Other tasks say that a package should be present or absent, and it
+will be either installed or uninstalled as needed.  The end result is
+a machine in a known state. You can describe the state in great
+detail, put it under source control, and reproduce it as needed.
+Ansible works remotely over ssh and can operate in parallel on lists
+of hosts, so you can configure or reproduce whole networks of
+machines.</p>
+
+<p>This is a wonderful way to run a railroad!</p>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=debian></A>Why Debian?</H2>
+
+<p>I have happily used Gentoo, Centos, Mint, and other distros going
+back to boot floppies.  I've also used every iteration of Windows and
+MacOS, old school picks like SunOS, Solaris, HP-UX, AIX, IRIX, Ultrix
+and even VMS.  I don't hold strong opinions on operating systems (but
+editors are a different story - I didn't grow that extra meta-finger
+for nothing!)</p>
+
+<p>I wanted to target a single distro, just to keep the playbooks
+clean and understandable.  Debian was the winner simply because of
+numbers &mdash; 80% of the examples that I ran across used Debian, and
+it is the origin of a hundred other downstream distros, like Ubuntu
+and Mint.  I started with Debian 9 (Stretch) but moved to Debian 10
+(Buster) shortly after it was released.</p>
+
+<p>It shouldn't take too much work to adapt this to other distros.  In
+most places, the Ansible playbooks use the <code>package:</code>
+module rather than <code>apt:</code> for installing, so it can work
+with <code>emerge</code> or <code>yum</code>, but there are bound to
+be some differences in package details or file locations.
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=debnotes></A>Debian Notes</H2>
+
+<p>The Debian website has a catalog of
+<a href="https://www.debian.org/distrib/packages">all available
+packages</a>, and a
+<a href="https://backports.debian.org/Packages/">backports catalog</a>
+with newer versions of certain packages.</p>
+
+<p>I advise using Ansible for any additions, but while prototyping,
+occasional calls to the <code>apt</code> package manager come in
+handy:</p>
+
+<PRE class=code>
+apt list --installed       # all installed packages
+apt list &lt;pkg&gt;
+apt list &lt;pkg&gt; -a    # list all versions in the repo
+
+# to completely uninstall and reinstall a package.
+apt-get --purge remove &lt;pkg&gt;
+apt-get install &lt;pkg&gt;
+</PRE>
+
+<div class=copyright>
+<p>Copyright &copy; 2020 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -23,11 +23,10 @@
 <div class=main>
 <H1>LowCloud Mail, Web, and Backup</H1>
 
-<p>
-These Ansible roles set up mail and web service, usually in the cloud,
-with backups from a second private machine.  The low machine
-requirements should appeal to anyone used to computing with stone
-knives and bearskins.  My three goals for this exercise were:</p>
+<p>These Ansible roles set up mail and web service in the cloud, with
+backups from a separate machine.  Requirements are low, with few extra
+frills, and should appeal to anyone comfortable with stone knives and
+bearskins.  My three goals for this exercise were:</p>
 
 <ol>
 <li>Basic mail and web for one or more domains, 
@@ -42,8 +41,7 @@ some fun pictures of my old hardware at the bottom of each page.</p>
 
 
 <ul>
-<li><a href="ansible.html">Why Ansible</a>?
-<li><a href="debian.html">Why Debian</a>?
+<li><a href="background.html">Background</a>
 <li><a href="machines.html">The Machines</a>
 <p>
 <li><a href="ssh.html">SSH</a>
@@ -84,14 +82,13 @@ lowcloud  myhosts
 a <code>hosts</code> file and a <code>group_vars</code> directory.
 After customizing these as described below, I recommend putting this
 directory under source control.  You can do that however you like
-because it is not connected to the <code>davecoloud</code> repo.
+because it is not connected to the <code>lowcloud</code> repo.
 
-<p>Use a private repo if you keep <code>myhosts</code> on Github.
-Passwords will be encrypted in <code>vault.yml</code>, but you
-probably don't want IPs, emails, and domain names world viewable.
-Your settings are in a separate directory, so you only need to
-fork <code>lowcloud</code> if you edit playbooks to do new things.</p>
-
+<p>As described in <a href="#extending">Going Further</a>, you can
+expand <code>myhosts</code> with your own roles and playbooks, so you
+only need to fork <code>lowcloud</code> to change a role in that. It
+would be nice to star the <code>lowcloud</code> repo though, so that I
+have an sense of how many people are using it.
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -252,6 +249,9 @@ There is another <a href="snapshot.html">snapshot</a> tag that copies
 back certain system data like keys and certs for easy transfer when
 wiping or migrating a machine.</p>
 
+
+[defaults]
+roles_path=../lowcloud/roles
 
 <!-- ============================== -->
 <H2 class=rule>

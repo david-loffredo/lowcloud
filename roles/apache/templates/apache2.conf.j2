@@ -1,5 +1,5 @@
 
-# DAVECLOUD - Move webdata root, tighten up security settings 
+# LOWCLOUD - Move webdata root, tighten up security settings 
 
 # This is the main Apache server configuration file.  It contains the
 # configuration directives that give the server its instructions.
@@ -165,13 +165,13 @@ Include ports.conf
 	Require all denied
 </Directory>
 
-# DAVECLOUD - Disable until we need it
+# LOWCLOUD - Disable until we need it
 #<Directory "/usr/share">
 #	AllowOverride None
 #	Require all granted
 #</Directory>
 
-# DAVECLOUD - Disable directory listing (Indexes) and set to the
+# LOWCLOUD - Disable directory listing (Indexes) and set to the
 #    webroot that we actually use, which may be on the cryptdir.
 #<Directory /var/www/>
 #	Options Indexes FollowSymLinks
