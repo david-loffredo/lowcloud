@@ -16,6 +16,7 @@
 <li><a href="#vars">Variables</a>
 <li><a href="#first">First Login Playbook</a>
 <li><a href="#play">Site Setup Playbook</a>
+<li><a href="#extending">Going Further</a>
 <li><a href="#reboot">Rebooting</a>
 </UL>
 </div>
@@ -88,7 +89,7 @@ because it is not connected to the <code>lowcloud</code> repo.
 expand <code>myhosts</code> with your own roles and playbooks, so you
 only need to fork <code>lowcloud</code> to change a role in that. It
 would be nice to star the <code>lowcloud</code> repo though, so that I
-have an sense of how many people are using it.
+have an sense of how many people find it useful.
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -250,8 +251,25 @@ back certain system data like keys and certs for easy transfer when
 wiping or migrating a machine.</p>
 
 
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=extending></A>Going Further</H2>
+
+<p>You can add your own <code>roles</code> directory and playbook YML
+files to the <code>myhosts</code> directory and build more extensive
+actions into your own setup.  Set your role search path to include the
+<code>lowcloud</code> roles to build upon then in your playbook.
+Create an <code>ansible.cfg</code> file in <code>myhosts</code> that
+contains:
+
+<PRE class=code>
 [defaults]
 roles_path=../lowcloud/roles
+</PRE>
+
+<p>The <a href="https://galaxy.ansible.com/">Ansible Galaxy site</a>
+contains roles that people have written for many different things, and
+is a great place to see worked examples and get ideas.</p>
 
 <!-- ============================== -->
 <H2 class=rule>

@@ -21,12 +21,13 @@
 <div class=main>
 <H1>Background</H1>
 
-<p>I've been around since before HTTP was a thing, but moving some
-mail and web services to a VPS in the cloud recently gave me a chance
-to look at the setup with fresh eyes.  I wanted to do the
-configuration entirely with Ansible, and the result is familiar,
-Postfix, Dovecot, and Apache running on Debian, but with differences
-in the details.</p>
+<p>A recent move of some mail and web from an in-house machine, where
+they had been for 25 years, to a VPS in the cloud, gave me a chance to
+look at the setup with fresh eyes.  The result is a familiar, modern
+pattern: virtual users, Postfix, Dovecot, and Apache running on
+Debian, but with some differences in the details.  I also wanted to do
+the configuration entirely with Ansible.</p>
+
 
 <p>All who lived through the dark times, when bits were hewn from the
 living rock and 640k was enough for anyone, developed a natural
@@ -35,9 +36,9 @@ understand, a smaller attack surface, and lower machine requirements.
 The <em>LowCloud</em> name is a reflection of this.</p>
 
 <p>For example, many people install MySQL, with 8.5 million lines of
-code, to return account names from a single static table of with a
-dozen rows.  Still, SQL makes the job easier, so we use SQLite, which
-is fast, has zero moving parts, and is easily secured with file
+code, to return account names from a single static table with a dozen
+rows.  SQL does make the job easier, so we use SQLite, which is fast,
+has zero moving parts, and is easily secured with file
 permissions.</p>
 
 <p>Rather than a mail administration client like postfixadmin, I put
@@ -86,20 +87,19 @@ or <code>msbuild</code> figure out which actions to use to place the
 code into that state.</p>
 
 <p>Ansible is <code>make</code> for machines. Playbooks and roles are
-the <code>Makefiles</code> and describe "idempotent" tasks that leave
+the <code>Makefiles</code> that describe "idempotent" tasks that leave
 the machine in the same state no matter how many times you run them.
-For example, a config file needs a line "foo=bar".  It is added if
-missing.  If "foo=zap" is present, it is changed to "foo=bar".  If
-present and correct, it is left alone.  At the end, that config file
-will have one copy of the value and it will be "foo=bar".</p>
+For example, a config file needs a line "foo=bar".  If present, it is
+left alone.  If missing, it is added.  If "foo=zap" is present, it is
+changed to "foo=bar".  At the end, that config file has one copy of
+the value and it is "foo=bar".  Other tasks say that a package should
+be present or absent, and it is installed or uninstalled as needed.</p>
 
-<p>Other tasks say that a package should be present or absent, and it
-will be either installed or uninstalled as needed.  The end result is
-a machine in a known state. You can describe the state in great
-detail, put it under source control, and reproduce it as needed.
-Ansible works remotely over ssh and can operate in parallel on lists
-of hosts, so you can configure or reproduce whole networks of
-machines.</p>
+<p>The end result is a machine in
+a known state. You can describe the state in great detail, put it
+under source control, and reproduce it as needed.  Ansible works
+remotely over ssh and can operate in parallel on lists of hosts, so
+you can configure or reproduce whole networks of machines.</p>
 
 <p>This is a wonderful way to run a railroad!</p>
 
@@ -152,6 +152,17 @@ apt list &lt;pkg&gt; -a    # list all versions in the repo
 apt-get --purge remove &lt;pkg&gt;
 apt-get install &lt;pkg&gt;
 </PRE>
+
+<figure>
+<img src="images/decfloppy.jpg" alt="DEC 8inch Floppy">
+<figcaption>Keep your boot floppy close at hand.  A strong magnet will
+hold it to the side of the case, within easy reach.
+
+<p><em>NOTE: This 8inch DEC floppy was manufactured four years after
+the Lego astronaut and about the time Return of the Jedi hit
+theatres.</em></p>
+</figcaption>
+</figure>
 
 <div class=copyright>
 <p>Copyright &copy; 2020 David Loffredo, licensed under
