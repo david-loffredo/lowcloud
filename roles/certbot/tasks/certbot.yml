@@ -39,14 +39,14 @@
 # remove hooks that are no longer needed
 - name: remove unneeded certbot pre-post hook
   file: dest={{item}} state=absent
-  items:
+  with_items:
     - /etc/letsencrypt/renewal-hooks/pre/pre-hook
     - /etc/letsencrypt/renewal-hooks/post/post-hook
   when: not certbot_need_prepost_hook
 
 - name: remove unneeded certbot deploy hook
   file: dest={{item}} state=absent
-  items:
+  with_items:
     - /etc/letsencrypt/renewal-hooks/deploy/deploy-hook
   when: not certbot_need_deploy_hook
     

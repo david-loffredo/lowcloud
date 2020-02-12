@@ -8,7 +8,10 @@
     state: present
     name:
       - unattended-upgrades
+      # mail changelogs to admin
       - apt-listchanges
+      # bounce services with changed libraries
+      - needrestart
 
 # /etc/apt/apt.conf.d/50unattended-upgrades has all of the knobs for
 # customizing what sort of updates you want.  By default you get the
@@ -43,6 +46,15 @@
   template: src=listchanges.conf.j2
     dest=/etc/apt/listchanges.conf
     owner=root group=root mode=0644
-    
+
+- name: automatic restart of services with stale libraries
+  lineinfile:
+    path: /etc/needrestart/needrestart.conf
+    # match commented or uncommented
+    regexp: "^(#\\s*)?\\$nrconf\\{restart\\}"
+    line: "$nrconf{restart} = 'a';"
+    insertafter: EOF
+    state: present
+
 - name: unattended upgrades started and enabled
   service: name=unattended-upgrades state=started enabled=yes
