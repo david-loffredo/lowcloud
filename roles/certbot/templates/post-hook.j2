@@ -1,7 +1,7 @@
 #!/bin/bash
 
 {% if certbot_open_firewall %}
-iptables -D INPUT -p tcp --dport 80,443 -j ACCEPT
+iptables -D INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m multiport --dport 80,443 -m conntrack --ctstate NEW -j ACCEPT
 {% endif %}
 {% for n in certbot_service_stop %}
 service {{n}} start
