@@ -1,4 +1,4 @@
----    
+---
 # Debian 10 versions
 # encfs         1.9.5-1+b1
 
@@ -10,12 +10,11 @@
   package: name=encfs state=present
 
 - name: encrypted and cleartext directories present
-  file: state=directory path={{item}}
+  file: state=directory path={{ item }}
   with_items:
-    - "{{cryptdir_root}}"
-    - "{{cryptdir_encfs_dir}}"
+    - "{{ cryptdir_root }}"
+    - "{{ cryptdir_encfs_dir }}"
 
-   
 ##
 ## Private Directory
 ##
@@ -25,25 +24,29 @@
 # inits the filesystem.  The "p" is for paranoia mode.
 # 
 - name: encrypted data directory is initialized
-  find: paths={{cryptdir_encfs_dir}} hidden=yes file_type=any
+  find: paths={{ cryptdir_encfs_dir }} hidden=yes file_type=any
   register: encfs_spool_check
   changed_when: encfs_spool_check.matched == 0
-  
+
 - name: encrypted data directory, test if mounted
-  command: "/bin/mountpoint -q {{cryptdir_root}}"
+  command: "/bin/mountpoint -q {{ cryptdir_root }}"
   register: encfs_spool_mount
   changed_when: encfs_spool_mount.rc != 0
   failed_when: false
 
 - name: encrypted data directory empty, creating new
-  shell: printf "p\n{{ cryptdir_pw }}" | encfs {{cryptdir_encfs_dir}} {{cryptdir_root}} --public --stdinpass
+  shell: set -o pipefail && printf "p\n{{ cryptdir_pw }}" |
+        encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public --stdinpass
+  args: { executable: /bin/bash }
   when: encfs_spool_check.matched == 0
 
 - name: encrypted data directory present, mounting existing
-  shell: printf '{{ cryptdir_pw }}' | encfs {{cryptdir_encfs_dir}} {{cryptdir_root}} --public --stdinpass
+  shell: set -o pipefail && printf '{{ cryptdir_pw }}' |
+        encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public --stdinpass
+  args: { executable: /bin/bash }
   when: encfs_spool_check.matched > 0  and encfs_spool_mount.rc != 0
 
 - name: encrypted data directory, verified as mounted
-  command: "/bin/mountpoint -q {{cryptdir_root}}"
+  command: "/bin/mountpoint -q {{ cryptdir_root }}"
   changed_when: false
 

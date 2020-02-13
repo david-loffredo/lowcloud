@@ -8,7 +8,7 @@
 # ISP connection or VPS provider like AWS, Linode, or DigitalOcean
 example.com		ansible_host=1.2.3.4
 
-[backup-server]
+[backup_server]
 # connects to other machines to fetch and store backups, best if you
 # have physical control of the machine.  It does not need a public IP
 # and can be behind a residential ISP connection.
@@ -18,4 +18,4 @@ guardian.example.com	ansible_host=5.6.7.8
 
 #------------------------------
 # Identify raspberry pi machines for some extra group variables.
-[raspberry-pi]
+[raspberry_pi]

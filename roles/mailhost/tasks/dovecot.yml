@@ -9,7 +9,6 @@
 # install that had 143 enabled.  Only seems to show up once.  dovecot:
 # master: Error: systemd listens on port 143, but it's not configured
 # in Dovecot. Closing.
- 
 
 - name: dovecot and related packages present
   package:
@@ -26,16 +25,16 @@
 # Do not start dovecot at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  
 #
-- name: dovecot start at boot - {{mail_services_bootstart}}
-  service: name=dovecot enabled={{mail_services_bootstart}}
+- name: dovecot start at boot - {{ mail_services_bootstart }}
+  service: name=dovecot enabled={{ mail_services_bootstart }}
 
 - name: spool directories for mail domain are present
-  file: state=directory path="{{mail_spool_root}}/{{ item }}"
+  file: state=directory path="{{ mail_spool_root }}/{{ item }}"
     owner=vmail group=vmail mode=0770
   with_items: "{{ mail_domains }}"
 
 - name: dovecot etc files present
-  template: src="dovecot/{{item}}" dest="/etc/dovecot/{{item}}"
+  template: src="dovecot/{{ item }}" dest="/etc/dovecot/{{ item }}"
     owner=root group=root mode=0644
   with_items:
     - dovecot.conf
@@ -43,7 +42,7 @@
   notify: restart dovecot
 
 - name: dovecot conf.d files present
-  template: src="dovecot/{{item}}" dest="/etc/dovecot/conf.d/{{item}}"
+  template: src="dovecot/{{ item }}" dest="/etc/dovecot/conf.d/{{ item }}"
     owner=root group=root mode=0644
   with_items:
     - 10-auth.conf
@@ -57,7 +56,7 @@
     - 90-sieve.conf
     - auth-sql.conf.ext
   notify: restart dovecot
-    
+
 
 #------------------------------
 # SIEVE
@@ -67,8 +66,8 @@
 # can automatically compile them.
 #
 - name: sieve directories are present
-  file: state=directory path="{{mail_sieve_root}}/{{ item }}"
-    owner=vmail group=vmail mode=0770 
+  file: state=directory path="{{ mail_sieve_root }}/{{ item }}"
+    owner=vmail group=vmail mode=0770
   with_items: "{{ mail_domains + ['after.d', 'before.d', 'global'] }}"
 
 # sieve scripts are installed by rspamd

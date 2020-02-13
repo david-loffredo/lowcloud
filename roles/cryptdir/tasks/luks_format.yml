@@ -8,34 +8,39 @@
     prompt: |-
       WARNING WARNING WARNING WARNING WARNING WARNING
       WARNING WARNING WARNING WARNING WARNING WARNING
-      {{cryptdir_luks_dev}} does not contain a LUKS partition
-      
-      Do LUKS format on {{cryptdir_luks_dev}}?
-      This will overwrite all data on {{cryptdir_luks_dev}}
-      
+      {{ cryptdir_luks_dev }} does not contain a LUKS partition
+
+      Do LUKS format on {{ cryptdir_luks_dev }}?
+      This will overwrite all data on {{ cryptdir_luks_dev }}
+
       Type "yes" to continue, anything else will stop.
   register: format_confirm_test
   failed_when: format_confirm_test.user_input != "yes"
 
 # Initializes the partition
 - name: "{{ cryptdir_luks_dev }} initialized as LUKS partition"
-  shell: printf '{{ cryptdir_pw }}' |
-        cryptsetup luksFormat --batch-mode --verbose {{ cryptdir_luks_dev }} - 
+  shell: set -o pipefail && printf '{{ cryptdir_pw }}' |
+        cryptsetup luksFormat --batch-mode --verbose {{ cryptdir_luks_dev }} -
+  args: { executable: /bin/bash }
+  when: format_confirm_test.user_input == "yes"
 
 # Creates mapping in /dev/mapper/foo
 - name: "{{ cryptdir_luks_dev }} mapped as {{ cryptdir_luks_mapname }}"
-  shell: printf '{{ cryptdir_pw }}' |
-        cryptsetup luksOpen --batch-mode -d - {{cryptdir_luks_dev}} {{cryptdir_luks_mapname}}
+  shell: set -o pipefail && printf '{{ cryptdir_pw }}' |
+        cryptsetup luksOpen --batch-mode -d - {{ cryptdir_luks_dev }} {{ cryptdir_luks_mapname }}
+  args: { executable: /bin/bash }
+  when: format_confirm_test.user_input == "yes"
 
 # zero out the disk to initialize it  would /dev/urandom be better?
 # dd if=/dev/zero of=/dev/mapper/foo
 - name: "mapped {{ cryptdir_luks_mapname }} zeroed out, may take a while"
   command: dd if=/dev/zero of=/dev/mapper/{{ cryptdir_luks_mapname }}
   failed_when: false
-  
+  when: format_confirm_test.user_input == "yes"
+
 # create the filesystem
 # mkfs.ext4 /dev/mapper/foo
 - name: "mapped {{ cryptdir_luks_mapname }} ext4 filesystem present"
   command: mkfs.ext4 /dev/mapper/{{ cryptdir_luks_mapname }}
+  when: format_confirm_test.user_input == "yes"
 
-    

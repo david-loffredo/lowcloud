@@ -6,7 +6,7 @@
 # cloud group, but we may add some PCs later.  If we ever have more
 # than one director, they will probably have different clients.
 #
-bacula_clients: "{{ (groups['cloud'] + groups['backup-server']) | unique}}"
+bacula_clients: "{{ (groups['cloud'] + groups['backup_server']) | unique}}"
 
 # Select database backend: mysql, pgsql or sqlite3.  Mysql and
 # Postgress need a password but Sqlite does not.

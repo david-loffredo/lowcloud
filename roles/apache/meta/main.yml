@@ -1,4 +1,4 @@
 ---
 dependencies:
-  - web-dflts  
+  - web-dflts
   - certbot

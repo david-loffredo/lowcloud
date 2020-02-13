@@ -8,8 +8,6 @@
     name:
       - apache2
 
-
-
 - name: apache global configurations present
   template: src={{ item.src }}.j2
     dest=/etc/apache2/{{ item.dst }}
@@ -20,12 +18,11 @@
   notify:
     - restart apache
 
-      
 # Must do before we enable the configs for the sites, because it
 # parses the configs, which results in a chicken-and-egg situation if
 # we need a particular module and it is not yet installed.
 - name: apache modules present
-  apache2_module: name={{item}} state=present
+  apache2_module: name={{ item }} state=present
   with_items: "{{ (apache_modules + apache_default_modules) | unique }}"
   notify:
     - restart apache
@@ -43,7 +40,7 @@
     loop_var: host
 
 - name: apache default site removed
-  file: path={{item}} state=absent
+  file: path={{ item }} state=absent
   with_items:
     - /etc/apache2/sites-available/000-default.conf
     - /etc/apache2/sites-enabled/000-default.conf
@@ -55,7 +52,6 @@
 # SSLUseStapling On
 # SSLStaplingCache shmcb:${APACHE_RUN_DIR}/ssl_stapling(32768)
 
-    
 ## The default Apache config enables gzip compression, and it is not
 ## recommended to turn it off.  If your website uses cookies, strongly
 ## advise using the SameSite flag to mitigate BREACH (CVE-2013-3587)
@@ -83,10 +79,10 @@
 #  - checkgid (Checks whether the caller can setgid to the specified group)
 #  - check_forensic (Extract mod_log_forensic output from Apache log files)
 #  - httxt2dbm (Generate dbm files for use with RewriteMap)
-    
+
 # logrotate is already installed 
 #  - rotatelogs (Periodically stop writing to a logfile and open a new one)
 #  - split-logfile (Split a single log including multiple vhosts)
 
-- name: apache start at boot - {{web_services_bootstart}}
-  service: name=apache2 enabled={{web_services_bootstart}}
+- name: apache start at boot - {{ web_services_bootstart }}
+  service: name=apache2 enabled={{ web_services_bootstart }}

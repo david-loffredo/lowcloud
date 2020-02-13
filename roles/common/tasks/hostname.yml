@@ -38,4 +38,4 @@
   when: hostcmd_state is changed or
         hostsv4_state is changed or
         hostsv6_state is changed
-        
+

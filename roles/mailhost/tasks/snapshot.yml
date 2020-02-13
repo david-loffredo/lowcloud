@@ -9,11 +9,11 @@
     format: gz
     dest: /tmp/dkim_keys.tgz
   tags: [snapshot, mail-snapshot]
-    
+
 - name: return maildb and dkim to mothership
-  fetch: src={{item}} dest="{{snapshot_dir}}/" flat=yes
+  fetch: src={{ item }} dest="{{ snapshot_dir }}/" flat=yes
   with_items:
-    - "{{mail_db}}"
+    - "{{ mail_db }}"
     - /tmp/dkim_keys.tgz
   tags: [snapshot, mail-snapshot]
 
@@ -22,4 +22,4 @@
     path: /tmp/dkim_keys.tgz
     state: absent
   tags: [snapshot, mail-snapshot]
-    
+

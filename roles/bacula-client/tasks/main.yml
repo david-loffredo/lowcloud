@@ -8,7 +8,7 @@
 - name: bacula password has real value
   fail: msg="Set bacula_client_pw to a real value"
   when: bacula_client_pw == "changeme"
-    
+
 - name: bacula client config file
   template:
     src: bacula-fd.conf.j2
@@ -32,7 +32,7 @@
     group: "{{ bacula_tunnel_group }}"
     state: present
     password: "{{ bacula_tunnel_pwhash }}"
-      
+
 - name: bacula tunnel has authorized keys
   authorized_key:
     user: "{{ bacula_tunnel_acct }}"
@@ -51,7 +51,7 @@
 # ansible does not support the default= argument to map yet.  Just
 # build the list procedurally.
 #
-# with_items: "{{ groups['backup-server'] | map('extract', hostvars) |
+# with_items: "{{ groups['backup_server'] | map('extract', hostvars) |
 #   map(attribute='storage_host', default=dft_var) | unique | list }}"
 # 
 - name: tunneled storage director resolves to loopback
@@ -62,15 +62,13 @@
     state: present
   with_items: >-
     {%- set ns = namespace(sds=[]) -%}
-    {%- for i in groups['backup-server'] -%}
+    {%- for i in groups['backup_server'] -%}
     {{- ns.sds.append( hostvars[i].bacula_storage_host |
         default(bacula_default_storage_host) )  -}}
     {%- endfor -%}
     {{- ns.sds | unique -}}
-        
-    
+
 # RedHat and Suse would also need stuff in sysconfig
 
 - name: bacula client service enabled and started
   service: name=bacula-fd enabled=yes state=started
-    

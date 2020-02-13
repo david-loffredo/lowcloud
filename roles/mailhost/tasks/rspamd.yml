@@ -11,15 +11,15 @@
 #
 - name: backports repository is configured as a source
   lineinfile:
-    dest: /etc/apt/sources.list.d/{{item}}-backports.list
-    line: "deb http://deb.debian.org/debian {{item}}-backports main"
+    dest: /etc/apt/sources.list.d/{{ item }}-backports.list
+    line: "deb http://deb.debian.org/debian {{ item }}-backports main"
     state: present
     create: yes
     owner: root
     group: root
     mode: 0644
   with_items:
-    - "{{ansible_distribution_release}}"
+    - "{{ ansible_distribution_release }}"
   register: backportconfig
 
 - name: backports cache updated
@@ -27,21 +27,21 @@
   when: backportconfig is changed
 
 
-- name: rspamd present from {{ansible_distribution_release}}-backports
+- name: rspamd present from {{ ansible_distribution_release }}-backports
   apt:
     name: rspamd
     state: present
-    default_release: "{{ansible_distribution_release}}-backports"
+    default_release: "{{ ansible_distribution_release }}-backports"
     update_cache: yes
   tags: install-rspamd
-  
+
 - name: rspamd related packages present
   package:
     state: present
     name:
       - redis-server
 
-- name: redis configuration 
+- name: redis configuration
   template: src={{ item }}.j2 dest=/etc/redis/{{ item }}
     owner=redis group=redis mode=640
   with_items:
@@ -66,14 +66,14 @@
 
 
 - name: sieves for pre-filter present
-  copy: src={{ item }} dest={{mail_sieve_root}}/before.d/{{ item }}
+  copy: src={{ item }} dest={{ mail_sieve_root }}/before.d/{{ item }}
     owner=vmail group=vmail mode=640
   with_items:
     - separate_spam.sieve
   notify: restart dovecot
 
 - name: sieves for training present
-  copy: src={{ item }} dest={{mail_sieve_root}}/global/{{ item }}
+  copy: src={{ item }} dest={{ mail_sieve_root }}/global/{{ item }}
     owner=vmail group=vmail mode=640
   with_items:
     - learn_ham.sieve
@@ -84,54 +84,54 @@
 # DKIM Signing - Only enabled when we set a selector
 - name: Check for local dkim key backup
   become: False
-  local_action:
-    stat path="{{snapshot_dir}}/dkim_keys.tgz"
+  delegate_to: localhost
+  stat: path="{{ snapshot_dir }}/dkim_keys.tgz"
   register: dkim_key_backup
   tags: dkim
 
-- name: restore local dkim key backup to {{mail_dkim_root|dirname}}
+- name: restore local dkim key backup to {{ mail_dkim_root|dirname }}
   unarchive:
-    src: "{{snapshot_dir}}/dkim_keys.tgz"
-    dest: "{{mail_dkim_root|dirname}}"
+    src: "{{ snapshot_dir }}/dkim_keys.tgz"
+    dest: "{{ mail_dkim_root|dirname }}"
     owner: root
     group: root
-  when: dkim_key_backup.stat.exists == true
+  when: dkim_key_backup.stat.exists
   tags: dkim
 
 - name: DKIM key directory present
-  file: path={{mail_dkim_root}} state=directory
+  file: path={{ mail_dkim_root }} state=directory
         owner=_rspamd group=_rspamd mode=0755
   tags: dkim
 
 - name: DKIM keys generated
-  shell: rspamadm dkim_keygen -b {{dkim_keysize}}
-        -d {{item}} -s {{dkim_selector}}
-        -k {{item}}.{{dkim_selector}}.key >
-        {{item}}.{{dkim_selector}}.txt
+  shell: rspamadm dkim_keygen -b {{ dkim_keysize }}
+        -d {{ item }} -s {{ dkim_selector }}
+        -k {{ item }}.{{ dkim_selector }}.key >
+        {{ item }}.{{ dkim_selector }}.txt
   args:
-    creates: "{{mail_dkim_root}}/{{item}}.{{dkim_selector}}.key"
-    chdir: "{{mail_dkim_root}}"
+    creates: "{{ mail_dkim_root }}/{{ item }}.{{ dkim_selector }}.key"
+    chdir: "{{ mail_dkim_root }}"
   with_items: "{{ mail_domains }}"
   when: dkim_selector_is_set
   notify: restart rspamd
   tags: dkim
 
 - name: upcoming DKIM keys generated
-  shell: rspamadm dkim_keygen -b {{dkim_keysize}}
-        -d {{item}} -s {{dkim_selector_next}}
-        -k {{item}}.{{dkim_selector_next}}.key >
-        {{item}}.{{dkim_selector_next}}.txt
+  shell: rspamadm dkim_keygen -b {{ dkim_keysize }}
+        -d {{ item }} -s {{ dkim_selector_next }}
+        -k {{ item }}.{{ dkim_selector_next }}.key >
+        {{ item }}.{{ dkim_selector_next }}.txt
   args:
-    creates: "{{mail_dkim_root}}/{{item}}.{{dkim_selector_next}}.key"
-    chdir: "{{mail_dkim_root}}"
+    creates: "{{ mail_dkim_root }}/{{ item }}.{{ dkim_selector_next }}.key"
+    chdir: "{{ mail_dkim_root }}"
   with_items: "{{ mail_domains }}"
   when: dkim_selector_next_is_set
   tags: dkim
 
 # we do not enable these at boot because they may need data from the
 # encrypted mail directories
-- name: spam services start at boot - {{mail_services_bootstart}}
-  service: name={{ item }} state=started enabled={{mail_services_bootstart}}
+- name: spam services start at boot - {{ mail_services_bootstart }}
+  service: name={{ item }} state=started enabled={{ mail_services_bootstart }}
   with_items:
     - redis-server
     - rspamd

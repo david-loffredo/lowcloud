@@ -111,9 +111,9 @@
   when: ssh_weak_ciphers is defined
   notify:
     - reload ssh
-    
+
 - name: modern host key generated
-  command: ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N "" 
+  command: ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""
   args:
     creates: /etc/ssh/ssh_host_ed25519_key
   notify:

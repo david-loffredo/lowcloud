@@ -4,7 +4,7 @@
 # use should be consistent across machines.
 
 - name: locale is present
-  locale_gen: name={{item}}  state=present
+  locale_gen: name={{ item }}  state=present
   with_items: "{{ [ host_locale, host_language ] | unique }}"
 
 - name: current locale and language configuration
@@ -14,11 +14,18 @@
 
 - name: current locale analysis
   set_fact:
-    calc_lang: "{{ locale_status.stdout | regex_search('LANG=([^\n]+)', '\\1') | first }}"
+    calc_lang: "{{
+        locale_status.stdout |
+        regex_search('LANG=([^\n]+)', '\\1') |
+        first }}"
 
 - name: current language analysis
   set_fact:
-    calc_language: "{{ locale_status.stdout | regex_search('LANGUAGE=([^\n]+)', '\\1') | default([calc_lang], true) | first }}"
+    calc_language: "{{
+        locale_status.stdout |
+        regex_search('LANGUAGE=([^\n]+)', '\\1') |
+        default([calc_lang], true) |
+        first }}"
 
 # On Debian 10, localectl seems to set LANGUAGE in /etc/default/locale
 # but once there, does not change it again.  The update-locale tool
@@ -29,10 +36,12 @@
 # on the other distros, but they seem to use /etc/locale.conf
 #
 - name: locale as '{{ host_locale }}' and language as '{{ host_language }}'
-  command: localectl set-locale LANG={{ host_locale }} LANGUAGE={{ host_language }}
-  changed_when: calc_lang != host_locale or calc_language != host_language
+  command: localectl set-locale
+        LANG={{ host_locale }} LANGUAGE={{ host_language }}
+  changed_when: calc_lang != host_locale or
+        calc_language != host_language
 
-- name: /etc/default/locale contains proper defaults  
+- name: /etc/default/locale contains proper defaults
   template: src=locale.j2 dest=/etc/default/locale
     owner=root group=root mode=0644
-  
+

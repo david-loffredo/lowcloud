@@ -12,7 +12,7 @@
 - name: return certbot keys to mothership
   fetch:
     src: /tmp/letsencrypt_keys.tgz
-    dest: "{{snapshot_dir}}/"
+    dest: "{{ snapshot_dir }}/"
     flat: yes
   tags: [never, snapshot, web-snapshot]
 

@@ -15,20 +15,20 @@
 # Restore snapshot from existing machine if needed
 - name: Check for certbot local key backup
   become: False
-  local_action:
-    stat path="{{snapshot_dir}}/letsencrypt_keys.tgz"
+  delegate_to: localhost
+  stat: path="{{ snapshot_dir }}/letsencrypt_keys.tgz"
   register: certbot_key_backup
 
 - name: restore certbot local key backup
   unarchive:
-    src: "{{snapshot_dir}}/letsencrypt_keys.tgz"
+    src: "{{ snapshot_dir }}/letsencrypt_keys.tgz"
     dest: /etc
     owner: root
     group: root
-  when: certbot_key_backup.stat.exists == true
+  when: certbot_key_backup.stat.exists
 
 - name: certificate testing script present
-  copy: src=testcertnames dest={{certbot_test_util}}
+  copy: src=testcertnames dest={{ certbot_test_util }}
     owner=root group=root mode=0755
 
 - include_tasks: certbot_create.yml
@@ -38,18 +38,18 @@
 
 # remove hooks that are no longer needed
 - name: remove unneeded certbot pre-post hook
-  file: dest={{item}} state=absent
+  file: dest={{ item }} state=absent
   with_items:
     - /etc/letsencrypt/renewal-hooks/pre/pre-hook
     - /etc/letsencrypt/renewal-hooks/post/post-hook
   when: not certbot_need_prepost_hook
 
 - name: remove unneeded certbot deploy hook
-  file: dest={{item}} state=absent
+  file: dest={{ item }} state=absent
   with_items:
     - /etc/letsencrypt/renewal-hooks/deploy/deploy-hook
   when: not certbot_need_deploy_hook
-    
+
 # add new hooks that are needed
 - name: add pre-renew hook to stop services
   template: src=pre-hook.j2

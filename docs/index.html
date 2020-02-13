@@ -99,7 +99,7 @@ have an sense of how many people find it useful.
 <p>The <code>myhosts/hosts</code> file
 identifies <a href="machines.html">your machines</a>, and organizes
 them into groups.  We use two groups: <code>cloud</code>
-and <code>backup-server</code>.  The playbooks apply tasks to the
+and <code>backup_server</code>.  The playbooks apply tasks to the
 machines in each group.  </p>
 
 <p>Machines are listed by fully qualified domain name (FQDN) and IP
@@ -113,7 +113,7 @@ in the scripts.</p>
 # ISP connection or VPS provider like AWS, Linode, or DigitalOcean
 example.com		ansible_host=1.2.3.4
 
-[backup-server]
+[backup_server]
 # connects to other machines to fetch and store backups, best if you
 # have physical control of the machine.  It does not need a public IP
 # and can be behind a residential ISP connection.
@@ -138,7 +138,7 @@ Every machine belongs to the special <code>all</code> group.</p>
 <p>Most settings are in <code>all/all.yml</code>.  Look through this
 file and customize the values as appropriate.  A few things unique to
 each machine are kept in <code>cloud.yml</code>
-and <code>backup-server.yml</code>.
+and <code>backup_server.yml</code>.
 
 <p>Sensitive values like passwords are in
 <code>all/vault.yml</code>, which will be an encrypted
@@ -204,7 +204,7 @@ the <code>--private-key</code> flag instead.</p>
 
 <PRE class=code>
 $ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit cloud
-$ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit backup-server
+$ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit backup_server
 </PRE>
 
 <p>After this, remote password login is disabled and everything

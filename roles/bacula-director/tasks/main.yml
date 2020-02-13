@@ -32,19 +32,19 @@
 
 # changing this after the fact might require dpkg-reconfigure 
 - name: bacula database config installed
-  template: src={{item}}.conf.j2
-    dest=/etc/dbconfig-common/{{item}}.conf
+  template: src={{ item }}.conf.j2
+    dest=/etc/dbconfig-common/{{ item }}.conf
     owner=root group=root mode=0600
   with_items:
-    - "{{bacula_db_pkg[bacula_db]}}"
+    - "{{ bacula_db_pkg[bacula_db] }}"
 
 - name: bacula director packages installed
   package:
     state: present
     name:
-      - "{{bacula_db_pkg[bacula_db]}}"
+      - "{{ bacula_db_pkg[bacula_db] }}"
       - bacula-server
-      - bacula-console      
+      - bacula-console
 
 - name: bacula server working directories present
   file: state=directory path="{{ item }}"
@@ -55,11 +55,11 @@
     - "{{ bacula_storage_datadir }}"
     - /etc/bacula/tunnel
 
-    
+
 # Configs for director, storage daemon, and console
 - name: bacula config files present
-  template: src={{item}}.j2
-    dest=/etc/bacula/{{item}}
+  template: src={{ item }}.j2
+    dest=/etc/bacula/{{ item }}
     owner=root group=bacula mode=0640
   with_items:
     - bacula-dir.conf
@@ -72,7 +72,7 @@
 - name: cloud client configurations present
   template:
     src: client.conf.j2
-    dest: /etc/bacula/{{hostvars[item].inventory_hostname_short}}-job.conf
+    dest: /etc/bacula/{{ hostvars[item].inventory_hostname_short }}-job.conf
     owner: root
     group: bacula
     mode: 0640
@@ -82,14 +82,14 @@
 
 # SSH Tunnel Things ---------------------------------------
 - name: bacula tunnel script present
-  template: src={{item}} dest=/etc/bacula/{{item}}
+  template: src={{ item }} dest=/etc/bacula/{{ item }}
     owner=root group=bacula mode=0750
   with_items:
     - ssh-tunnel.sh
 
 - name: bacula tunnel keys for all clients
-  copy: src={{item.src}}
-    dest=/etc/bacula/tunnel/{{item.dst}}
+  copy: src={{ item.src }}
+    dest=/etc/bacula/tunnel/{{ item.dst }}
     owner=root group=bacula mode=0640
   with_items: >-
     {%- set ns = namespace(keys=[]) -%}
@@ -110,16 +110,15 @@
     regexp: '.*{{ item }}$'
     line: "127.0.0.1 {{ item }}"
     state: present
-  with_items: 
+  with_items:
     - "{{ bacula_storage_host }}"
 
 # RedHat and Suse would also need stuff in sysconfig
 
-- name: bacula services start at boot - {{bacula_director_bootstart}}
-  service: name={{item}} enabled={{bacula_director_bootstart}} state=started
+- name: bacula services start at boot - {{ bacula_director_bootstart }}
+  service: name={{ item }} state=started
+    enabled={{ bacula_director_bootstart }}
   with_items:
     - bacula-dir
     - bacula-sd
 
-
-  

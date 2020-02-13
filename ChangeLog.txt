@@ -1,6 +1,10 @@
 
 ## [Unreleased]
 
+- Changed '-' to '_' in backup_server and raspberry_pi group names to
+  satisfy new Ansible naming requirements.  Update your host files and
+  group_var files to match.  Many lint fixes throughout the playbooks.
+
 - Certbot handling now broken out into a separate role, the renewal
   hooks are now configurable and handled by a few simple variables.
   Now requesting a separate certificate for the mail server.  This

@@ -24,7 +24,7 @@
 
 # "o=Debian Backports,a=${distro_codename}-backports,l=Debian Backports";
 
-- name: unattended upgrades notify {{admin_email}}
+- name: unattended upgrades notify {{ admin_email }}
   lineinfile:
     path: /etc/apt/apt.conf.d/50unattended-upgrades
     # match commented or uncommented

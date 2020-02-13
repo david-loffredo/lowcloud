@@ -8,7 +8,7 @@
 # iproute2 has the new ss command
 # net-tools has the legacy commands including netstat
 
-- name: network filtering packages are installed 
+- name: network filtering packages are installed
   package:
     state: present
     name:
@@ -20,7 +20,7 @@
     msg:
       - OPEN TCP PORTS {{ firewall_ports_tcp }}
       - OPEN UDP PORTS {{ firewall_ports_udp }}
-      
+
 - name: iptables v4 configured
   template:
     src: testrules.v4.j2

@@ -4,14 +4,14 @@
 
 - name: defaults calculated
   set_fact:
-    host_dflt_root: "{{webdata_root}}/{{ host.name }}"
+    host_dflt_root: "{{ webdata_root }}/{{ host.name }}"
 
-- name: document root present {{apache_host_dflt_root}}
+- name: document root present {{ apache_host_dflt_root }}
   file:
     path: "{{ host.root | default(apache_host_dflt_root) }}"
     state: directory
     mode: 0755
-  
+
 - name: site content present
   template:
     src: host.html.j2
@@ -37,5 +37,3 @@
     creates: /etc/apache2/sites-enabled/{{ host.name }}.conf
   notify:
     - restart apache
-
-    

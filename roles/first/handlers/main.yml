@@ -1,19 +1,14 @@
 ---
-
 # Restart is usually fine but there is a small chance that it might
 # bounce the connection.  Reload instead.
 - name: reload ssh
   service: name=ssh state=reloaded
 
 - name: flush local known_hosts
-  known_hosts: name="{{item}}" state=absent
+  known_hosts: name="{{ item }}" state=absent
   delegate_to: localhost
   become: False
-  with_items: "{{ 
+  with_items: "{{
         ([inventory_hostname, ansible_host] +
         (ansible_all_ipv4_addresses|default([])))
         |unique }}"
-
-    
-  
-

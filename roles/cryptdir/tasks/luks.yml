@@ -21,18 +21,19 @@
   register: mapper_status_check
   changed_when: mapper_status_check.rc != 0
   failed_when: false
-  
+
 - name: "{{ cryptdir_luks_dev }} mapped as {{ cryptdir_luks_mapname }}"
-  shell: printf '{{ cryptdir_pw }}' |
-        cryptsetup luksOpen --batch-mode -d - {{cryptdir_luks_dev}} {{cryptdir_luks_mapname}}
+  shell: set -o pipefail && printf '{{ cryptdir_pw }}' |
+        cryptsetup luksOpen --batch-mode -d - {{ cryptdir_luks_dev }} {{ cryptdir_luks_mapname }}
+  args: { executable: /bin/bash }
   when: mapper_status_check.rc != 0
 
 - name: "{{ cryptdir_luks_mapname }} mount point present"
-  file: state=directory path="{{cryptdir_root}}"
+  file: state=directory path="{{ cryptdir_root }}"
 
 # Unmount if needed by killing all of the mail processes, then
 # umount /vault; cryptsetup luksClose vault-blk
-  
+
 # Add the partition to crypttab, but do not try to mount at boot.
 # Unfortunately, this does not auto open when we mount cryptdir_root.
 # 
@@ -44,18 +45,18 @@
 #     opts: noauto
 #     state: present
 
-  
+
 # mount the partition rw, nosuid, but not nodev because we keep the
 # postfix chroot on there.  No automatic mount at boot because it wont
 # really be there.
 - name: "{{ cryptdir_luks_mapname }} configured and mounted"
   mount:
-    path: "{{cryptdir_root}}"
-    src: /dev/mapper/{{cryptdir_luks_mapname}}
+    path: "{{ cryptdir_root }}"
+    src: /dev/mapper/{{ cryptdir_luks_mapname }}
     fstype: ext4
     opts: rw,nosuid,noauto
     state: mounted
-  
+
 # dumps the luks headers, good to backup
 # cryptsetup luksDump /dev/xvdc
 

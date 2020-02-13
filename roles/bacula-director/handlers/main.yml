@@ -6,4 +6,3 @@
 
 - name: restart bacula storage daemon
   service: name=bacula-sd state=restarted
-  

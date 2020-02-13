@@ -14,7 +14,7 @@
 
 - name: restart redis
   service: name=redis-server state=restarted
-  
+
 - name: remove default postfix queue
-  file: path={{mail_queue_default_dir}} state=absent
+  file: path={{ mail_queue_default_dir }} state=absent
   when: mail_queue_dir != mail_queue_default_dir

@@ -1,5 +1,5 @@
 {%- set dir_names=[] -%}
-{%- for i in groups['backup-server'] -%}
+{%- for i in groups['backup_server'] -%}
 {{- dir_names.append(
     hostvars[i].bacula_director_name | default(
     hostvars[i].inventory_hostname_short + '-dir')) -}}
