@@ -2,6 +2,13 @@
 #========================================
 # Certbot Settings
 #
+# Would like to customize the location of the certs so they are in
+# someplace other than /etc/letsencrypt, but it appears strongly baked
+# into the script.  The --config-dir flag appears to change it, but
+# then you need to make sure that same flag gets into the renewal cron
+# jobs at /lib/systemd/system/certbot.service and /etc/cron.d/certbot
+#
+
 certbot_script: certbot
 certbot_admin_email: "{{ admin_email }}"
 

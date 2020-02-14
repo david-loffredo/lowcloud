@@ -4,12 +4,5 @@
 - { import_tasks: firewall.yml,         tags: firewall }
 - { import_tasks: ntp.yml,              tags: ntp }
 - { import_tasks: upgrades.yml,         tags: unattended-upgrades }
+- { import_tasks: logrotate.yml,        tags: logrotate }
 - { import_tasks: editor.yml,           tags: editor }
-
-# test but probably not what we want
-# - import_tasks: debsums.yml
-
-# - import_tasks: disk-check.yml
-# - import_tasks: htop.yml
-# - import_tasks: needrestart.yml
-# - import_tasks: dnsmasq.yml

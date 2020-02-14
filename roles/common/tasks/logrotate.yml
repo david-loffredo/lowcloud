@@ -1,0 +1,17 @@
+---
+# logrotate is installed by default on debian
+
+- name: date extension on rotated logs
+  lineinfile:
+    path: /etc/logrotate.conf
+    # match commented or uncommented
+    regexp: "^(#\\s*)?dateext"
+    line: "dateext"
+    insertafter: EOF
+    state: present
+
+# Might want to play with the logging preferences for individual
+# packages (like bacula) but should do it in those packages because
+# the configs for them would not be installed yet.
+
+
