@@ -31,5 +31,11 @@ apache_force_https: yes
 apache_staple_sz: 32768
 apache_staple_on: no
 
+# Per vhost variables
+apache_host_dflt_root:      "{{webdata_root}}/{{ host.name }}"
+apache_host_dflt_cert:      "/etc/letsencrypt/live/{{host.name}}/fullchain.pem"
+apache_host_dflt_certkey:   "/etc/letsencrypt/live/{{host.name}}/privkey.pem"
 
-apache_host_dflt_root: "{{webdata_root}}/{{ host.name }}"
+# older versions of apache needed both of these
+#apache_host_dflt_cert:      "/etc/letsencrypt/live/{{host.name}}/cert.pem"
+#apache_host_dflt_certchain: "/etc/letsencrypt/live/{{host.name}}/chain.pem"

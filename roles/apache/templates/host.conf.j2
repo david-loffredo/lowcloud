@@ -1,7 +1,9 @@
 {# move jinja computation to one place to make the body clearer -#}
 {%- set host_logname = host.name | replace('.', '_') -%}
 {%- set host_admin = host.admin | default(admin_email) -%}
-{%- set host_root = host.root | default(webdata_root+'/'+host.name) -%}
+{%- set host_root = host.root | default(apache_host_dflt_root) -%}
+{%- set host_cert = host.cert | default(apache_host_dflt_cert) -%}
+{%- set host_certkey = host.certkey | default(apache_host_dflt_certkey) -%}
 <VirtualHost *:80>
     # The ServerName directive sets the request scheme, hostname and
     # port that the server uses to identify itself. This is used when
@@ -73,9 +75,11 @@
     SSLHonorCipherOrder     off
     SSLSessionTickets       off
 
-    SSLCertificateFile /etc/letsencrypt/live/{{host.name}}/cert.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/{{host.name}}/privkey.pem
-    SSLCertificateChainFile /etc/letsencrypt/live/{{host.name}}/chain.pem
+    SSLCertificateFile {{ host_cert }}
+    SSLCertificateKeyFile {{ host_certkey }}
+
+    # Older versions took SSLCertificateFile=cert.pem and 
+    # SSLCertificateChainFile   chain.pem file for apache<2.4.8
 
 {% if apache_staple_on %}
     # Stapling is usually done globally, in the mod/ssl.conf

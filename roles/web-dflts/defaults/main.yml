@@ -12,9 +12,13 @@ webdata_root: /var/www
 # the following values
 # - name: "ServerName"  (required)
 #   aliases: [list of ServerAlias]  (optional, usually www.{{name}})
-#   admin: "ServerAdmin"  (defaults to webmaster@{{name}})
-#   root: "DocumentRoot" (defaults to {{webdata_root}}/{{name}})
+#   admin: "admin email"    (defaults to webmaster@{{name}})
+#   root: "document root"   (defaults to {{webdata_root}}/{{name}})
+#   cert: "cert file"       (defaults to letsencrypt {{name}}/cert.pem)
+#   certkey: "key file"     (defaults to letsencrypt {{name}}/privkey.pem)
+#   certchain: "chain file" (defaults to letsencrypt {{name}}/chain.pem)
 #
+
 web_vhosts:
   - name: "{{ domain }}"
     aliases: [ "www.{{ domain }}" ] 
