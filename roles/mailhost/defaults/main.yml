@@ -30,9 +30,11 @@ mail_services_bootstart: yes
 mail_queue_default_dir: /var/spool/postfix
 mail_queue_dir: "{{mail_queue_default_dir}}"
 
-# SSL certificate files
-mail_ssl_cert:      "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
-mail_ssl_certkey:   "/etc/letsencrypt/live/{{ domain }}/privkey.pem"
+# SSL certificate files - the certhost is usually a separate cert for
+# mail, but could be grouped in as an alias on the main domain.
+mail_certhost: '{{ mail_server_hostname }}'
+mail_ssl_cert:      "/etc/letsencrypt/live/{{ mail_certhost }}/fullchain.pem"
+mail_ssl_certkey:   "/etc/letsencrypt/live/{{ mail_certhost }}/privkey.pem"
 
 # Mail spool and user database should be in the encrypted directory.
 mail_spool_root: /var/vmail

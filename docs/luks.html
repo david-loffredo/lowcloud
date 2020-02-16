@@ -64,6 +64,10 @@ $ mount /vault
 <p>The <code>dmsetup</code> command has many other operations on
 encrypted things.</p>
 
+<p>If you want to nuke a LUKS partition, just run wipefs on the
+device.  With the header gone, the partition is now useless.  You may
+want to back up the header with luksDump.</p>
+
 <div class=copyright>
 <p>Copyright &copy; 2020 David Loffredo, licensed under
 <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">

@@ -275,10 +275,11 @@ is a great place to see worked examples and get ideas.</p>
 <H2 class=rule>
 <A NAME=reboot></A>Rebooting</H2>
 
-<p>The machine should boot clean and everything will come up except
-mail.  Log in and run <code>mailboot</code> as root.  Enter the
-encrypted directory password and the script will mount the cleartext
-data and start the mail daemon.</p>
+<p>At boot, everything will start normally except mail, which waits
+until we log in and unlock the encrypted mail spool by running
+the <code>mailboot</code> script.  Any incoming mail should remain
+queued by the sending system until the mail daemon is up again.</p>
+
 
 <figure>
 <img src="images/sparc20.jpg" alt="Sparc 20">

@@ -15,7 +15,7 @@
     regexp: "^{{ hostname_ipv4 }}"
     line: "{{ hostname_ipv4 }} {{ hostname_fqdn }} {{ hostname }}"
     state: present
-  when: hostname_ipv4 is defined
+  when: hostname_ipv4 | length > 0
   register: hostsv4_state
 
 - name: /etc/hosts has ipv6 fqdn
@@ -24,9 +24,8 @@
     regexp: "^{{ hostname_ipv6 }}"
     line: "{{ hostname_ipv6 }} {{ hostname_fqdn }} {{ hostname }}"
     state: present
-  when: hostname_ipv6 is defined
+  when: hostname_ipv6 | length > 0
   register: hostsv6_state
-
 
 # Rather than use a handler, bounce this using register vars.  When
 # the host changes we might get a security warning email every task,
@@ -38,4 +37,3 @@
   when: hostcmd_state is changed or
         hostsv4_state is changed or
         hostsv6_state is changed
-

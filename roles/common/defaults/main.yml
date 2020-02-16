@@ -11,8 +11,8 @@ timezone: 'Etc/UTC'
 
 hostname:       "{{ inventory_hostname_short }}"
 hostname_fqdn:  "{{ inventory_hostname }}"
-hostname_ipv4:  "{{ ansible_default_ipv4.address }}"
-hostname_ipv6:  "{{ ansible_default_ipv6.address }}"
+hostname_ipv4:  "{{ ansible_default_ipv4.address | default('') }}"
+hostname_ipv6:  "{{ ansible_default_ipv6.address | default('') }}"
 
 # Can set LANG and LANGUAGE separately, roll your own if you want
 # something finer grained.
