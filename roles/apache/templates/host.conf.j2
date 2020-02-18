@@ -43,6 +43,8 @@
     # RewriteEngine On
     # RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]    
 {% endif %}
+{{ host.conf_extra|default('') }}
+{{ host.conf_extra_http|default('') }}
 </VirtualHost>
 
 {% if apache_use_https %}
@@ -106,5 +108,8 @@
     <Directory /usr/lib/cgi-bin>
 	SSLOptions +StdEnvVars +StrictRequire
     </Directory>
+
+{{ host.conf_extra|default('') }}
+{{ host.conf_extra_https|default('') }}
 </VirtualHost>
 {% endif %}

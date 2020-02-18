@@ -16,17 +16,22 @@
 #
 # ssh-keygen -t ed25519 -f deploy -C deploy-yourhost -N ''
 # ssh-keygen -t ed25519 -f bacula -C bacula-tunnel-yourhost -N ''
+# ssh-keygen -t ed25519 -f www -C www-yourhost -N ''
 #
 # Create the pwhash for passwords with "mkpasswd --method=sha-512"
 #
-vault_deploy_sshpub: ~/.ssh/deploy.pub
-vault_deploy_sshkey: ~/.ssh/deploy
+vault_deploy_sshpub: ~/.ssh/id_deploy.pub
+vault_deploy_sshkey: ~/.ssh/id_deploy
 vault_deploy_pwhash: [change me to hash like $6$verylongcryptstring]
+
+# Separate account without any sudo access for uploading web content.
+vault_www_sshpub: ~/.ssh/id_www.pub
+vault_www_sshkey: ~/.ssh/id_www
 
 # Bacula passwords coordinate between director and the daemons.  You
 # can just make these 50-60 char long strings of gibberish.
-vault_bacula_tunnel_sshpub: ~/.ssh/bacula.pub
-vault_bacula_tunnel_sshkey: ~/.ssh/bacula
+vault_bacula_tunnel_sshpub: ~/.ssh/id_bacula.pub
+vault_bacula_tunnel_sshkey: ~/.ssh/id_bacula
 vault_bacula_client_pw:  [change me to very long gibberish]
 vault_bacula_storage_pw: [change me to very long gibberish]
 vault_bacula_console_pw: [change me to very long gibberish]

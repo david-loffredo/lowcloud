@@ -7,6 +7,7 @@
     state: present
     name:
       - apache2
+      - rsync   # for pushing web data
 
 - name: apache global configurations present
   template: src={{ item.src }}.j2
@@ -29,9 +30,30 @@
 
 # Should already be present on Debian.  Use for the web management
 # user accounts for each website.
-- name: Create 'www-data' group
+- name: www-data group present
   group: name=www-data state=present
 
+# Create a normal user accout without sudo to allow others to upload
+# web content.   Starred password, only login by ssh key.
+- name: www account present
+  user: name=www   password='*'  state=present
+    group=users  groups=www-data  append=yes
+    shell=/bin/bash
+
+- name: www account has authorized keys
+  authorized_key:
+    user: www
+    key:  "{{ lookup('file', www_acct_sshpub) }}"
+
+
+- name: web root has proper ownership
+  file:
+    path: "{{ webdata_root }}"
+    state: directory
+    owner: www
+    group: www-data
+    mode: 0755
+    
 - name: configurations present for each host
   include_tasks: host.yml
   with_items:
@@ -43,7 +65,9 @@
   file: path={{ item }} state=absent
   with_items:
     - /etc/apache2/sites-available/000-default.conf
+    - /etc/apache2/sites-available/default-ssl.conf
     - /etc/apache2/sites-enabled/000-default.conf
+    - /etc/apache2/sites-enabled/default-ssl.conf
     - /var/www/html
   notify:
     - restart apache

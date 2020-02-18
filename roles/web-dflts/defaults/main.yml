@@ -18,6 +18,13 @@ webdata_root: /var/www
 #   certkey: "key file"     (defaults to letsencrypt {{name}}/privkey.pem)
 #   certchain: "chain file" (defaults to letsencrypt {{name}}/chain.pem)
 #
+# The following can each contain a string (probably multiline) that
+# will be included in the configuration directives for the http and
+# https configs.  Use for custom error pages, rewrite rules, etc.
+#
+#   conf_extra          ( both )
+#   conf_extra_http     ( only http )
+#   conf_extra_https    ( only https )
 
 web_vhosts:
   - name: "{{ domain }}"

@@ -53,6 +53,11 @@ web_vhosts:
     aliases:
       - www.second-domain.example
 
+# Separate 'www' account without any sudo access for uploading web
+# content.  You can disable this if you just want to use the deploy
+# account for everything
+www_acct_sshpub: "{{ vault_www_sshpub }}"
+www_acct_sshkey: "{{ vault_www_sshkey }}"
 
 #========================================
 # Mail Server Settings
