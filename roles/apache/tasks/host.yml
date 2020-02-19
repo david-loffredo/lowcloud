@@ -1,4 +1,15 @@
 ---
+# If we have multiple sites, the default one is first in the collation
+# order.  We can force that by prepending 000, but watch for outdated
+# conf files if we happen to change this setting.  For the most part,
+# the default does not matter unless we happen to use the raw IP or
+# have DNS records that point to us that have no vhost.
+#
+- name: "{{ host.name }} : defaults calculated"
+  set_fact:
+    host_conf: "{{ '000-' if host.default|default(False) }}{{ host.name }}" 
+    host_oppo: "{{ '000-' if not host.default|default(False) }}{{ host.name }}" 
+
 - name: "{{ host.name }} : document root present {{ apache_host_dflt_root }}"
   file:
     path: "{{ host.root | default(apache_host_dflt_root) }}"
@@ -19,16 +30,31 @@
 - name: "{{ host.name }} : http config present"
   template:
     src: host.conf.j2
-    dest: /etc/apache2/sites-available/{{ host.name }}.conf
+    dest: /etc/apache2/sites-available/{{ host_conf }}.conf
     owner: root
     group: root
     mode: 0644
   notify:
     - restart apache
 
+# make the link manually rather than call a2ensite because it bounces
+# apache every time
 - name: "{{ host.name }} : enabled"
-  command: a2ensite {{ host.name }}
-  args:
-    creates: /etc/apache2/sites-enabled/{{ host.name }}.conf
+  file:
+    dest: /etc/apache2/sites-enabled/{{ host_conf }}.conf
+    src: ../sites-available/{{ host_conf }}.conf
+    state: link
+    owner: root
+    group: root
+    mode: 0644
   notify:
     - restart apache
+
+- name: "{{ host.name }} : alternate configs removed"
+  file: path={{ item }} state=absent
+  with_items:
+    - /etc/apache2/sites-available/{{ host_oppo }}.conf
+    - /etc/apache2/sites-enabled/{{ host_oppo }}.conf
+  notify:
+    - restart apache
+    

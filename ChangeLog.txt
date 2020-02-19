@@ -1,5 +1,8 @@
 
-## [Unreleased]
+## [1.1] - 2020-02-18
+
+- Added 'www' user account for uploading website data.  Also reworked
+  the website configs to add a variety of extra flags.
 
 - Changed '-' to '_' in backup_server and raspberry_pi group names to
   satisfy new Ansible naming requirements.  Update your host files and

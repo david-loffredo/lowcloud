@@ -54,10 +54,11 @@ the <a href="encrypt.html">encryption configuration</a>.</p>
 <H2 class=rule>
 <A NAME=keys></A>SSH Keys</H2>
 
-<p>These playbooks expect a SSH keys for the deploy account and the
-Bacula tunnel.  The tunnel key should not have a passphrase because it
-will be used by scripts, but it is your choice whether to use one for
-the deploy account key.</p>
+<p>These playbooks expect a SSH keys for the deploy account, the
+Bacula tunnel, and the www account for website content.  The tunnel
+key should not have a passphrase because it will be used by scripts,
+but it is your choice whether to use one for the deploy and www
+account keys.</p>
 
 <p>I recommend using
 modern <a href="https://en.wikipedia.org/wiki/EdDSA">Ed25519 keys</a>
@@ -66,6 +67,7 @@ unless you need to support really old SSH clients.</p>
 <PRE class=code>
 $ ssh-keygen -t ed25519 -f deploy -C deploy-yourhost -N ''
 $ ssh-keygen -t ed25519 -f bacula -C bacula-tunnel-yourhost -N ''
+$ ssh-keygen -t ed25519 -f www -C www-yourhost -N ''
 </PRE>
 
 

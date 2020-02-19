@@ -14,9 +14,9 @@ webdata_root: /var/www
 #   aliases: [list of ServerAlias]  (optional, usually www.{{name}})
 #   admin: "admin email"    (defaults to webmaster@{{name}})
 #   root: "document root"   (defaults to {{webdata_root}}/{{name}})
-#   cert: "cert file"       (defaults to letsencrypt {{name}}/cert.pem)
+#   cert: "cert file"       (defaults to letsencrypt {{name}}/fullchain.pem)
 #   certkey: "key file"     (defaults to letsencrypt {{name}}/privkey.pem)
-#   certchain: "chain file" (defaults to letsencrypt {{name}}/chain.pem)
+#   default: (if yes, .conf sorted first to force it as the default vhost)
 #
 # The following can each contain a string (probably multiline) that
 # will be included in the configuration directives for the http and
