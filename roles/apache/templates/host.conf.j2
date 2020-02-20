@@ -1,9 +1,11 @@
-{# move jinja computation to one place to make the body clearer -#}
-{%- set host_logname = host.name | replace('.', '_') -%}
-{%- set host_admin = host.admin | default(admin_email) -%}
-{%- set host_root = host.root | default(apache_host_dflt_root) -%}
-{%- set host_cert = host.cert | default(apache_host_dflt_cert) -%}
-{%- set host_certkey = host.certkey | default(apache_host_dflt_certkey) -%}
+{# move jinja computation to one place to make the body clearer #}
+{% set host_logname = host.name | replace('.', '_') %}
+{% set host_admin = host.admin | default(admin_email) %}
+{% set host_root = host.root | default(apache_host_dflt_root) %}
+{% set host_cert = host.cert | default(apache_host_dflt_cert) %}
+{% set host_certkey = host.certkey | default(apache_host_dflt_certkey) %}
+{% set host_use_https = host.use_https | default(True) %}
+{% set host_force_https = host.force_https|default(apache_force_https) %}
 <VirtualHost *:80>
     # The ServerName directive sets the request scheme, hostname and
     # port that the server uses to identify itself. This is used when
@@ -11,7 +13,7 @@
     # ServerName specifies what hostname must appear in the request's
     # Host: header to match this virtual host. 
     ServerName {{ host.name }}
-{% for alias in host.aliases %}
+{% for alias in host.aliases|default(['www.'+host.name]) %}
     ServerAlias {{ alias }}
 {% endfor %}
 
@@ -34,7 +36,7 @@
     # after it has been globally disabled with "a2disconf".
     #Include conf-available/serve-cgi-bin.conf
 
-{% if apache_force_https %}
+{% if host_use_https and host_force_https %}
     # Force everything to HTTPS.  A redirect updates the client to the
     # new URL.
     Redirect permanent / https://{{ host.name }}/
@@ -47,10 +49,10 @@
 {{ host.conf_extra_http|default('') }}
 </VirtualHost>
 
-{% if apache_use_https %}
+{% if host_use_https %}
 <VirtualHost *:443>
     ServerName {{ host.name }}
-{% for alias in host.aliases %}
+{% for alias in host.aliases|default(['www.'+host.name]) %}
     ServerAlias {{ alias }}
 {% endfor %}
 

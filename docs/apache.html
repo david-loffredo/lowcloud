@@ -41,23 +41,30 @@ advise using the SameSite flag to mitigate BREACH (CVE-2013-3587)
 <A NAME=vars></A>Variables</H2>
 
 <p>The <code>web_vhosts</code> variable is a list of structs, one for
-each root domain, with a main name and any aliases.  It looks
-something like this.</p>
+each root domain, along any other settings.  It looks something like
+this.</p>
 
 <PRE class=code>
 web_vhosts:
-  - name: "{{ domain }}"
-    aliases:
-      - www.{{ domain }}
+  # simple example.com and www.example.com
+  - name: example.com
 
-  - name: foobar.com
+  # a second domain with more aliases, a different
+  # DocumentRoot and a custom error page.
+  - name: another.com
     aliases:
-      - www.foobar.com
+      - www.another.com
+      - someother.another.com
+    root: /var/www/someplace/else
+    conf_extra: >-
+      ErrorDocument 404 /error/notfound.html
 </PRE>
 
 <p>The <code>name</code> is required and is the ServerName.  The
 <code>aliases</code> list is optional and contains a list of
-ServerAlias values.  Other possible settings are:
+ServerAlias values.  If it is not present, it will default to the
+'www' alias for the name.  If you don't want any aliases, set this to
+an empty list <code>[]</code>.  Other settings are:
 
 <ul>
 <li><code>admin</code>: "admin email" (defaults to webmaster@{{name}})
@@ -67,7 +74,17 @@ ServerAlias values.  Other possible settings are:
    
 <li><code>default</code> (if yes, .conf sorted first to force it as
 the default vhost)
+
+<li><code>use_https</code> provide https?  (defaults to True, set to
+False for an http-only site)
+
+<li><code>force_https</code> redirect everything to https?  (defaults
+to <code>apache_force_https</code> which itself defaults to yes)
 </ul>
+
+<p>The <code>certbot</code> role will not request a certificate for a
+particular host if the <code>cert</code> or <code>certkey</code>
+fields are defined or if <code>use_https</code> is False.</p>
 
 <p>The following can each contain a single string (probably
 multi-line) that is included in the http and https configuration

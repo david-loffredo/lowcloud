@@ -19,7 +19,6 @@ apache_default_modules: [ rewrite, ssl, headers ]
 apache_modules: [ ]
 
 # permanent redirect from http to https
-apache_use_https: yes
 apache_force_https: yes
 
 # OCSP Stapling

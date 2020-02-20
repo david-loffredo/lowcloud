@@ -11,13 +11,18 @@ webdata_root: /var/www
 # Values to populate host configuration.  The dictionary can contain
 # the following values
 # - name: "ServerName"  (required)
-#   aliases: [list of ServerAlias]  (optional, usually www.{{name}})
+#   aliases: [list of ServerAlias]  (defaults to [ www.{{name}} ])
 #   admin: "admin email"    (defaults to webmaster@{{name}})
 #   root: "document root"   (defaults to {{webdata_root}}/{{name}})
 #   cert: "cert file"       (defaults to letsencrypt {{name}}/fullchain.pem)
 #   certkey: "key file"     (defaults to letsencrypt {{name}}/privkey.pem)
 #   default: (if yes, .conf sorted first to force it as the default vhost)
+#   use_https: (default yes, set to no for an http-only site)
+#   force_https: (default apache_force_https, redirect everything)
 #
+# Will not request a cert via certbot if the cert or certkey fields
+# are defined or if use_https is False.
+# 
 # The following can each contain a string (probably multiline) that
 # will be included in the configuration directives for the http and
 # https configs.  Use for custom error pages, rewrite rules, etc.

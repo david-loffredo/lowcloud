@@ -26,7 +26,13 @@ certbot_certs: '{{ certbot_vhost_certs + certbot_extra_certs }}'
 certbot_vhost_certs: >-
   {%- set ns = namespace(ids=[]) -%}
   {%- for i in web_vhosts -%}
-  {{- ns.ids.append({ 'domains': [ i.name ] + i.aliases }) -}}
+  {%- if host.use_https | default(True) and
+         host.cert is not defined and
+         host.certkey is not defined -%}
+  {{- ns.ids.append({
+      'domains': [ i.name ] + i.aliases|default(['www.'+i.name])
+      }) -}}
+  {%- endif -%}
   {%- endfor -%}
   {{- ns.ids -}}
 
