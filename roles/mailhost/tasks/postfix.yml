@@ -111,7 +111,8 @@
   register: result
   changed_when: result.stdout
   with_items: "{{ mail_users }}"
-
+  no_log: True
+  
 - name: mail aliases present
   command: "{{ mail_db_util }} addalias {{ item.src }} {{ item.dst }}"
   register: result

@@ -39,12 +39,14 @@
         encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public --stdinpass
   args: { executable: /bin/bash }
   when: encfs_spool_check.matched == 0
+  no_log: True
 
 - name: encrypted data directory present, mounting existing
   shell: set -o pipefail && printf '{{ cryptdir_pw }}' |
         encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public --stdinpass
   args: { executable: /bin/bash }
   when: encfs_spool_check.matched > 0  and encfs_spool_mount.rc != 0
+  no_log: True
 
 - name: encrypted data directory, verified as mounted
   command: "/bin/mountpoint -q {{ cryptdir_root }}"

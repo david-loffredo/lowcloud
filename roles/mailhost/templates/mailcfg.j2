@@ -158,8 +158,7 @@ sub main {
 
     /^adduse?r$/ && do {
 	my ($usr,$pw) = @_;
-	$pw = '*' if not defined $pw;
-	
+
 	# The OR IGNORE is sqlite specific ON CONFLICT behavior which
 	# will be triggered if a unique constratint would be violated.
 	# This means that we already have an entry for that.
@@ -267,6 +266,9 @@ sub sym_domain {
 
 sub crypt_passwd {
     my ($raw) = @_;
+
+    return '*' unless defined $raw and $raw ne '';
+    
     my $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')
 	[rand 64, rand 64, rand 64, rand 64, rand 64, 
 	 rand 64, rand 64, rand 64, rand 64, rand 64, 

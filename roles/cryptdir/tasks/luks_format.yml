@@ -23,6 +23,7 @@
         cryptsetup luksFormat --batch-mode --verbose {{ cryptdir_luks_dev }} -
   args: { executable: /bin/bash }
   when: format_confirm_test.user_input == "yes"
+  no_log: True
 
 # Creates mapping in /dev/mapper/foo
 - name: "{{ cryptdir_luks_dev }} mapped as {{ cryptdir_luks_mapname }}"
@@ -30,6 +31,7 @@
         cryptsetup luksOpen --batch-mode -d - {{ cryptdir_luks_dev }} {{ cryptdir_luks_mapname }}
   args: { executable: /bin/bash }
   when: format_confirm_test.user_input == "yes"
+  no_log: True
 
 # zero out the disk to initialize it  would /dev/urandom be better?
 # dd if=/dev/zero of=/dev/mapper/foo
