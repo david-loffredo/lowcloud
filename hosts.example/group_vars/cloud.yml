@@ -14,7 +14,7 @@ firewall_services: [ 'mail', 'web' ]
 # fail2ban will ignore these networks
 # firewall_friendly_networks:
 
-
+ 
 #==============================
 # Encrypted Directories - Override the directories for various
 # packages to keep the data in an encrypted partition at rest.

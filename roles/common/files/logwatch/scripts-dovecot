@@ -1,0 +1,667 @@
+
+########################################################
+# Please file all bug reports, patches, and feature
+# requests under:
+#      https://sourceforge.net/p/logwatch/_list/tickets
+# Help requests and discusion can be filed under:
+#      https://sourceforge.net/p/logwatch/discussion/
+########################################################
+
+########################################################
+# The Dovecot script was written by:
+#   Patrick Vande Walle <patrick@isoc.lu>
+# Based on previous work by
+#    Pawel Golaszewski <blues@gda.pl>
+#
+# TODO:
+# - use printf features to align text in table
+#
+########################################################
+
+########################################################
+## Copyright (c) 2008 Patrick Vande Walle
+## Covered under the included MIT/X-Consortium License:
+##    http://www.opensource.org/licenses/mit-license.php
+## All modifications and contributions by other persons to
+## this script are assumed to have been donated to the
+## Logwatch project and thus assume the above copyright
+## and licensing terms.  If you want to make contributions
+## under your own copyright or a different license this
+## must be explicitly stated in the contribution an the
+## Logwatch project reserves the right to not accept such
+## contributions.  If you have made significant
+## contributions to this script and want to claim
+## copyright please contact logwatch-devel@lists.sourceforge.net.
+#########################################################
+
+use strict;
+
+my $Debug = $ENV{'LOGWATCH_DEBUG'} || 0;
+my $Detail = $ENV{'dovecot_detail'} || $ENV{'LOGWATCH_DETAIL_LEVEL'} || 0;
+my $IgnoreHost = $ENV{'dovecot_ignore_host'} || "";
+
+my $Restarts = 0;
+my $End = 0;
+my $TLSInitFail = 0;
+my %Aborted;
+my %AuthDisconnectedWithPending;
+my %AuthTimedOut;
+my %AuthUsernameChars;
+my %ChildErr;
+my %Connection;
+my %ConnectionClosed;
+my %ConnectionIMAP;
+my %ConnectionPOP3;
+my %ConnectionSieve;
+my %Disconnected;
+my %DiskQuotaExceed;
+my %Deliver;
+my %DeliverUserCount;
+my %Error;
+my %Fatal;
+my %Forwarded;
+my %LimitExceeded;
+my %Login;
+my %LoginIMAP;
+my %LoginPOP3;
+my %MUAList;
+my %OtherList;
+my %ProxyConnection;
+my %ProxyConnectionIMAP;
+my %ProxyConnectionPOP3;
+my %ProxyDisconnected;
+my %ProxyLogin;
+my %ProxyLoginIMAP;
+my %ProxyLoginPOP3;
+my %SieveLogin;
+my %VacationDup;
+my %VacationResponse;
+
+if ( $Debug >= 5 ) {
+   print STDERR "\n\nDEBUG \n\n";
+}
+
+use Socket;
+my %rdns;
+sub hostName {
+   (my $ipaddr) = @_;
+
+   if ($ENV{'LOGWATCH_NUMERIC'} || $ENV{'dovecot_numeric'}) {
+      return $ipaddr;
+   }
+
+   if (exists $rdns{ $ipaddr }) {
+      return $rdns{ $ipaddr };
+   }
+   $rdns{ $ipaddr } = $ipaddr;
+
+   my $iaddr = inet_aton($ipaddr);
+   if (defined $iaddr) {
+      my $host = gethostbyaddr($iaddr, AF_INET);
+      if (defined $host) {
+         my $iaddrcheck = gethostbyname($host);
+         if (defined $iaddrcheck) {
+            if ($iaddr eq $iaddrcheck) {
+               $rdns{ $ipaddr } = $host;
+            }
+         }
+      }
+   }
+   return $rdns{ $ipaddr };
+}
+
+# Handle "dovecot: <svc>" and "dovecot: [ID yyyyy mail.info] <svc"
+my $dovecottag = qr/dovecot(?:\[\d+\])?:(?:\s*\[[^]]+\])?/;
+
+while (defined(my $ThisLine = <STDIN>)) {
+   # The *RemoveHeaders script is now invoked in the service configuration file
+   # so this next line is no longer needed
+   #$ThisLine =~ s/^\w{3} .\d \d\d:\d\d:\d\d (?:[^\s:]* |)//;
+   if ( ($ThisLine =~ /(?:ssl-build-param|ssl-params): SSL parameters regeneration completed/) or
+      ($ThisLine =~ /ssl-params: Generating SSL parameters/) or
+      ($ThisLine =~ /auth-worker/) or
+      ($ThisLine =~ /auth:.*: Connected to/) or
+      ($ThisLine =~ /Connection closed/) or
+      ($ThisLine =~ /IMAP.*: Connection closed bytes/) or
+      ($ThisLine =~ /IMAP.* failed with mbox file/) or
+      ($ThisLine =~ /discarded duplicate forward to/) or
+      ($ThisLine =~ /discarding vacation response/) or
+      ($ThisLine =~ /discarded vacation reply to/) or
+      ($ThisLine =~ /Debug:/) or
+      ($ThisLine =~ /^$dovecottag imap\(\w+\): Mailbox renamed:/) or
+      ($ThisLine =~ /^$dovecottag imap\(\w+\): copy from /) or
+      ($ThisLine =~ /^$dovecottag imap\(\w+\): delete: /) or
+      ($ThisLine =~ /^$dovecottag imap\(\w+\): expunge: /) or
+      0 # This line prevents blame shifting as lines are added above
+      )
+   {
+       # We don't care about these
+   } elsif ( $ThisLine =~ /Killed with signal /) {
+       $End++;
+   } elsif ( $ThisLine =~ /Dovecot (v\d[^ ]* |)(\([0-9a-fA-F]+\) )?starting up/) {
+       $Restarts++;
+       $End = 0;
+   } elsif ( (my ($User, $Host) = ( $ThisLine =~ /^(?:$dovecottag )?pop3-login: Login: (.*?) \[(.*)\]/ ) ) or
+             (my ($User, $Host) = ( $ThisLine =~ /^(?:$dovecottag )?pop3-login: (?:Info: )?Login: user=\<(.*?)\>.*rip=(.*), lip=/ ) ) ) {
+      if ($Host !~ /$IgnoreHost/) {
+         $Host = hostName($Host);
+         $Login{$User}{$Host}++;
+         $LoginPOP3{$User}++;
+         $ConnectionPOP3{$Host}++;
+         $Connection{$Host}++;
+      }
+   } elsif ( (my ($User, $Host) = ( $ThisLine =~ /^(?:$dovecottag )?imap-login: Login: (.*?) \[(.*)\]/ ) ) or
+             (my ($User, $Host) = ( $ThisLine =~ /^(?:$dovecottag )?imap-login: (?:Info: )?Login: user=\<(.*?)\>.*rip=(.*), lip=/ ) ) ) {
+      if ($Host !~ /$IgnoreHost/) {
+         $Host = hostName($Host);
+         $Login{$User}{$Host}++;
+         $LoginIMAP{$User}++;
+         $ConnectionIMAP{$Host}++;
+         $Connection{$Host}++;
+      }
+   } elsif (my ($User, $Host) = ( $ThisLine =~ /managesieve-login: Login: user=\<(.*?)\>.*rip=(.*), lip=/ ) ) {
+      if ($Host !~ /$IgnoreHost/) {
+         $Host = hostName($Host);
+         $SieveLogin{$User}{$Host}++;
+         $ConnectionSieve{$Host}++;
+         $Connection{$Host}++;
+      }
+
+# 'lda' for dovecot 2.0, 'deliver' for earlier versions
+   } elsif (my ($User, $Mailbox) = ( $ThisLine =~ /^$dovecottag (?:lda|deliver)\((.*)\)(?:<[^>]+><[^>]+>)?: msgid=.*: saved mail to (.*)/ ) ) {
+      $Deliver{$User}{$Mailbox}++;
+   } elsif ( ($User, $Mailbox) = ( $ThisLine =~ /^$dovecottag service=lda, user=(.*), .* msgid=.*: saved mail to (.*)/ ) ) {
+      $Deliver{$User}{$Mailbox}++;
+# For Sieve-based delivery
+   } elsif (my ($User, $Mailbox) = ( $ThisLine =~ /^$dovecottag (?:lda|deliver)\((.*)\)(?:<[^>]+><[^>]+>)?: sieve: msgid=.*: stored mail into mailbox '(.*)'/ ) ) {
+      $Deliver{$User}{$Mailbox}++;
+
+# LMTP-based delivery
+   } elsif (my ($User, $Mailbox) = ( $ThisLine =~ /^$dovecottag lmtp\((?:\d+, )?(.*?)\)(?:<[^>]+><[^>]+>)?: .*msgid=.*: saved mail to (.*)/ ) ) {
+    # dovecot: [ID 583609 mail.info] lmtp(12782, cloyce@headgear.org): jBt1EfjCMk3uMQAAm9eMBA: msgid=<4D32DB1F.3080707@c-dot.co.uk>: saved mail to INBOX
+    # dovecot: lmtp(some@domain.tld): msgid=<20190506012701.DBE073122C3@domain.tld>: saved mail to INBOX
+    # dovecot: lmtp(some@domain.tld)<21947><Zi6SJJae1Fy7VQAA+Uzxeg>: msgid=<20190506012701.DBE073122C3@domain.tld>: saved mail to INBOX
+      $Deliver{$User}{$Mailbox}++;
+
+# LMTP-based delivery Dovecot 2.2.33
+    } elsif ( ($User, $Mailbox) = ( $ThisLine =~ /^$dovecottag lmtp\((.*)\): msgid=.*: saved mail to (.*)/ ) ) {
+    # dovecot: lmtp(user@domain.com): msgid=<0.0.B.B83.1D385668207AF06.0@b12.mta01.sendsmaily.info>: saved mail to INBOX
+      $Deliver{$User}{$Mailbox}++;
+
+# LMTP-based Sieve delivery
+   } elsif (my ($User, $Mailbox) = ( $ThisLine =~ /^$dovecottag lmtp\((?:\d+, )?(.*?)\)(?:<[^>]+><[^>]+>)?: .*: sieve: msgid=.*: stored mail into mailbox '(.*)'/ ) ) {
+      $Deliver{$User}{$Mailbox}++;
+
+# LMTP-based Sieve delivery Dovecot 2.3
+   } elsif (my ($User, $Mailbox) = ( $ThisLine =~ /^$dovecottag lmtp\((.*)\)(?:<[^>]+><[^>]+>)?: sieve: msgid=.*: stored mail into mailbox '(.*)'/ ) ) {
+      $Deliver{$User}{$Mailbox}++;
+
+# sieve forward
+   } elsif (my ($User, $Recip) = ($ThisLine =~ /^$dovecottag (?:lda|deliver|lmtp)\((?:\d+, )?(.*?)\)(?:<[^>]+><[^>]+>)?:(?: [^:]+:)? sieve: msgid=.* forwarded to \<(.*)\>/)) {
+      $Forwarded{$User}{$Recip}++;
+
+# sieve pipe
+   } elsif (my ($User, $Recip) = ($ThisLine =~ /^$dovecottag (?:imap|lmtp)\((.*?)\)(?:<[^>]+><[^>]+>)?: sieve: (?:msgid=.*: )?pipe action: piped message to program `.*'/) or
+            my ($User, $Recip) = ($ThisLine =~ /^$dovecottag (?:imap|lmtp)\((.*?)\)(?:<[^>]+><[^>]+>)?: sieve: (?:msgid=.*: )?left message in mailbox '.*'/) ) {
+      # dovecot: imap(user@domain.com): sieve: pipe action: piped message to program `sa-learn-sieve.sh'
+      # dovecot: imap(user@domain.com): sieve: left message in mailbox 'INBOX.Spam'
+      # dovecot: lmtp(spam@domain.com): sieve: msgid=<6e3eb3f436fdca54@host.domain.com>: pipe action: piped message to program `sa-learn-sieve.sh'
+      # IGNORE
+
+# sieve vacation
+   } elsif (my ($User, $Recip) = ($ThisLine =~ /^$dovecottag (?:lda|deliver|lmtp)\((?:\d+, )?(.*)\)(?:<[^>]+><[^>]+>)?:(?: .*:)? sieve: msgid=.* sent vacation response to \<(.*)\>/)) {
+      $VacationResponse{$User}{$Recip}++;
+
+   } elsif (my ($User, $Recip) = ($ThisLine =~ /^$dovecottag (?:lda|deliver|lmtp)\((?:\d+, )?(.*)\)(?:<[^>]+><[^>]+>)?:(?: .*:)? sieve: msgid=.* discarded duplicate vacation response to \<(.*)\>/ )) {
+      $VacationDup{$User}{$Recip}++;
+
+   } elsif ( $ThisLine =~ /^$dovecottag (?:lda|deliver|lmtp)\(.*\): .*sieve: msgid=.* marked message to be discarded if not explicitly delivered/ ) {
+   # dovecot: lda(joe): sieve: msgid=<m$01$@com>: marked message to be discarded if not explicitly delivered (discard action)
+   # IGNORE
+   } elsif ( $ThisLine =~ /^$dovecottag lmtp\(.*\): Connect from/ ) {
+   # dovecot: [ID 583609 mail.info] lmtp(12782): Connect from local: 1 Time(s)
+   # IGNORE
+
+   } elsif ( $ThisLine =~ /^$dovecottag lmtp\(.*\): Disconnect from/ ) {
+   # dovecot: [ID 583609 mail.info] lmtp(12782): Disconnect from local: Client quit: 1 Time(s)
+   # IGNORE
+
+   } elsif ($ThisLine =~ /^$dovecottag doveadm\(.*\)\: Executing command '.*' as '.*'/ or
+            $ThisLine =~ /^$dovecottag doveadm\(.*\)(?:<[^>]+><[^>]+>)?: doveadm: .*/ ) {
+   # dovecot: doveadm(::1): Executing command 'quota get' as 'user@domain.com'
+   # dovecot: doveadm(user@domain.com)<11075><P/qmJj0ktF1DKwAAsNnMGQ>: doveadm: ::1 - - "POST /doveadm/v1 HTTP/1.1" 200 249 "http://localhost:8080/doveadm/v1" ""
+   # IGNORE
+
+   # Dovecot 2.0 proxy
+   } elsif (my ($User, $Host) = ( $ThisLine =~ /^$dovecottag pop3-login: proxy\((.*)\): started proxying to .*: user=<.*>, method=.*, rip=(.*), lip=/ ) ) {
+      if ($Host !~ /$IgnoreHost/) {
+         $ProxyLogin{$User}{$Host}++;
+         $ProxyLoginPOP3{$User}++;
+         $ProxyConnectionPOP3{$Host}++;
+         $ProxyConnection{$Host}++;
+      }
+   } elsif (my ($User, $Host) = ( $ThisLine =~ /^$dovecottag imap-login: proxy\((.*)\): started proxying to .*: user=<.*>, method=.*, rip=(.*), lip=/ ) ) {
+      if ($Host !~ /$IgnoreHost/) {
+         $ProxyLogin{$User}{$Host}++;
+         $ProxyLoginIMAP{$User}++;
+         $ProxyConnectionIMAP{$Host}++;
+         $ProxyConnection{$Host}++;
+      }
+   } elsif (my ($Reason) = ( $ThisLine =~ /proxy\(.*\): disconnecting .* \(Disconnected (.*)\)/ ) ) {
+      $ProxyDisconnected{$Reason}++;
+
+   } elsif ($ThisLine =~ /Disconnected (\[|bytes|top)/) {
+      $Disconnected{"No reason"}++;
+   } elsif (my ($Reason) = ($ThisLine =~ /Disconnected: (.*) \[/) ) {
+      $Disconnected{$Reason}++;
+   } elsif (my ($Reason) = ($ThisLine =~ /Disconnected: (.*) (bytes|top|in)=.*/) ) {
+      $Disconnected{$Reason}++;
+   } elsif ($ThisLine =~ /Logged out (rcvd|bytes|top|in)=.*/) {
+      $Disconnected{"Logged out"}++;
+   } elsif (my ($Reason) = ($ThisLine =~ /Disconnected \((.*)\):/) ) {
+      $Reason =~ s/ in \d+ secs//;
+      $Disconnected{$Reason}++;
+   } elsif ($ThisLine =~ /Server shutting down./) {
+      $ConnectionClosed{"Server shutting down"}++;
+   } elsif (my ($Reason, $Host) = ($ThisLine =~ /TLS initialization failed/) ) {
+      $TLSInitFail++;
+   } elsif (my ($Host) = ($ThisLine =~ /Aborted login:.* rip=(.*),/) ) {
+      $Host = hostName($Host);
+      $Aborted{$Host}++;
+   } elsif (my ($Host) = ($ThisLine =~ /Aborted login \[(.*)\]/) ) {
+      $Host = hostName($Host);
+      $Aborted{$Host}++;
+   } elsif (my ($Reason) = ($ThisLine =~ /Aborted login \((.*)\):/)) {
+      $Aborted{$Reason}++;
+   } elsif (my ($User,$IP) = ($ThisLine =~ /auth: (?:LOGIN|login)\((.*),(\d+\.\d+\.\d+\.\d+)\): Request timed out waiting for client to continue authentication/) ) {
+      $AuthTimedOut{$User}{$IP}++;
+   } elsif (my ($Reason) = ($ThisLine =~ /auth: Warning: auth client \d+ disconnected with \d+ pending requests: (.*)/) ) {
+      $AuthDisconnectedWithPending{$Reason}++;
+   } elsif (my ($IP) = ($ThisLine =~ /auth: login\(.*,(\d+\.\d+\.\d+\.\d+)\): Username character disallowed by auth_username_chars: .* \(username: .*\)/) ) {
+      $AuthUsernameChars{$IP}++;
+   } elsif (my ($user, $rip, $lip) = ($ThisLine =~ /Maximum number of connections.* exceeded.* user=<([^>]+)>.*rip=([^,]+), lip=([^,]+)/)) {
+     # dovecot: [ID 583609 mail.info] imap-login: Maximum number of connections from user+IP exceeded (mail_max_userip_connections=10): user=<cloyce@headgear.org>, method=CRAM-MD5, rip=102.225.17.52, lip=14.105.322.67, TLS
+      $LimitExceeded{"max_userip_connections: $user from $rip to $lip"}++;
+
+# This is for Dovecot 1.0 series
+# Overly general matches in this section -mgt
+   } elsif ($ThisLine =~ /Disconnected for inactivity/) {
+      $Disconnected{"Inactivity"}++;
+   } elsif ($ThisLine =~ /Disconnected in IDLE/) {
+      $Disconnected{"in IDLE"}++;
+   } elsif ($ThisLine =~ /Disconnected in APPEND/) {
+      $Disconnected{"in APPEND"}++;
+   } elsif (($ThisLine =~ /Disconnected$/) or
+            ($ThisLine =~ /(IMAP|POP3)\(.+\): Disconnected (bytes|top|rip|user|method)=/) or
+            ($ThisLine =~ /(imap\-login|pop3\-login): Disconnected: (bytes|top|rip|user|method)=/) ) { 
+      $Disconnected{"No reason"}++;
+   } elsif ( (my ($Reason) = ($ThisLine =~ /(?:IMAP|POP3).+: Disconnected: (.+) (bytes|top)=/i)) or
+          (my ($Reason) = ($ThisLine =~ /(?:imap\-login|pop3\-login): Disconnected: \(?(.+)\)?: /)) or
+            #This one should go away also -mgt
+          (my ($Reason) = ($ThisLine =~ /IMAP.+: Disconnected: (.+)/i)) ) {
+      $Disconnected{$Reason}++;
+   } elsif ($ThisLine =~ /(IMAP|POP3).+: Connection closed (top|bytes)=/i) {
+        $ConnectionClosed{"No reason"}++;
+   } elsif (my ($Reason) = ($ThisLine =~ /(?:IMAP|POP3).+: Connection closed: (.*) (?:bytes|method|top|rip|user)=/i) ) {
+       $ConnectionClosed{$Reason}++;
+   } elsif ($ThisLine =~ /(IMAP|POP3).+: (Connection closed.*)/) {
+      $Disconnected{$2}++;
+   } elsif (my ($Host) = ($ThisLine =~ /(?:imap\-login|pop3\-login): Aborted login: .*rip=(?:::ffff:)?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/) ) {
+      $Aborted{$Host}++;
+   } elsif (my ($Error) = ($ThisLine =~ /child \d* (?:\(login\) )?returned error (.*)/)) {
+   # dovecot: child 23747 (login) returned error 89
+   # dovecot: log: Error: service(auth): child 19654 returned error 89 (Fatal failure)
+      $ChildErr{$Error}++;
+   } elsif (my ($Name) = ($ThisLine =~ /$dovecottag IMAP\((.*)\): .*(.*) failed: Disk quota exceeded/i)) {
+   # dovecot: IMAP(podracka): mkdir(/home/LF/KLINIKY/podracka/mail/.imap/saved-messages) failed: Disk quota exceeded
+      $DiskQuotaExceed{$Name}++;
+   # This is with imap_id_log = * enabled
+   } elsif (my ($User,$MUA) = ($ThisLine =~ /imap\((.*)\): ID sent: name=(.*)/)) {
+      $MUAList{$MUA}{$User}++;
+   # These are failed connections with imap_id_log = * enabled
+   } elsif ($ThisLine =~ /imap-login: ID sent: (?:name|vendor)=/) {
+      # Ignore
+   } elsif (my ($Fatal) = ($ThisLine =~ /^(?:$dovecottag )?(.* Fatal:.*)/)) {
+      $Fatal{$Fatal}++;
+   } elsif (my ($Error) = ($ThisLine =~ /^(?:$dovecottag )?(.* Error:.*)/)) {
+      $Error{$Error}++;
+   } else {
+      # Report any unmatched entries...
+      chomp($ThisLine);
+      $OtherList{$ThisLine}++;
+   }
+}
+
+################################################
+
+if ( $End ) {
+   print "\nDovecot was killed, and not restarted afterwards.\n";
+}
+
+if ( keys %Fatal ) {
+   print "\nDovecot Fatal Errors:\n";
+   foreach my $Fatal (sort keys %Fatal) {
+      print "   ${Fatal}: $Fatal{$Fatal} Time(s)\n";
+   }
+}
+
+if ( keys %Error ) {
+   print "\nDovecot Errors:\n";
+   foreach my $Error (sort keys %Error) {
+      print "   ${Error}: $Error{$Error} Time(s)\n";
+   }
+}
+
+if ( ( $Detail >=5 ) and $Restarts ) {
+   print "\nDovecot restarted $Restarts time(s).\n";
+}
+
+if ( ( $Detail >= 5 ) and (keys %Connection)) {
+   print     "\n[Dovecot IMAP and POP3] Connections:".
+             "\n====================================".
+             "\nPOP3 IMAP Total  Host".
+             "\n" . "-" x 72;
+
+   $TLSInitFail = 0;
+   my $IMAPCount = 0;
+   my $POP3Count = 0;
+   my $TotalCount = 0;
+   foreach my $Host (sort { $Connection{$b} <=> $Connection{$a} }
+                  keys %Connection) {
+      my $Total = $Connection{$Host};
+      my $Conns = 0;
+      my $IMAP = 0;
+      if (defined ($ConnectionPOP3{$Host})) {
+         $Conns = $ConnectionPOP3{$Host};
+      }
+      if (defined ($ConnectionIMAP{$Host})) {
+         $IMAP = $ConnectionIMAP{$Host};
+      }
+# Cleanly display IPv4 addresses
+      $Host=~ s/::ffff://;
+      printf "\n%4s %4s %5s  %s", $Conns, $IMAP, $Total, $Host;
+      $POP3Count += $Conns;
+      $IMAPCount += $IMAP;
+      $TotalCount += $Total;
+   }
+   print "\n" . "-" x 72;
+   printf "\n%4s %4s %5s  %s", $POP3Count, $IMAPCount, $TotalCount, "Total";
+}
+
+if (keys %Deliver) {
+   my $DeliverCount = 0;
+   my $DeliverUserCount;
+   foreach my $User (keys %Deliver) {
+      foreach my $Mailbox (keys %{$Deliver{$User}}) {
+         $DeliverUserCount{$User} += $Deliver{$User}{$Mailbox};
+      }
+      $DeliverCount += $DeliverUserCount{$User};
+   }
+   printf "\n" if ($Detail >= 5);
+   printf "\nDovecot Deliveries: %s", $DeliverCount;
+   if ($Detail >= 5) {
+      foreach my $User (sort { $DeliverUserCount{$b} <=> $DeliverUserCount{$a} }
+                        keys %DeliverUserCount) {
+         printf "\n  %4s %s", $DeliverUserCount{$User}, $User;
+         if ($Detail >= 10) {
+            foreach my $Mailbox (sort {
+               $Deliver{$User}{$b} <=> $Deliver{$User}{$a}
+                              } keys %{$Deliver{$User}}) {
+               printf "\n      %4s %s", $Deliver{$User}{$Mailbox}, $Mailbox;
+            }
+         }
+      }
+   }
+}
+
+if (($Detail >= 10) and (keys %Forwarded)) {
+   my $TotalForwarded = 0;
+
+   print "\n\nDovecot LDA sieve forwards:";
+   foreach my $User (sort keys %Forwarded) {
+      print "\n\n  User $User";
+      foreach my $Recip (sort keys %{$Forwarded{$User}}) {
+         print "\n    To $Recip: $Forwarded{$User}{$Recip} time(s)";
+         $TotalForwarded += $Forwarded{$User}{$Recip};
+      }
+   }
+   print "\n\n  Total: $TotalForwarded Time(s)";
+}
+
+if (($Detail >= 10) and (keys %VacationResponse)) {
+   my $TotalVacResp = 0;
+   print "\n\nDovecot LDA sieve vacation responses:";
+   foreach my $User (sort keys %VacationResponse) {
+      print "\n\n  User $User";
+      foreach my $Recip (sort keys %{$VacationResponse{$User}}) {
+         print "\n    To $Recip: $VacationResponse{$User}{$Recip} time(s)";
+         $TotalVacResp += $VacationResponse{$User}{$Recip};
+      }
+   }
+   print "\n\n  Total: $TotalVacResp Time(s)";
+}
+
+if (($Detail >= 10) and (keys %VacationDup)) {
+   my $TotalVacDup = 0;
+   print "\n\nDovecot LDA sieve duplicate vacation responses not sent:";
+   foreach my $User (sort keys %VacationDup) {
+      print "\n  User $User";
+      foreach my $Recip (sort keys %{$VacationDup{$User}}) {
+         print "\n    To $Recip: $VacationDup{$User}{$Recip} time(s)";
+         $TotalVacDup += $VacationDup{$User}{$Recip};
+      }
+   }
+   print "\n\n  Total: $TotalVacDup Time(s)";
+}
+
+if (keys %Login) {
+   my $LoginCount = 0;
+   my %LoginUserCount;
+   foreach my $User (keys %Login) {
+      foreach my $Host (keys %{$Login{$User}}) {
+         $LoginUserCount{$User} += $Login{$User}{$Host};
+      }
+      $LoginCount += $LoginUserCount{$User};
+      $LoginPOP3{$User} = 0 if $LoginPOP3{$User} <= 0;
+      $LoginIMAP{$User} = 0 if $LoginIMAP{$User} <= 0;
+   }
+   printf "\n" if ($Detail >= 5);
+   printf "\nDovecot IMAP and POP3 Successful Logins: %s", $LoginCount;
+   if ($Detail >= 5) {
+      foreach my $User (sort { $LoginUserCount{$b} <=> $LoginUserCount{$a} }
+                        keys %LoginUserCount) {
+         printf("\n  %4s %s", $LoginUserCount{$User}, $User);
+         if ($Detail >= 10) {
+            print " (";
+            if ($LoginPOP3{$User} > 0) { print "$LoginPOP3{$User} POP3"; };
+            if ($LoginPOP3{$User} > 0 && $LoginIMAP{$User} > 0) { print ", "; };
+            if ($LoginIMAP{$User} > 0) { print "$LoginIMAP{$User} IMAP"; };
+            print ")";
+            foreach my $Host (sort { $Login{$User}{$b} <=> $Login{$User}{$a} }
+                              keys %{$Login{$User}}) {
+               # Cleanly display IPv4 addresses
+               $Host=~ s/::ffff://;
+               printf "\n      %4s %s", $Login{$User}{$Host}, $Host;
+            }
+         }
+      }
+   }
+}
+
+if ( ( $Detail >= 10 ) and (keys %SieveLogin)) {
+   print "\n\nDovecot ManageSieve Successful Logins:";
+   my $LoginCount = 0;
+   foreach my $User (sort keys %SieveLogin) {
+      print "\n\n  User $User:";
+      my $UserCount = 0;
+      my $NumHosts = 0;
+      foreach my $Host (sort keys %{$SieveLogin{$User}}) {
+         $NumHosts++;
+         my $HostCount = $SieveLogin{$User}{$Host};
+# Cleanly display IPv4 addresses
+         $Host=~ s/::ffff://;
+         print "\n    From $Host: $HostCount Time(s)";
+         $UserCount += $HostCount;
+      }
+      $LoginCount += $UserCount;
+      if ($NumHosts > 1) {
+      print "\n  Total: $UserCount Time(s)";
+      }
+   }
+   print "\n\nTotal: $LoginCount successful ManageSieve logins";
+}
+
+if (keys %LimitExceeded) {
+   print "\n\nDovecot limits exceeded:";
+   foreach my $Reason (sort keys %LimitExceeded) {
+      print "\n   $Reason: $LimitExceeded{$Reason} Time(s)";
+   }
+}
+
+if ( ( $Detail >= 10 ) and (keys %AuthDisconnectedWithPending)) {
+   print "\n\nAuth client disconnected with pending requests:";
+   foreach my $Reason (sort keys %AuthDisconnectedWithPending) {
+      print "\n   $Reason: $AuthDisconnectedWithPending{$Reason} Time(s)";
+   }
+}
+
+if ( ( $Detail >= 10 ) and (keys %AuthTimedOut)) {
+   print "\n\nRequest timed out waiting for client to continue authentication:";
+   foreach my $User (sort(keys %AuthTimedOut)) {
+      print "\n   User: $User (IPs: ";
+      print join(", ",sort(keys %{$AuthTimedOut{$User}}));
+      my $Total = 0;
+      foreach my $IP (keys %{$AuthTimedOut{$User}}) { 
+         $Total += $AuthTimedOut{$User}{$IP};
+      }
+      print ") $Total Time(s)";
+   }
+}
+
+if ( ( $Detail >= 10 ) and (keys %AuthUsernameChars)) {
+   print "\n\nUsername character disallowed by auth_username_chars:";
+   foreach my $IP (sort keys %AuthUsernameChars) {
+      print "\n   $IP: $AuthUsernameChars{$IP} Time(s)";
+   }
+}
+
+if (keys %Disconnected) {
+   my $Disconnects = 0;
+   foreach my $Reason (%Disconnected) {
+      $Disconnects += $Disconnected{$Reason};
+   }
+   printf "\n\nDovecot disconnects: %s Total", $Disconnects;
+   if ($Detail >= 5) {
+      foreach my $Reason (sort { $Disconnected{$b} <=> $Disconnected{$a} }
+                          keys %Disconnected) {
+         printf "\n  %4s %s", $Disconnected{$Reason}, $Reason;
+      }
+   }
+}
+
+if (keys %ConnectionClosed) {
+   print "\n\nDovecot connections closed:";
+   foreach my $Reason (sort keys %ConnectionClosed) {
+      print "\n   $Reason: $ConnectionClosed{$Reason} Time(s)";
+   }
+}
+
+if (keys %ChildErr) {
+   print "\n\nDovecot child error:";
+   foreach my $Error (sort keys %ChildErr) {
+      print "\n   error number ". $Error . ": ". $ChildErr{$Error} ." Time(s)";
+   }
+}
+
+if ((keys %Aborted) && ($Detail >= 10)) {
+   print "\n\nLogout/aborts:";
+   foreach my $Host (sort keys %Aborted) {
+      print "\n   $Host: $Aborted{$Host} Time(s)";
+   }
+}
+
+if ($TLSInitFail > 0) {
+   print "\n\nTLS Initialization failed $TLSInitFail Time(s)";
+}
+
+if (keys %DiskQuotaExceed) {
+   print "\n\nDisk quota exceeded:";
+   foreach my $Name (sort keys %DiskQuotaExceed) {
+      print "\n   disk quota for user '". $Name . "' exceeded: ". $DiskQuotaExceed{$Name} ." Time(s)";
+   }
+}
+
+# This has to be explicitly enabled in dovecot config to log this,
+# so we'll assume people want it if enabled
+if (keys %MUAList) {
+   print "\n\nIMAP Mail User Agent Strings:";
+   foreach my $MUA (sort(keys %MUAList)) {
+      print "\n   $MUA: (Users: ";
+      print join(", ",sort(keys %{$MUAList{$MUA}}));
+      my $Total = 0;
+      foreach my $User (keys %{$MUAList{$MUA}}) { 
+         $Total += $MUAList{$MUA}{$User};
+      }
+      print ") $Total Time(s)";
+   }
+}
+
+if ( ( $Detail >= 5 ) and (keys %ProxyLogin)) {
+   print "\n\nDovecot Proxy IMAP and POP3 Successful Logins:";
+   my $LoginCount = 0;
+   foreach my $User (sort keys %ProxyLogin) {
+      print "\n  User $User:";
+      if ( ($Detail >= 10) and ($ProxyLoginPOP3{$User} > 0 || $ProxyLoginIMAP{$User} > 0) ) {
+         print "   (";
+         if ($ProxyLoginPOP3{$User} > 0) { print "$ProxyLoginPOP3{$User} POP3"; };
+         if ($ProxyLoginPOP3{$User} > 0 && $ProxyLoginIMAP{$User} > 0) { print ", "; };
+         if ($ProxyLoginIMAP{$User} > 0) { print "$ProxyLoginIMAP{$User} IMAP"; };
+         print ")";
+      }
+      my $UserCount = 0;
+      my $NumHosts = 0;
+      foreach my $Host (sort keys %{$ProxyLogin{$User}}) {
+         $NumHosts++;
+         my $HostCount = $ProxyLogin{$User}{$Host};
+# Cleanly display IPv4 addresses
+         $Host=~ s/::ffff://;
+         print "\n    From $Host: $HostCount Time(s)" if ($Detail >= 10);
+         $UserCount += $HostCount;
+      }
+      $LoginCount += $UserCount;
+      if ($Detail >= 10) {
+         if ($NumHosts > 1) {
+            print "\n  Total: $UserCount Time(s)\n";
+         } else {
+            print "\n";
+         }
+      } elsif ($Detail >= 5) {
+         print " $UserCount Time(s)";
+      }
+   }
+   print "\nTotal: $LoginCount successful logins";
+}
+
+if (keys %ProxyDisconnected) {
+   print "\n\nDovecot Proxy disconnects:\n";
+   foreach my $Reason (sort keys %ProxyDisconnected) {
+      print "   $Reason: $ProxyDisconnected{$Reason} Time(s)\n";
+   }
+}
+
+if (keys %OtherList) {
+   print "\n\n**Unmatched Entries**\n";
+   foreach my $line (sort {$a cmp $b} keys %OtherList) {
+      print "   $line: $OtherList{$line} Time(s)\n";
+   }
+}
+
+exit(0);
+
+
+# vi: shiftwidth=3 tabstop=3 syntax=perl et
+# Local Variables:
+# mode: perl
+# perl-indent-level: 3
+# indent-tabs-mode: nil
+# End:

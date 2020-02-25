@@ -6,3 +6,6 @@
 - { import_tasks: upgrades.yml,         tags: unattended-upgrades }
 - { import_tasks: logrotate.yml,        tags: logrotate }
 - { import_tasks: editor.yml,           tags: editor }
+
+# Only install logwatch if we specifically request it for a machine
+- { include_tasks: logwatch.yml,        when: use_logwatch }

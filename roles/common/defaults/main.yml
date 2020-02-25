@@ -5,6 +5,9 @@ main_user_shell: "/bin/bash"
 # apticron, fail2ban reports will be sent to this address
 admin_email: "root@{{ domain }}"
 
+# dont install unless requested
+use_logwatch: no
+
 # UTC is default, see paths under /usr/share/zoneinfo
 # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: 'Etc/UTC'
