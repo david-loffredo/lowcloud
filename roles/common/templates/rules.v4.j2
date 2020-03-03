@@ -61,6 +61,9 @@
 -A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type time-exceeded -m limit --limit 10/second -j ACCEPT
 -A PREROUTING -i {{ fw_interface }} -p icmp -j DROP
 
+# Allow DHCP explicitly rather than count on connection tracking working right
+-A PREROUTING -i {{ fw_interface }} -p udp --sport 67 --dport 68 -j ACCEPT
+
 # Allow only ESTABLISHED and RELATED incomming
 -A PREROUTING -i {{ fw_interface }} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 

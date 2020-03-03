@@ -70,14 +70,13 @@
 -A PREROUTING -i {{ fw_interface }} -p ipv6-icmp -m icmp6 --icmpv6-type echo-reply -m limit --limit 10/second -j ACCEPT
 -A PREROUTING -i {{ fw_interface }} -p ipv6-icmp -j DROP
 
-# Allow DHCPv6 responses from link-local to 546.  DHCPv6 uses the
-# link-local address range with separate ports for client (546) and
-# server (547) so connection tracking will not really work.  We may
-# have sketchy neighbors on a VPS, so we only allow the client port.
-# If you are running on a known-good network segment, you might want
-# to just accept everything from fe80.
-#
--A PREROUTING -i {{ fw_interface }} -s fe80::/10 -p udp --dport 546 -j ACCEPT 
+# DHCPv6 uses the link-local address range and client (546) and server
+# (547) ports.  You might want to just accept everything from fe80 on
+# a known-good network segment, but we may have sketchy neighbors on a
+# VPS, so we only allow certain ports.
+
+# Allow DHCP explicitly rather than count on connection tracking working right
+-A PREROUTING -i {{ fw_interface }} -s fe80::/10 -p udp --sport 547 --dport 546 -j ACCEPT
 
 # Allow ESABLISHED and RELATED incomming
 -A PREROUTING -i {{ fw_interface }} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
