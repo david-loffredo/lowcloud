@@ -1,0 +1,16 @@
+# IP sets for blocking access to certain ports from large network
+# segments, possibly entire regions.
+#
+flush
+
+# IPv4 networks to block
+create geoblock-v4 hash:net family inet hashsize 1024 maxelem 65536
+{% for net in firewall_ipset_geoblock_v4 %}
+add geoblock-v4 {{ net }}
+{% endfor %}
+
+# IPv6 networks to block
+create geoblock-v6 hash:net family inet hashsize 1024 maxelem 65536
+{% for net in firewall_ipset_geoblock_v6 %}
+add geoblock-v6 {{ net }}
+{% endfor %}

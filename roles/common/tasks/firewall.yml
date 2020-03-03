@@ -13,6 +13,7 @@
     state: present
     name:
       - iptables-persistent
+      - ipset-persistent
       - fail2ban
       - net-tools
 
@@ -21,43 +22,36 @@
       - OPEN TCP PORTS {{ firewall_ports_tcp }}
       - OPEN UDP PORTS {{ firewall_ports_udp }}
 
-- name: iptables v4 configured
+- name: iptables v4 rules
   template:
-    src: testrules.v4.j2
-    dest: /etc/iptables/testrules.v4
+    src: rules.v4.j2
+    dest: /etc/iptables/rules.v4
     owner: root
     group: root
     mode: 0644
-  register: iptablesconf4
   when: ansible_default_ipv4.interface is defined
+  notify:
+    - reload iptables v4 rules
 
-- name: iptables v6 configured
+- name: iptables v6 rules
   template:
-    src: testrules.v6.j2
-    dest: /etc/iptables/testrules.v6
+    src: rules.v6.j2
+    dest: /etc/iptables/rules.v6
     owner: root
     group: root
     mode: 0644
-  register: iptablesconf6
   when: ansible_default_ipv6.interface is defined
-
-- name: iptables v4 configs loaded and persistent
-  shell: iptables-restore /etc/iptables/testrules.v4 && iptables-save > /etc/iptables/rules.v4
-  when: iptablesconf4.changed
   notify:
-    - restart netfilter-persistent
-    - restart fail2ban
+    - reload iptables v6 rules
 
-- name: iptables v6 configs loaded and persistent
-  shell: ip6tables-restore /etc/iptables/testrules.v6 && ip6tables-save > /etc/iptables/rules.v6
-  when: iptablesconf6.changed
-  notify:
-    - restart netfilter-persistent
-    - restart fail2ban
 
-- name: iptables services are started and enabled
+# ipset destroy
+# ipset flush
+# ipset restore -file foobar 
+    
+- name: iptables services enabled
   service: name=netfilter-persistent state=started enabled=yes
-  when: iptablesconf4.changed or iptablesconf6.changed
+
 
 # Assume we will have ssh, apache, postfix, and dovecot and enable the
 # jails for them.  If we do not use some of those, perhaps we can play
@@ -70,8 +64,9 @@
     owner: root
     group: root
     mode: 0644
-  notify: restart fail2ban
+  notify:
+    - restart fail2ban
 
-- name: fail2ban is started
-  service: name=fail2ban state=started
+- name: fail2ban service enabled
+  service: name=fail2ban state=started enabled=yes
 

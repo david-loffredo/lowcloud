@@ -1,9 +1,16 @@
 ---
+- name: reload iptables v4 rules
+  command: iptables-restore --noflush /etc/iptables/rules.v4
+  notify:
+    - restart fail2ban
+
+- name: reload iptables v6 rules
+  command: ip6tables-restore --noflush /etc/iptables/rules.v6
+  notify:
+    - restart fail2ban
+
 - name: restart fail2ban
   service: name=fail2ban state=restarted
-
-- name: restart netfilter-persistent
-  service: name=netfilter-persistent state=restarted
 
 - name: restart ntp
   service: name=ntp state=restarted

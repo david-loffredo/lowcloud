@@ -23,17 +23,15 @@
 
 <p>We implement firewall rules directly using <code>iptables</code>,
 with <code>iptables-persistent</code> to reload our configuration on
-boot.  The playbook writes our IPv4 and IPv6 rules to
-<code>/etc/iptables/testrules.v4</code> and <code>testrules.v6</code>,
-and then runs <code>iptables-restore</code>
-and <code>iptables-save</code> to round-trip them into
-the <code>rules.v4</code> and <code>rules.v6</code> files that are
-loaded at boot.</p>
+boot.  The playbook writes IPv4 and IPv6 rules to the
+<code>/etc/iptables/rules.v4</code> and <code>rules.v6</code> files
+that are loaded at boot.  These files are well commented and explain
+the purpose of each of the rules.</p>
 
-<p>The rules drop all incoming connections unless explicitly enabled
-by the variables described below.  It allows pings, but rate limits
-them, and also drops unusually-formed packets.  We always open the ssh
-port.</p>
+<p>The IPv4 and IPv6 rules protect normal applications and those in
+Docker containers.  We only allow incoming connections to ports that
+were explicitly opened.  We always open the ssh port.  We also allow
+pings, but rate limit them, and drop unusually-formed packets.</p>
 
 <p>We run <code>fail2ban</code> to scan the logs for repeated
 intrusion attempts and temporarily ban IPs.  We use a fairly
@@ -83,6 +81,29 @@ firewall_openudp: []
 firewall_blacklist_ips: []
 </PRE>
 
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=docker></A>Docker</H2>
+
+<p>Network traffic to software in Docker containers is handled
+differently than traffic to software running natively on the machine.
+Docker creates small virtual LANs to connect containers within the
+machine.  Traffic going to a Docker container is then routed to this
+virtual LAN through the iptables FORWARD chain, while traffic going to
+native software is handled by the INPUT chain.</p>
+
+<p>These chains are in the default "filter" table.  Unfortunately,
+most people add their firewall rules to the INPUT chain, which has no
+effect on traffic to Docker containers.  We do most of the blocking on
+the PREROUTING chain of the "mangle" table.  Packets go through this
+chain early in the processing, which has two big benefits.  First, it
+covers both native apps and Docker containers.  Second, the earlier
+you can drop a bad packet, the more bad packets you can handle.</p>
+
+<p>We do need to make some accommodations for Docker.  In particular,
+when using fail2ban for a container, we must make sure that it can
+find the logs for the container and put its rules on the DOCKER-USER
+chain.</p>
 
 
 <!-- ============================== -->
@@ -91,23 +112,23 @@ firewall_blacklist_ips: []
 
 <p>The <code>ufw</code> (universal firewall) package is a popular
 choice for blocking everything except for a few ports, and it has a
-convenient Ansible module.  It is very good for manually managing the
-ports, but it is just a wrapper around <code>iptables</code>.</p>
+convenient Ansible module.  It is nice for manually opening and
+closing ports, but it is just a wrapper around <code>iptables</code>
+and <code>iptables-save</code> files.</p>
 
-<p>I decided to use <code>iptables</code> directly for two reasons.
-First, it seemed that UFW took over everything, so it was not possible
-to integrate with other tools like ipsets.  However, a closer read of
-the docs shows that it just manages iptables-save files
-in <code>/etc/ufw</code>, so we could add things there.</p>
+<p>I generated <code>iptables-save</code> files directly because it
+gives a much clearer picture of the complete state of the rules, while
+UFW mostly just gets in the way if you want to use ipsets or work with
+the sophisticated rules set up by Docker.  The iptables syntax is easy
+enough to understand once you've seen a few rules.</p>
 
-<p>The second reason was idempotency.  UFW remembers state, so a port
-stays open until you explicitly tell it to close.  With Ansible, we
-typically just declare a list of open ports, so if you remove a port
-from the list, you may think it is closed, but it will remain open on
-the machine.  We could reset UFW every playbook run, but that falsely
-makes it appear that the everything has changed.  Our current iptables
-task guarantees a known state and only displays something as changed
-when it actually changes.</p>
+<p>A second reason was idempotency.  UFW keeps its
+own <code>iptables-save</code> files, so a port stays open until you
+explicitly tell UFW to close it.  With Ansible, we list open ports, so
+when you remove a port from the list, you may intend it to be closed,
+but it remains open on the machine until you tell UFW to close it.  By
+generating the rules.v4 and rules.v6 ourselves, we guarantee a known
+state.</p>
 
 <p>It seems like some people are moving to nftables (nft) instead of
 iptables.  Something to keep an eye on for the future.</p>

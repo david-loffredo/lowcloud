@@ -1,0 +1,134 @@
+{%- set fw_interface = firewall_interface | default(ansible_default_ipv4.interface) -%}
+# IPv4 filtering for both native applications and docker containers.
+# You can apply these rules without overwriting the docker ones with:
+#
+#   iptables-restore --noflush rules.v4
+#
+# Since we may have various private interfaces like docker0, be
+# explicit about eth0 when we are talking about outside traffic.
+#
+
+#----------------------------------------
+# MANGLE Table.  Do basic blocking on the PREROUTING chain, which is
+# traversed after defragmenting and connection tracking, but before
+# "nat" and "filter".  Rules found here will execute with less cost
+# than waiting until later tables, so it is the best place to guard
+# against DOS traffic.
+#
+# Apply rules to packets coming in on the public interface (eth0,
+# wlan0, etc), which skips the loopback interface and the private
+# interfaces created by docker.  With multiple external networks, you
+# can do a wildcard like eth+
+*mangle
+:PREROUTING ACCEPT [0:0]
+-F PREROUTING
+
+# Drop any packets that are not part of an established connection or
+# starting a new one.
+-A PREROUTING -i {{ fw_interface }} -m conntrack --ctstate INVALID -j DROP
+
+# This rule blocks all new packets that are not a SYN
+-A PREROUTING -i {{ fw_interface }} -p tcp ! --syn -m conntrack --ctstate NEW -j DROP
+
+# IPv4 hosts are required to be able to handle an MSS of 536 octets
+# and IPv6 hosts are required to be able to handle 1220 octets.  If
+# someone is sending a SYN packet with an abnormally low value, they
+# must be a doofus.
+#
+-A PREROUTING -i {{ fw_interface }} -p tcp -m conntrack --ctstate NEW -m tcpmss ! --mss 536:65535 -j DROP
+
+# Drop packets with all flags (XMAS), no flags, and other bogus combinations
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,SYN FIN,SYN -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,RST FIN,RST -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,ACK FIN -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,URG URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,FIN FIN -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,PSH PSH -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL ALL -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL NONE -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
+
+# Allow certain inbound ICMP types (ping, traceroute) at certain rates
+-A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type destination-unreachable -m limit --limit 10/second -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type echo-reply -m limit --limit 10/second -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type echo-request -m limit --limit 10/second -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type fragmentation-needed -m limit --limit 10/second -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type source-quench -m limit --limit 10/second -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type time-exceeded -m limit --limit 10/second -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p icmp -j DROP
+
+# Allow only ESTABLISHED and RELATED incomming
+-A PREROUTING -i {{ fw_interface }} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Drop new connections on certain ports from banned places
+
+# Allow open ports from anywhere else.   Split if more than 15 ports.
+-A PREROUTING -i {{ fw_interface }} -p tcp -m multiport --dport {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
+
+{% for udp in firewall_ports_udp %}
+-A PREROUTING -i {{ fw_interface }} -p udp --dport {{ udp }} -m conntrack --ctstate NEW -j ACCEPT
+{% endfor %}
+
+# Drop anything else coming into the public interface
+-A PREROUTING -i {{ fw_interface }} -j DROP
+COMMIT
+
+
+#----------------------------------------
+# FILTER Table.  Already blocked unwanted external traffic on the
+# mangle prerouting chain.  The left over is to ports that we run
+# services on. May blocked IPs based on bad behavior or region.
+#
+# Define a new BLACKLIST chain that can be shared across the INPUT and
+# DOCKER-USER chains for native and dockerized apps.
+#
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+:DOCKER-USER - [0:0]
+:ALLOW-LIST - [0:0]
+:BLOCK-LIST - [0:0]
+
+# Docker does things on the nat table and the filter FORWARD chain.
+# Leave those alone.
+-F INPUT
+-F OUTPUT
+-F DOCKER-USER
+-F ALLOW-LIST
+-F BLOCK-LIST
+
+# Lists for blanket allow or deny.
+{% if firewall_blacklist_ips|length > 0 %}
+{% for ip in firewall_blacklist_ips %}
+-A BLOCK-LIST -s {{ ip }} -j DROP
+{% endfor %}
+{% endif %}
+
+#--------------------
+# INPUT - Allow loopback, then go through block lists
+-A INPUT -i lo -j ACCEPT
+-A INPUT -j ALLOW-LIST
+-A INPUT -j BLOCK-LIST
+
+# allow anything that gets this far from outside.  Since the chain
+# defaults to drop, we won't suddenly bypass filtering if traffic
+# shows up from another external ethernet interface that we didn't
+# know about.
+-A INPUT -i {{ fw_interface }} -j ACCEPT
+
+#--------------------
+# OUTPUT - Allow loopback and all the external interface
+-A OUTPUT -o lo -j ACCEPT
+-A OUTPUT -o {{ fw_interface }} -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
+
+#--------------------
+# DOCKER TRAFFIC - I believe that this sees inbound and outbound traffic.
+-A DOCKER-USER -j ALLOW-LIST
+-A DOCKER-USER -j BLOCK-LIST
+
+COMMIT

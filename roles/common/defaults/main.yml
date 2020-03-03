@@ -54,6 +54,12 @@ ntp_servers:
 # while the play is running, like certbot.  So now we declare up
 # front.
 
+# Defaults to the interface used for IP4 and IP6 addresses, but you
+# can override it to specify one, like eth0 or eth1.  Can also specify
+# a wildcard with + like eth+
+#
+# firewall_interface: eth0
+
 # List of services.  This is checked by the iptables and fail2ban
 # tasks.  You can add your own names to this list.  For each element,
 # we add <name>_opentcp and <name>_openudp, if they exist, to the open
@@ -121,3 +127,363 @@ firewall_ports_udp: >-
   {%- endfor -%}
   {{- ns.ports | sort | unique -}}
   
+
+# Geoblock certain ports. Will not increase security (if you can
+# afford a $5 Linode in your zone, so can an APT), but it does quiet
+# your logs by removing a constant stream of traffic on otherwise open
+# ports from regions that have no legitimate reason to be using that
+# service.
+
+# Builds one big IPset containing all of the address ranges from the
+# given NICs (Regional Internet Registries), plus any others that you
+# might want to add.   
+
+# AFRINIC - African Network Information Center, Africa
+
+# ARIN - American Registry for Internet Numbers (US, Canada,
+#    Caribbean, and that hotbed of cybercrime - Antarctica)
+
+# APNIC - Asia-Pacific Network Information Centre (East Asia, Oceania,
+#    South Asia, and Southeast Asia)
+
+# LACNIC - Latin America and Caribbean Network Information Centre
+#    (most of the Caribbean and all of Latin America)
+
+# RIPE - Réseaux IP Européens Network Coordination Centre (Europe,
+#    Central Asia, Russia, and West Asia)
+
+# Before the RIRs were established, addresses from all of the early
+# Class A's (/8 blocks) were not geographically segmented, so they are
+# scattered everywhere.  Later, the remaining /8 blocks were assigned
+# to individual regions, so they have simpler IPsets.  IPv6 blocks
+# were set up after the regions were established, so they are all
+# compact.
+# https://www.iana.org/numbers
+# https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.xml
+# https://www.iana.org/assignments/ipv6-unicast-address-assignments/ipv6-unicast-address-assignments.xhtml
+
+
+
+# AFRINIC ARIN APNIC LACNIC RIPE
+firewall_geoblock_nic: []
+firewall_geoblock_extra: []
+firewall_geoblock_extra_v6: []
+
+firewall_geoblock_tcp: []
+firewall_geoblock_udp: []
+
+
+firewall_ipset_geoblock_v4: >-
+  {%- set ns = namespace(nets=[]) -%}
+  {%- for i in firewall_geoblock_nic -%}
+  {{- ns.nets.extend( lookup('vars', 'firewall_geoblock_' + i|lower, default=[]) ) -}}
+  {%- endfor -%}
+  {{- ns.nets.extend( firewall_geoblock_extra ) -}}
+  {{- ns.nets | unique -}}
+
+firewall_ipset_geoblock_v6: >-
+  {%- set ns = namespace(nets=[]) -%}
+  {%- for i in firewall_geoblock_nic -%}
+  {{- ns.nets.extend( lookup('vars', 'firewall_geoblock_' + i|lower + '_v6', default=[]) ) -}}
+  {%- endfor -%}
+  {{- ns.nets.extend( firewall_geoblock_extra_v6 ) -}}
+  {{- ns.nets | unique -}}
+
+
+
+# AFRINIC - African Network Information Center, Africa
+# Class A blocks are listed below, but a bunch of stuff has fragmented over the years.
+firewall_geoblock_afrinic:
+  - 41.0.0.0/8
+  - 102.0.0.0/8
+  - 105.0.0.0/8
+  - 197.0.0.0/8
+  # No specific information on legacy addresses 
+  # 154/8	Administered by AFRINIC	1993-05
+  # 196/8	Administered by AFRINIC	1993-05
+
+  
+firewall_geoblock_afrinic_v6:
+  - 2001:4200::/23
+  - 2c00:0000::/12
+
+
+# APNIC - Asia-Pacific Network Information Centre (East Asia, Oceania,
+#    South Asia, and Southeast Asia)
+
+# https://www.apnic.net/manage-ip/manage-resources/address-status/apnic-resource-range/
+# Note that this includes 1.1.1.1 DNS.
+firewall_geoblock_apnic:
+  - 1.0.0.0/8
+  - 14.0.0.0/8
+  - 27.0.0.0/8
+  - 36.0.0.0/8
+  - 39.0.0.0/8
+  - 42.0.0.0/8
+  - 49.0.0.0/8
+  - 58.0.0.0/8
+  - 59.0.0.0/8
+  - 60.0.0.0/8
+  - 61.0.0.0/8
+  - 101.0.0.0/8
+  - 103.0.0.0/8
+  - 106.0.0.0/8
+  - 110.0.0.0/8
+  - 111.0.0.0/8
+  - 112.0.0.0/8
+  - 113.0.0.0/8
+  - 114.0.0.0/8
+  - 115.0.0.0/8
+  - 116.0.0.0/8
+  - 117.0.0.0/8
+  - 118.0.0.0/8
+  - 119.0.0.0/8
+  - 120.0.0.0/8
+  - 121.0.0.0/8
+  - 122.0.0.0/8
+  - 123.0.0.0/8
+  - 124.0.0.0/8
+  - 125.0.0.0/8
+  - 126.0.0.0/8
+  - 169.208.0.0/12
+  - 175.0.0.0/8
+  - 180.0.0.0/8
+  - 182.0.0.0/8
+  - 183.0.0.0/8
+  - 202.0.0.0/8
+  - 203.0.0.0/8
+  - 210.0.0.0/8
+  - 211.0.0.0/8
+  - 218.0.0.0/8
+  - 219.0.0.0/8
+  - 220.0.0.0/8
+  - 221.0.0.0/8
+  - 222.0.0.0/8
+  - 223.0.0.0/8
+
+  # APNIC received following IPv4 ranges from the IANA recovered pool
+  - 43.224.0.0/13
+  - 43.236.0.0/14
+  - 43.240.0.0/14
+  - 43.245.0.0/16
+  - 43.246.0.0/15
+  - 43.248.0.0/14
+  - 43.252.0.0/16
+  - 43.254.0.0/15
+  - 45.64.0.0/16
+  - 45.65.0.0/20
+  - 45.65.16.0/20
+  - 45.65.32.0/19
+  - 45.112.0.0/12
+  - 45.248.0.0/13
+  - 137.59.0.0/16
+  - 139.5.0.0/16
+  - 144.48.0.0/16
+  - 146.196.32.0/19
+  - 146.196.64.0/18
+  - 150.107.0.0/16
+  - 150.129.0.0/16
+  - 150.242.0.0/16
+  - 157.119.0.0/16
+  - 160.19.20.0/22
+  - 160.19.48.0 /21
+  - 160.19.64.0/22
+  - 160.19.208.0/20
+  - 160.19.224.0/22
+  - 160.20.0.0/20
+  - 160.20.40.0 /21
+  - 160.20.48.0/20
+  - 160.20.72.0/22
+  - 160.20.222.0/23
+  - 160.202.8.0 /21
+  - 160.202.32.0/19
+  - 160.202.128.0/17
+  - 160.238.0.0/24
+  - 160.238.12.0/22
+  - 160.238.16.0/22
+  - 160.238.33.0/24
+  - 160.238.34.0/23
+  - 160.238.58.0/23
+  - 160.238.64.0/19
+  - 162.12.208.0/21
+  - 162.12.240.0/21
+  - 163.47.4.0/22
+  - 163.47.8.0/21
+  - 163.47.16.0/23
+  - 163.47.18.0/24
+  - 163.47.20.0/23
+  - 163.47.32.0/21
+  - 163.47.40.0/22
+  - 163.47.44.0/23
+  - 163.47.47.0/24
+  - 163.47.48.0/20
+  - 163.47.64.0/18
+  - 163.47.128.0/17
+  - 163.53.0.0/16
+  - 192.12.109.0/24
+  - 192.26.110.0/24
+  - 192.51.188.0/24
+  - 192.75.137.0/24
+  - 192.135.90.0/23
+  - 192.135.99.0/24
+  - 192.140.128.0/17
+  - 192.144.78.0/23
+  - 192.144.80.0/20
+  - 192.145.228.0/23
+  - 192.156.144.0/24
+  - 192.156.220.0/24
+  - 192.188.82.0/23
+  - 192.197.113.0/24
+  - 199.21.172.0/22
+  - 199.212.57.0/24
+  - 204.52.191.0/24
+  - 216.250.96.0/20
+
+firewall_geoblock_apnic_v6:
+  - 2001:0200::/23
+  - 2001:0C00::/23
+  - 2001:0E00::/23
+  - 2001:4400::/23
+  - 2001:8000::/19
+  - 2001:A000::/20
+  - 2001:B000::/20
+  - 2400:0000::/12
+
+
+# ARIN - American Registry for Internet Numbers (US, Canada,
+#    Caribbean, and that hotbed of cybercrime - Antarctica)
+
+# The early Class A's all fall under ARIN, but are broken up globally,
+# so if you want to block ARIN, it will require a very detailed IP Set.
+firewall_geoblock_arin:
+  - 23.0.0.0/8	
+  - 24.0.0.0/8	
+  - 50.0.0.0/8	
+  - 63.0.0.0/8	
+  - 64.0.0.0/8	
+  - 65.0.0.0/8	
+  - 66.0.0.0/8	
+  - 67.0.0.0/8	
+  - 68.0.0.0/8	
+  - 69.0.0.0/8	
+  - 70.0.0.0/8	
+  - 71.0.0.0/8	
+  - 72.0.0.0/8	
+  - 73.0.0.0/8	
+  - 74.0.0.0/8	
+  - 75.0.0.0/8	
+  - 76.0.0.0/8	
+  - 96.0.0.0/8	
+  - 97.0.0.0/8	
+  - 98.0.0.0/8	
+  - 99.0.0.0/8	
+  - 100.0.0.0/8	
+  - 104.0.0.0/8	
+  - 107.0.0.0/8	
+  - 108.0.0.0/8	
+  - 173.0.0.0/8
+  - 174.0.0.0/8
+  - 184.0.0.0/8
+  - 199.0.0.0/8
+  - 204.0.0.0/8
+  - 205.0.0.0/8
+  - 206.0.0.0/8
+  - 207.0.0.0/8
+  - 208.0.0.0/8
+  - 209.0.0.0/8
+  # No specific information on the many, many legacy addresses 
+
+firewall_geoblock_arin_v6:
+  - 2001:0400::/23
+  - 2001:1800::/23
+  - 2001:4800::/23
+  - 2600:0000::/12
+  - 2610:0000::/23
+  - 2620:0000::/23
+  - 2630:0000::/12
+
+
+# LACNIC - Latin America and Caribbean Network Information Centre
+#    (most of the Caribbean and all of Latin America)
+
+firewall_geoblock_lacnic:
+  - 177.0.0.0/8
+  - 179.0.0.0/8
+  - 181.0.0.0/8
+  - 186.0.0.0/8
+  - 187.0.0.0/8
+  - 189.0.0.0/8
+  - 190.0.0.0/8
+  - 200.0.0.0/8
+  - 201.0.0.0/8
+  # No specific information on legacy addresses 
+
+firewall_geoblock_lacnic_v6:
+  - 2001:1200::/23
+  - 2800:0000::/12
+
+# RIPE - Réseaux IP Européens Network Coordination Centre (Europe,
+#    Central Asia, Russia, and West Asia)
+
+
+firewall_geoblock_ripe:
+  - 2.0.0.0/8	
+  - 5.0.0.0/8	
+  - 31.0.0.0/8	
+  - 37.0.0.0/8	
+  - 46.0.0.0/8	
+  - 62.0.0.0/8	
+  - 77.0.0.0/8	
+  - 78.0.0.0/8	
+  - 79.0.0.0/8	
+  - 80.0.0.0/8	
+  - 81.0.0.0/8	
+  - 82.0.0.0/8	
+  - 83.0.0.0/8	
+  - 84.0.0.0/8	
+  - 85.0.0.0/8	
+  - 86.0.0.0/8	
+  - 87.0.0.0/8	
+  - 88.0.0.0/8	
+  - 89.0.0.0/8	
+  - 90.0.0.0/8	
+  - 91.0.0.0/8	
+  - 92.0.0.0/8	
+  - 93.0.0.0/8	
+  - 94.0.0.0/8	
+  - 95.0.0.0/8	
+  - 109.0.0.0/8	
+  - 176.0.0.0/8	
+  - 178.0.0.0/8	
+  - 185.0.0.0/8	
+  - 193.0.0.0/8	
+  - 194.0.0.0/8	
+  - 195.0.0.0/8	
+  - 212.0.0.0/8	
+  - 213.0.0.0/8	
+  - 217.0.0.0/8	
+  # No specific information on the many legacy addresses 
+  # 025/8	Administered by RIPE NCC
+  # 051/8	Administered by RIPE NCC
+  # 053/8	Daimler AG
+  # 057/8	Administered by RIPE NCC
+  # 141/8	Administered by RIPE NCC
+  # 145/8	Administered by RIPE NCC
+  # 151/8	Administered by RIPE NCC
+  # 188/8	Administered by RIPE NCC
+  
+firewall_geoblock_ripe_v6:
+  - 2001:0600::/23
+  - 2001:0800::/22
+  - 2001:1400::/22
+  - 2001:1a00::/23
+  - 2001:1c00::/22
+  - 2001:2000::/19
+  - 2001:4000::/23
+  - 2001:4600::/23
+  - 2001:4a00::/23
+  - 2001:4c00::/23
+  - 2001:5000::/20
+  - 2003:0000::/18
+  - 2a00:0000::/12
+  - 2a10:0000::/12

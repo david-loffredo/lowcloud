@@ -1,0 +1,883 @@
+
+########################################################
+# Please file all bug reports, patches, and feature
+# requests under:
+#      https://sourceforge.net/p/logwatch/_list/tickets
+# Help requests and discusion can be filed under:
+#      https://sourceforge.net/p/logwatch/discussion/
+########################################################
+
+#######################################################
+## Copyright (c) 2008 Kirk Bauer
+## Covered under the included MIT/X-Consortium License:
+##    http://www.opensource.org/licenses/mit-license.php
+## All modifications and contributions by other persons to
+## this script are assumed to have been donated to the
+## Logwatch project and thus assume the above copyright
+## and licensing terms.  If you want to make contributions
+## under your own copyright or a different license this
+## must be explicitly stated in the contribution an the
+## Logwatch project reserves the right to not accept such
+## contributions.  If you have made significant
+## contributions to this script and want to claim
+## copyright please contact logwatch-devel@lists.sourceforge.net.
+#########################################################
+
+$Detail = $ENV{'LOGWATCH_DETAIL_LEVEL'} || 0;
+#$DoLookup = $ENV{'secure_ip_lookup'};
+$Ignore = $ENV{'ignore_services'} || 0;
+$Summarize = $ENV{'summarize_connections'} || 0;
+$ConsoleLock = 0;
+$spop3d_opened=0;
+$spop3d_errors=0;
+$pwd_file_unknown = 0;
+$pwd_file_too_short = 0;
+$Executed_app = 0;
+$PwdChange = 0;
+$RequestKeyFailures = 0;
+%OtherList = ();
+%RootkitHunter = ();
+%sshguardAttackers = ();
+use Logwatch ':ip';
+
+while (defined($ThisLine = <STDIN>)) {
+   chomp($ThisLine);
+   $ThisLine =~ s/^... .. ..:..:.. [^ ]+ //;
+   #Solaris ID filter -mgt
+   $ThisLine =~ s/\[ID [0-9]+ [a-z]+\.[a-z]+\] //;
+   my $temp = $ThisLine;
+   $temp =~ s/^([^[:]+).*/$1/;
+   if ($Ignore =~ /(\s|^)\Q$temp\E(\s|$)/i) { next; }
+
+   #current sarge
+   if ($ThisLine =~ /^[^ :]*:( [0-9:\[\]\.]+|) \(pam_(unix|securetty)\)/i ) {next; }
+
+   #Woody - specific, thanks to Michael Stovenour
+   if ($ThisLine =~ /^PAM_unix[\[\]0-9]*:/i ) { next; }
+
+   if (( $ThisLine =~ /pam_succeed_if(\([a-zA-Z]*:[a-zA-Z]*\))?: requirement \"uid (<|>)=? (5|10)00?\" (was|not) met by user /) or
+      ( $ThisLine =~ /pam_rhosts_auth\[\d+\]: allowed to [^ ]+ as \w+/) or
+      ( $ThisLine =~ /pam_rhosts_auth\([^\)]+\): allowed to [^ ]+ as \w+/) or
+      ( $ThisLine =~ /^(.*)\(pam_unix\)/) or
+      ( $ThisLine =~ /pam_unix\(.*:.*\)/) or
+      ( $ThisLine =~ /pam_sss\(.*:.*\)/) or
+      ( $ThisLine =~ m/^[^ ]+\[\d+\]: connect from localhost$/ ) or
+      ( $ThisLine =~ /^halt:/) or
+      ( $ThisLine =~ /^com.apple.SecurityServer: Succeeded authorizing right system.(preferences|login.console|login.tty|login.done|privilege.admin) by process/) or
+      ( $ThisLine =~ /^pam_xauth\[\d+\]: call_xauth: child returned \d/) or
+      ( $ThisLine =~ /^su\[\d+\]: pam_authenticate: Authentication failure/) or
+      ( $ThisLine =~ /^passwd\[\d+\]:/) or
+      ( $ThisLine =~ /^passwd: gkr-pam: .*/) or
+      ( $ThisLine =~ /^reboot:/) or
+      ( $ThisLine =~ /^(?:\/usr\/bin\/)?sudo(?:\[\d+\])?:/) or
+      ( $ThisLine =~ /^su: pam_unix2: session (started|finished) for user [^ ]+, service [^ ]+/) or
+      ( $ThisLine =~ /^xinetd\[\d+\]: USERID: ([^ ]+) (.+)$/ ) or
+      ( $ThisLine =~ /warning: can.t get client address: Connection refused/) or
+      ( $ThisLine =~ /Showing Login Window/) or
+      ( $ThisLine =~ /User Authenticated: continue login process/) or
+      ( $ThisLine =~ /com.apple.SecurityServer: Entering service/) or
+      ( $ThisLine =~ /^(xinetd|xinetd-ipv6)\[\d+\]: EXIT: /) or
+      ( $ThisLine =~ /^crond\(\w+\)\[\d+\]: session /) or
+      ( $ThisLine =~ /pam_systemd\(.+:session\): Moving/) or
+      ( $ThisLine =~ /^sshd\(\w+\)\[\d+\]: authentication failure/) or
+      ( $ThisLine =~ /^sshd\(\w+\)\[\d+\]: check pass; user unknown/) or
+      ( $ThisLine =~ /^sshd\(\w+\)\[\d+\]: session /) or
+      ( $ThisLine =~ /sshd\[\d+\]: Server listening on/) or
+      ( $ThisLine =~ /sshd\[\d+\]: Received signal \d+; terminating/) or
+      ( $ThisLine =~ /sshd\[\d+\]: Disconnected from user/) or
+      ( $ThisLine =~ /sshd\[\d+\]: Received disconnect from/) or
+      ( $ThisLine =~ /sshd\[\d+\]: message repeated/) or
+      ( $ThisLine =~ /^ipop3d\[\d+\]:/) or
+      ( $ThisLine =~ /^su\[\d+\]: [+-] .+/) or
+      ( $ThisLine =~ /^su\[\d+\]: FAILED su for \S+ by \S+/) or #debian: done in pam_unix
+      ( $ThisLine =~ /^login\[\d+\]: ROOT LOGIN  on '\S+'/) or #debian: done in pam_unix (Similar message on other system is reported)
+      ( $ThisLine =~ /^login(?:\[\d+\])?: FAILED LOGIN \(\d+\) on ['`]\S+' FOR `\S+', (Authentication failure|User not known to the underlying authentication module)/) or #debian: done in pam_unix
+      ( $ThisLine =~ /^login: FAILED LOGIN 2 FROM (.*) FOR .*, (Authentication failure|User not known to the underlying authentication module)/) or
+      ( $ThisLine =~ /^login: pam_securetty(.*): unexpected response from failed conversation function/) or
+      ( $ThisLine =~ /^login: pam_securetty(.*): access denied: tty '.*' is not secure/) or
+      ( $ThisLine =~ /^login: pam_securetty(.*): cannot determine username/) or
+      ( $ThisLine =~ /^pam_limits\[\d+\]/ ) or
+      ( $ThisLine =~ /^kcheckpass(\[\d+\]|):/ ) or   # done in pam_unix
+      ( $ThisLine =~ /^cyrus\/lmtpd\[\d+\]: [^ ]+ server step [12]/ ) or
+      ( $ThisLine =~ /^cyrus\/imapd\[\d+\]: [^ ]+ server step [12]/ ) or
+      ( $ThisLine =~ /pam_timestamp: updated timestamp file/) or
+      ( $ThisLine =~ /pam_timestamp\(?[^ ]*\)?: timestamp file `([^ ]+)' is only \d+ seconds old, allowing access to ([^ ]+) for user ([^ ]+)/) or
+      ( $ThisLine =~ /pam_timestamp\(?[^ ]*\)?: timestamp file `([^ ]+)' (has unacceptable age \(\d+ seconds\)|is older than oldest login), disallowing access to ([^ ]+) for user ([^ ]+)/) or
+      ( $ThisLine =~ /userhelper\[\d+\]: running '([^ ]+)' with [^ ]+ context/) or
+      ( $ThisLine =~ /pam_timestamp\(.*:session\): updated timestamp file `\/var\/run\/sudo.*'/) or
+      ( $ThisLine =~ /[^ ]*: pam_keyinit(.*:.*): Unable to change GID to [0-9]* temporarily/) or
+      ( $ThisLine =~ /password check failed for user \(\S*\)/) or
+      ( $ThisLine =~ /PAM pam_set_item: attempt to set conv\(\) to NULL/) or
+      ( $ThisLine =~ /PAM pam_get_item: nowhere to place requested item/) or
+      ( $ThisLine =~ /pam_succeed_if\(.*:.*\): error retrieving information about user [a-zA-Z]*/ ) or
+      ( $ThisLine =~ /pam_selinux_permit\(.*:.*\):/ ) or
+      ( $ThisLine =~ /logfile turned over/) or # newsyslog on OpenBSD
+      ( $ThisLine =~ /vmware-authd\[[0-9]+\]: PAM \[error: [^ ]+ cannot open shared object file: No such file or directory\]/) or
+      ( $ThisLine =~ /vmware-authd\[[0-9]+\]: PAM adding faulty module: [^ ]+/) or
+      ( $ThisLine =~ /Connection closed by/) or
+      ( $ThisLine =~ /Conversation error/) or
+      ( $ThisLine =~ /sshd.*: Accepted \S+ for \S+ from [\d\.:a-f]+ port \d+/) or # ssh script reads this log
+      ( $ThisLine =~ /userhelper.*: running (.*) with context (.*)/) or
+      ( $ThisLine =~ /userhelper.*: pam_thinkfinger(.*): conversation failed/) or
+      ( $ThisLine =~ /su: PAM [0-9] more authentication failure; .*/) or
+      ( $ThisLine =~ /su: No passwd entry for user '(.*)'/) or
+      ( $ThisLine =~ /polkit-grant-helper\[\d+\]: granted authorization for [^ ]* to uid [0-9]* \[auth=.*\]/) or
+      ( $ThisLine =~ /polkit-grant-helper\[\d+\]: granted authorization for [^ ]* to session .* \[uid=[0-9]*\]/) or
+      ( $ThisLine =~ /polkit-grant-helper-pam\[\d+\]: pam_thinkfinger\(polkit:auth\): conversation failed/) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: (Unr|R)egistered Authentication Agent/) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: Operator of unix-session:/) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: Acquired the name [^ ]* on the system bus$/) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: Lost the name [^ ]* - exiting$/) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: Loading rules from directory /) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: Reloading rules/) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: Finished loading, compiling and executing \d+ rules$/) or
+      ( $ThisLine =~ /polkitd(\(authority=.*\)|\[\d+\])?: Collecting garbage unconditionally/) or
+      ( $ThisLine =~ /(gdm-session-worker|gdm-password|gnome-screensaver-dialog)\[\d+\]: gkr-pam: no password is available for user/) or
+      ( $ThisLine =~ /gkr-pam: the password for the login keyring was invalid/) or
+      ( $ThisLine =~ /gkr-pam: unlocked login keyring/) or
+      ( $ThisLine =~ /groupadd\[\d+\]: group added to /) or    # Details in other messages
+      ( $ThisLine =~ /groupmod\[\d+\]: group changed in \/etc\/gshadow /) or    # Details in other messages
+      ( $ThisLine =~ /gdm-session-worker\[\d+\]: pam_namespace\(gdm:session\): Unmount of [^ ]* failed, Device or resource busy/) or
+      ( $ThisLine =~ /pkexec: pam_systemd(.*): /) or
+      ( $ThisLine =~ /pkexec(?:\[\d+\])?: \S+: Executing command /) or
+      ( $ThisLine =~ /su: pam_systemd(.*): Failed to parse message: /) or
+      ( $ThisLine =~ /pam_systemd\(su:session\): Cannot create session: Already (running in|occupied by) a session/) or
+      ( $ThisLine =~ /pam_systemd\(su.*:session\): Failed to release session:/) or
+      ( $ThisLine =~ /systemd-logind\[\d+\]: (New|Removed) session/) or
+      ( $ThisLine =~ /systemd-logind\[\d+\]: New seat seat\d+\./) or
+      ( $ThisLine =~ /systemd-logind\[\d+\]: Watching system buttons on /) or
+      ( $ThisLine =~ /systemd-logind\[\d+\]: Failed to start session scope (\S+): Transaction is destructive\./) or
+      ( $ThisLine =~ /systemd-logind\[\d+\]: Session \d+ logged out/) or
+      ( $ThisLine =~ /DIGEST-MD5 common mech free/) or
+      ( $ThisLine =~ /sshguard\[\d+\]: Reloading rotated file /) or
+      ( $ThisLine =~ /sshguard\[\d+\]: Session \d+ logged out/) or
+      ( $ThisLine =~ /sshguard\[\d+\]: Exiting on signal/) or
+      ( $ThisLine =~ /sshguard\[\d+\]: Monitoring attacks from /) or
+      ( $ThisLine =~ /sshguard\[\d+\]: (?:message repeated \d+ times: \[ )?\S+: not blocking /) or
+      ( $ThisLine =~ /sshguard\[\d+\]: Received EOF from stdin/) or
+      ( $ThisLine =~ /sshguard\[\d+\]: .*has already been blocked/) or
+      0 # This line prevents blame shifting as lines are added above
+   ) {
+      # Ignore these entries
+   } elsif ($ThisLine =~ /^spop3d/ || $ThisLine =~ /^pop\(\w+\)\[\d+\]:/) {
+      @line=split(": ",$ThisLine);
+      if ($line[1]=~/^session opened for user/) {
+         $spop3d_opened++;
+         @bzz=split(" ",$line[1]);
+         $PopUser= $bzz[4];
+         $PopLogin{$PopUser}++;
+      } if ($line[1]=~/^authentication failure;/) {
+         # authentication failure; logname= uid=0 euid=0 tty=
+         # ruser= rhost=  user=xavier
+         $spop3d_errors++;
+         @bzz=split(" user=",$line[1]);
+         $PopErr=$bzz[1];
+         $PopErrors{$PopErr}++;
+      }
+   } elsif ( ($Host,$User) = ($ThisLine =~ /^login: FAILED LOGIN \d+ FROM ([^ ]+) FOR ([^,]+),/ ) ) {
+      $FailedLogins->{$User}->{$Host}++;
+   } elsif ( ($Service,$IP) = ($ThisLine =~ /^([^ ]+)\[\d+\]: connect(ion)? from "?(\d+\.\d+\.\d+\.\d+).*/) ) {
+      $Name = LookupIP($IP);
+      if ($Summarize =~ /\Q$Service\E/) {
+         $Connections->{$Service}++;
+      } else {
+         $Connections->{$Service}->{$Name}++;
+      }
+   } elsif ( ($Service,$Name) = ($ThisLine =~ /^(in\.rshd)\[\d+\]: (.*)/) ) {
+      if ($Summarize =~ /\Q$Service\E/) {
+         $Connections->{$Service}++;
+      } else {
+         $Connections->{$Service}->{$Name}++;
+      }
+   } elsif ( ($Service,$Su_msg) = ($ThisLine =~ /^(su)(?:\[\d+\])?:\s+('su \w+' succeeded for \w+) on/) ) {
+      #Solaris su messages -mgt
+      $Connections->{$Service}->{$Su_msg}++;
+   } elsif ( ($Service,$Su_msg) = ($ThisLine =~ /^(su)(?:\[\d+\])?:\s+succeeded: (\w+ changing from \w+ to \w+)/) ) {
+      #Irix su messages -mgt
+      $Connections->{$Service}->{$Su_msg}++;
+   } elsif ( ($Service,$IP) = ($ThisLine =~ /^([^ ]+)\[\d+\]: refused connect from (\d+\.\d+\.\d+\.\d+)$/) ) {
+      $Name = LookupIP($IP);
+      $Refused->{$Service}->{$Name}++;
+   } elsif ( ($Service,$Name) = ($ThisLine =~ /^([^ ]+)\[\d+\]: refused connect from (.*)$/) ) {
+      $Refused->{$Service}->{$Name}++;
+   } elsif ( ($Service,$Name) = ($ThisLine =~ /^([^ ]+)\[\d+\]: connect from ([^\n]+)$/) ) {
+      if ($Summarize =~ /\Q$Service\E/) {
+         $Connections->{$Service}++;
+      } else {
+         $Connections->{$Service}->{$Name}++;
+      }
+   } elsif ( (undef, $Service, $IP) = ($ThisLine =~ /^(xinetd|xinetd-ipv6)\[\d+\]: START: ([^ ]+) pid=\d+ from=([^\n]+)$/) ) {
+      if ($Ignore =~ /\b\Q$Service\E\b/i) { next; }
+      if ($Summarize =~ /\Q$Service\E/) {
+         $Connections->{$Service}++;
+      } else {
+         # the following is intended for the <no address> string, but captures
+         # all non-IP addresses
+         if ($IP =~ /^[A-Fa-f\d\.:]+$/ ) {
+            $Name = LookupIP($IP);
+         } else {
+            $Name = $IP;
+         }
+         $Connections->{$Service}->{$Name}++;
+      }
+   #Solaris inetd this works if you start "inetd -s -t" then send daemon.notice to authlog -mgt
+   } elsif ( ($Service, $IP) = ($ThisLine =~ /^inetd\[\d+\]: (\w+)\[\d+\] from ([^ \n]+) \d+$/) ) {
+      if ($Ignore =~ /\b\Q$Service\E\b/i) { next; }
+      if ($Summarize =~ /\Q$Service\E/) {
+         $Connections->{$Service}++;
+      } else {
+         $Name = LookupIP($IP);
+         $Connections->{$Service}->{$Name}++;
+      }
+   } elsif ( ($Service,undef,$Name) = ($ThisLine =~ /^([^ ]+)\[\d+\]: warning: ([^ ]+), line \d+: can't verify hostname: getaddrinfo\(([^ ]+), AF_INET\) failed$/) ) {
+      $NameVerifyFail{$Service}{$Name}++;
+   } elsif ( ($Service,undef,$Name,$IP) = ($ThisLine =~ /^([^ ]+)\[\d+\]: warning: ([^ ]+), line \d+: host name\/name mismatch: ([^ ]+) != ([^ ]+)$/) ) {
+      $NameVerifyFail{$Service}{"$Name != $IP"}++;
+   } elsif ( ($Display, $User) = ($ThisLine =~ /^xscreensaver\[\d+\]: FAILED LOGIN \d ON DISPLAY \"([^ ]+)\", FOR \"([^ ]+)\"$/) ) {
+      $FailedSaver->{$User}->{$Display}++;
+   } elsif ( $ThisLine =~ s/^([^ ]+)\[\d+\]: warning: can\'t get client address: No route to host$/$1/ ) {
+      $NoIP->{$ThisLine}++;
+   } elsif ( $ThisLine =~ s/^([^ ]+)\[\d+\]: warning: can\'t get client address: Network is unreachable$/$1/ ) {
+      $NoIP->{$ThisLine}++;
+   } elsif ( $ThisLine =~ s/^([^ ]+)\[\d+\]: warning: can\'t get client address: Connection reset by peer$/$1/ ) {
+      $NoIP->{$ThisLine}++;
+   } elsif ( $ThisLine =~ s/^([^ ]+)\[\d+\]: warning: can\'t get client address: Connection timed out$/$1/ ) {
+      $NoIP->{$ThisLine}++;
+   } elsif ( $ThisLine =~ s/^([^ ]+)\[\d+\]: connect from unknown$/$1/ ) {
+      $NoIP->{$ThisLine}++;
+   } elsif ( ($Service,$Err) = ($ThisLine =~ /^([^ ]+)\[\d+\]: error: (.+)$/) ) {
+      $Error{$Service}{$Err}++;
+   } elsif ( ($Service,$Err) = ($ThisLine =~ /^([^ ]+): (FAILED LOGIN SESSION FROM [^ ]+ FOR ([^ ]+)?, .*)$/ ) ) {
+      $Error{$Service}{$Err}++;
+   } elsif ( ($Service,$Err) = ($ThisLine =~ /^([^ ]+): (password mismatch for [^ ]+ in [^ ]+):.*$/ ) ) {
+      $Error{$Service}{$Err}++;
+   } elsif ( ($Service,$Err) = ($ThisLine =~ /^([^ ]+)\[\d+\]: (changed POP3 password for .*)$/ ) ) {
+      $Error{$Service}{$Err}++;
+   } elsif ( ($Service,$Err) = ($ThisLine =~ /^(su)(?:\[\d+\])?: ('su \w+' failed for \w+)/ ) ) {
+   #Solaris 10 su failed -mgt
+      $Error{$Service}{$Err}++;
+   } elsif ( ($Service,$Err) = ($ThisLine =~ /^(su): (FAILED SU \(to \w+\) \w+ on [^ ]+)/ ) ) {
+   #SuSe su failed
+      $Error{$Service}{$Err}++;
+   } elsif ( ($Service,$Err) = ($ThisLine =~ /^(su): (BAD SU \w+ to \w+ on [^ ]+)/ ) ) {
+   #OpenBSD su failed
+      $Error{$Service}{$Err}++;
+   } elsif ( $ThisLine =~ /^login(\[\d+\])*: ROOT LOGIN\s+(ON|on)\s+`?tty[0-9]+/) {
+      $RootLoginTTY++
+   } elsif ( $ThisLine =~ /^login(\[\d+\])*: ROOT LOGIN\s+(ON|on)\s+`?xvc[0-9]+/) {
+      $RootLoginXVC++
+   } elsif ( $ThisLine =~ /^com.apple.SecurityServer: authinternal authenticated user root .*/) {
+      $RootLoginTTY++
+   } elsif ( (undef,undef,$User) = ($ThisLine =~ /^login(\[\d+\])*: LOGIN ON (tty|pts\/)[0-9]+ BY ([^ ]+)/ )) {
+      $UserLogin{$User}++;
+   } elsif ( ($User,undef) = ($ThisLine =~ /^com.apple.SecurityServer: authinternal authenticated user ([^ ]+) .*/ )) {
+      $UserLogin{$User}++;
+   } elsif ( $ThisLine =~ s/^userdel(?:\[\d+\])?: delete user [`'](.+)'/$1/ ) {
+      $DeletedUsers .= "   $ThisLine\n";
+   } elsif ( $ThisLine =~ s/^(?:useradd|adduser)(?:\[\d+\])?: new user: name=(.+), (?:uid|UID)=(\d+).*$/$1 ($2)/ ) {
+      $NewUsers .= "   $ThisLine\n";
+   } elsif ( $ThisLine =~ s/^userdel(?:\[\d+\])?: remove(?:d)? (?:shadow )?group [`'](\S+)'( owned by \S+)?/$1/ ) {
+      $DeletedGroups .= "   $ThisLine\n";
+   } elsif ( $ThisLine =~ s/^groupdel(?:\[\d+\])?: remove group `(.+)'/$1/ ) {
+      $DeletedGroups .= "   $ThisLine\n";
+   } elsif ( $ThisLine =~ s/^(?:useradd|adduser)(?:\[\d+\])?: new group: name=(.+), (?:gid|GID)=(\d+).*$/$1 ($2)/ ) {
+      $NewGroups .= "   $ThisLine\n";
+   } elsif ( (undef,$User,,undef,$Group) = ($ThisLine =~ /(usermod|useradd)(?:\[\d+\])?: add [`']([^ ]+)' to (shadow ?|)group [`']([^ ]+)'/ )) {
+      $AddToGroup{$Group}{$User}++;
+   } elsif ( ($User,undef,$Group) = ($ThisLine =~ /gpasswd: user (.+) added by (.+) to group (.+)/)) {
+      $AddToGroup{$Group}{$User}++;
+   } elsif ( $ThisLine =~ s/^groupadd(?:\[\d+\])?: new group: name=(.+), (?:gid|GID)=(\d+).*$/$1 ($2)/ ) {
+      $NewGroups .= "   $ThisLine\n";
+   } elsif ( $ThisLine =~ s/^gpasswd(?:\[\d+\])?: set members of // ) {
+      $SetGroupMembers .= "   $ThisLine\n";
+   } elsif ( $ThisLine =~ /^(?:userdel|usermod)(?:\[\d+\])?: delete [`'](.*)' from (shadow |)group [`'](.*)'\s*$/ ) {
+      push @RemoveFromGroup, "    user $1 from group $3\n";
+      # This is an inetd lookup... $1 is the service (i.e. ftp), $2 is the response
+      # I don't think these are important to log at this time
+   } elsif ( ($service, $from) = ($ThisLine =~ /^xinetd\[\d+\]: FAIL: (.+) (?:address|libwrap|service_limit|connections per second) from=([\d.]+)/)) {
+      if ($Ignore =~ /\b\Q$service\E\b/i) { next; }
+      $Refused->{$service}->{$from}++;
+   } elsif ( ($from, $service, $user) = ($ThisLine =~ /^pam_abl\[\d+\]: Blocking access from (.+) to service (.+), user (.+)/)) {
+      if ($Detail >= 5) {
+         $Refused->{$service}->{$from."/".$user}++;
+      } else {
+         $Refused->{$service}->{$from}++;
+      }
+   } elsif ( ($User) = ($ThisLine =~ /^chage\[\d+\]: changed password expiry for ([^ ]+)/)) {
+      $PasswordExpiry{$User}++;
+   } elsif ( ($User) = ($ThisLine =~ /^chfn\[\d+\]: changed user `([^ ]+)' information/)) {
+      $UserInfChange{$User}++;
+   } elsif ( (undef) = ($ThisLine =~ /^pam_console\[\d+\]: console file lock already in place ([^ ]+)/ )) {
+      $ConsoleLock++;
+   } elsif ( ($Message) = ($ThisLine =~ /^pam_xauth\[\d+\]: call_xauth: (.+)/)) {
+      $XauthMessage{$Message}++;
+   } elsif ( ($Group,$NewName) = ($ThisLine =~ /^groupmod\[\d+\]: change group `(.*)' to `(.*)'/)) {
+      $GroupRenamed{"$Group -> $NewName"}++;
+   } elsif ( $ThisLine =~ s/^groupmod\[\d+\]: group changed in \/etc\/group \(group (.+)\/(\d+)\).*/$1 ($2)/) {
+      $GroupChanged{"$ThisLine"}++;
+   } elsif ( $ThisLine =~ s/^groupmod\[\d+\]: group changed in \/etc\/group \(group (.+)\/\d+, new name: (.+)\).*/$1 -> $2/) {
+      $GroupChanged{"$ThisLine"}++;
+   } elsif ( ($Pid,$User,$From,$To) = ($ThisLine =~ /^usermod(\[\d+\])?: ?change user [`'](.*)' home from [`'](.*)' to [`'](.*)'/)) {
+      $HomeChange{$User}{"$From -> $To"}++;
+   } elsif ( ($Pid,$User,$From,$To) = ($ThisLine =~ /^usermod(\[\d+\])?: ?change user [`'](.*)' shell from [`'](.*)' to [`'](.*)'/)) {
+      $ShellChange{$User}{"$From -> $To"}++;
+   } elsif ( ($Pid,$User,$From,$To) = ($ThisLine =~ /^usermod(\[\d+\])?: ?change user [`'](.*)' UID from [`'](.*)' to [`'](.*)'/)) {
+      $UidChange{"$User: $From -> $To"}++;
+   } elsif ( ($Pid,$User,$From,$To) = ($ThisLine =~ /^usermod(\[\d+\])?: ?change user [`'](.*)' GID from [`'](.*)' to [`'](.*)'/)) {
+      $GidChange{"$User: $From -> $To"}++;
+   } elsif ( ($Pid,$User,$From,$To) = ($ThisLine =~ /^usermod(\[\d+\])?: ?change user [`'](.*)' expiration from [`'](.*)' to [`'](.*)'/)) {
+      $AccountExpiry{"$User: $From -> $To"}++;
+   # checkpassword-pam
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Reading username and password/)) {
+   } elsif ( ($PID,$Username) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Username '([^']+)'/)) {
+      $ChkPasswdPam{$PID}{'Username'} = $Username;
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Password read successfully/)) {
+   } elsif ( ($PID,$Service) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Initializing PAM library using service name '([^']+)'/)) {
+      $ChkPasswdPam{$PID}{'Service'} = $Service;
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Pam library initialization succeeded/)) {
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: conversation\(\): msg\[0\], style PAM_PROMPT_ECHO_OFF, msg = "Password: "/)) {
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Authentication passed/)) {
+      $ChkPasswdPam{$PID}{'Success'} = 'true';
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Account management succeeded/)) {
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Setting PAM credentials succeeded/)) {
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Terminating PAM library/)) {
+   } elsif ( ($PID) = ($ThisLine =~ /^checkpassword-pam\[(\d+)\]: Exiting with status 0/)) {
+   } elsif ( ($User) = ($ThisLine =~ /^pam_tally\[\d+\]: pam_tally: pam_get_uid; no such user ([^ ]+)/)) {
+      $UnknownUser{$User}++;
+   } elsif ( ($User) = ($ThisLine =~ /^pam_tally\[\d+\]: Tally overflowed for user ([^ ]+)$/)) {
+      $TallyOverflow{$User}++;
+   } elsif ( ($User) = ($ThisLine =~ /^pam_pwdfile\[\d+\]: user not found in password database/) ) {
+      $pwd_file_unknown++;
+   } elsif ( ($User) = ($ThisLine =~ /^pam_pwdfile\[\d+\]: wrong password for user ([^ ]+)/)) {
+      $UnknownUser{$User}++;
+   } elsif ($ThisLine =~ /^pam_pwdfile\[\d+\]: password too short or NULL/) {
+      $pwd_file_too_short++;
+   } elsif ( ($User,$Su) = ($ThisLine =~ /^su: ([^ ]+) to ([^ ]+) on \/dev\/ttyp([0-9a-z]+)/) ) {
+      $Su_User{$User}{$Su}++;
+   } elsif ( ($Su,$User) = ($ThisLine =~ /^su: \(to ([^ ]+)\) ([^ ]+) on (?:none|\/dev\/(pts\/|ttyp)([0-9]+))/) ) {
+      $Su_User{$User}{$Su}++;
+   } elsif ( ($Su,$User) = ($ThisLine =~ /^su\[\d+\]: Successful su for (\S+) by (\S+)/) ) {
+      $Su_User{$User}{$Su}++;
+   } elsif ($ThisLine =~ /^userhelper\[\d+\]: running '([^']+)' with ([^']+) privileges on behalf of '([^']+)'/) {
+      $Executed_app{"$1,$2,$3"}++;
+   } elsif ($ThisLine =~ /^polkitd\[\d+\]: Operator of unix-process:\d+:\d+ successfully authenticated as unix-user:([^ ]+) to gain ONE-SHOT authorization for action org\.freedesktop\..* for system-bus-name::[\d.]+ \[([^\]]*)\] \(owned by unix-user:(\w+)\)/) {
+      $Executed_app{"$2,$1,$3"}++;
+   } elsif ( ($User) = $ThisLine =~ /change user [`']([^']+)' password/) {
+      $PwdChange{"$User"}++;
+   } elsif ( ($User) = ($ThisLine =~ /^cvs: password mismatch for ([^']+): ([^']+) vs. ([^']+)/) ){
+      $cvs_passwd_mismatch{$User}++;
+   } elsif ( ($User,$From,$To) = ($ThisLine =~ /usermod\[[0-9]*\]: change user `([^ ]*)' shell from `([^ ]*)' to `([^ ]*)'/) ) {
+      $ChangedShell{"$User,$From,$To"}++;
+   } elsif ( ($User,$To) = ($ThisLine =~ /chsh\[[0-9]*\]: change user [`']([^ ]*)' shell to [`']([^ ]*)'/) ) {
+      $ChangedShell{"$User,,$To"}++;
+   } elsif ( ($Name1,$Name2) = ($ThisLine =~ /usermod\[[0-9]*\]: change user name `([^ ]*)' to `([^ ]*)'/)) {
+      $ChangedUserName{"$Name1,$Name2"}++;
+   } elsif (($Name,$GID) = ($ThisLine =~ /change GID for `([^ ]*)' to ([0-9]*)/)) {
+      $ChangedGID{"$Name,$GID"}++;
+   } elsif (($Name,$UID1,$UID2) = ($ThisLine =~ /change user `([^ ]*)' UID from `([0-9]*)' to `([^ ]*)'/)) {
+      $ChangedUID{"$Name,$UID1,$UID2"}++;
+   } elsif (($Module,$Service) = ($ThisLine =~ /Deprecated (pam_[^ ]*) module called from service "([^ ]*)"/)) {
+      $DeprecateModule{"$Module,$Service"}++;
+   } elsif ( ($Library) = ($ThisLine =~ /vmware-authd\[\d+\]: PAM unable to dlopen\(([^ ]+)\)/) ) {
+      $MissingLib{"$Library"}++
+   } elsif ( ($Client,$User) = ($ThisLine =~ /vmware-authd\[\d+\]: login from ([0-9\.]+) as ([^ ]+)/) ) {
+      $UserLogin{$User}++;
+   } elsif ( ($User) = ($ThisLine =~ /vmware-authd\[\d+\]: pam_unix_auth\(vmware-authd:auth\): authentication failure; logname= uid=0 euid=0 tty= ruser= rhost=  user=([^ ]*)/) ) {
+   } elsif ( ($User) = ($ThisLine =~ /useradd.*failed adding user [`'](.*)',/) ) {
+      # useradd: failed adding user `rpcuser', data deleted
+      # useradd: failed adding user `mysql', exit code: 9
+      $FailedAddUsers{$User}++;
+   } elsif (($User,$Reason) = ($ThisLine =~ /dovecot-auth: pam_userdb\(dovecot:auth\): user `(.*)' denied access \((.*)\)/)) {
+      # dovecot-auth: pam_userdb(dovecot:auth): user `bobok' denied access (incorrect password)
+      $DeniedAccess{"$User,$Reason"}++;
+   } elsif ($ThisLine =~ /^request-key: Cannot find command to construct key/) {
+      $RequestKeyFailures++;
+   } elsif (my ($type,$from,$response,$client,$service,$e) = ($ThisLine =~ /krb5kdc\[[0-9]*\]: (AS_REQ|TGS_REQ) \([0-9]+ etypes \{[ 0-9]+}\) ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+): (ISSUE|UNKNOWN_SERVER): authtime [0-9]+, (?:etypes \{rep=[0-9]+ tkt=[0-9]+ ses=[0-9]+},)? ([^ ]+) for ([^ ,]+)(?:, )?(.*)$/)) {
+     if($service=~/^krbtgt\/([^@]+)@\1/) {
+        $service='Login';
+     }
+     if($response eq 'UNKNOWN_SERVER' && $e eq 'Server not found in Kerberos database') {
+        $response=$e;
+        $e='';
+     }
+     $KerbList{$response}{$type}{$from}{$service}{$client}{$e}++;
+  } elsif (my ($type,$from,$response,$client,$service,$e) = ($ThisLine =~ /krb5kdc\[[0-9]*\]: (AS_REQ|TGS_REQ) \([0-9]+ etypes \{[ 0-9]+}\) ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+): (NEEDED_PREAUTH|PREAUTH_FAILED|CLIENT_NOT_FOUND): ([^ ]+) for ([^ ,]+)(?:, )?(.*)$/)) {
+     if($service=~/^krbtgt\/([^@]+)@\1/) {
+        $service='Login';
+     }
+     if($response eq 'CLIENT_NOT_FOUND' && $e eq 'Client not found in Kerberos database') {
+        $response=$e;
+        $e='';
+     } elsif($response eq 'NEEDED_PREAUTH' && $e eq 'Additional pre-authentication required') {
+        next unless($Detail > 9||$type ne 'AS_REQ');
+        $response=$e;
+        $e='';
+     }
+     $KerbList{$response}{$type}{$from}{$service}{$client}{$e}++;
+   } elsif ($ThisLine =~ /(Rootkit Hunter|rkhunter)(\[\d+\])?:/ ) {
+      if ($ThisLine =~ /Please inspect this machine/) {
+         $RootkitHunter{'inspect'}++;
+      } elsif ($ThisLine =~ /check started/) {
+         $RootkitHunter{'runs'}++;
+      } elsif (my ($mins, $secs) = ($ThisLine =~ /Scanning took ([0-9]*) minutes? and ([0-9]*) seconds?/)) {
+         $RootkitHunter{'time'}+= $mins*60 + $secs;
+      }
+   } elsif ($ThisLine =~ /systemd-logind(?:\[\d+\])?: New session \d+ of user (.*)\.$/){
+      $UserLogin{$1}++;
+   } elsif ($ThisLine =~ /sshguard\[\d+\]: Blocking (.*) for (.*)/) {
+      my ($attacker, $details) = ($1, $2);
+      $sshguardAttackers{$attacker} = $details;
+   } else {
+      # Unmatched entries...
+      $ThisLine =~ s/\[\d+\]:/:/;
+      $OtherList{$ThisLine}++;
+   }
+}
+
+#######################################
+
+if ($NewUsers) {
+   print "New Users:\n$NewUsers\n";
+}
+
+if ($DeletedUsers) {
+   print "Deleted Users:\n$DeletedUsers\n";
+}
+
+if (keys %FailedAddUsers) {
+   print "Failed adding users:\n";
+   foreach $User (keys %FailedAddUsers) {
+      print "   $User: ". $FailedAddUsers{$User}. " Time(s)\n";
+   }
+   print"\n";
+}
+
+if ($NewGroups) {
+   print "New Groups:\n$NewGroups\n";
+}
+
+if ($DeletedGroups) {
+   print "Deleted Groups:\n$DeletedGroups\n";
+}
+
+if (keys %GroupRenamed) {
+   print "Renamed groups:\n";
+   foreach $Group (sort {$a cmp $b} keys %GroupRenamed) {
+      print "   $Group\n";
+   }
+}
+
+if (keys %GroupChanged) {
+   print "Changed groups:\n";
+   foreach $Group (sort {$a cmp $b} keys %GroupChanged) {
+      print "   $Group\n";
+   }
+}
+
+if (keys %AddToGroup) {
+   print "\nAdded User to group:\n";
+   foreach $Group (sort {$a cmp $b} keys %AddToGroup) {
+      print "   $Group:\n";
+      foreach $User (sort {$a cmp $b} keys %{$AddToGroup{$Group}}) {
+         print "      $User\n";
+      }
+   }
+}
+
+if ($SetGroupMembers) {
+   print "Set Members of Group:\n$SetGroupMembers\n";
+}
+
+if (@RemoveFromGroup) {
+   print "\nRemoved From Group:\n".join('',@RemoveFromGroup)."\n";
+}
+
+if (keys %HomeChange) {
+   print "\nChanged users home directory:\n";
+   foreach $User (sort {$a cmp $b} keys %HomeChange) {
+      print "   $User:\n";
+      # No sorting here - show it by time...
+      foreach $Home (keys %{$HomeChange{$User}}) {
+         print "      $Home\n";
+      }
+   }
+}
+
+if (keys %ShellChange) {
+   print "\nChanged shell:\n";
+   foreach $User (sort {$a cmp $b} keys %ShellChange) {
+      # No sorting here - show it by time...
+      foreach $Shell (keys %{$ShellChange{$User}}) {
+         print "      $User: $Shell\n";
+      }
+   }
+}
+
+if (keys %UidChange) {
+   print "\nChanged users UID:\n";
+   foreach $Entry (sort {$a cmp $b} keys %UidChange) {
+      print "   $Entry\n";
+   }
+}
+
+if (keys %GidChange) {
+   print "\nChanged users GID:\n";
+   foreach $Entry (sort {$a cmp $b} keys %GidChange) {
+      print "   $Entry\n";
+   }
+}
+
+if (keys %PwdChange) {
+   print "\nChanged users password:\n";
+   foreach $Entry (keys %PwdChange) {
+      print "   $Entry changed password: $PwdChange{$Entry} Time(s)\n";
+   }
+}
+
+if (keys %UnknownUser) {
+   print "\nUnknown users:\n";
+   foreach $User (sort {$a cmp $b} keys %UnknownUser) {
+      print "   $User : $UnknownUser{$User} Time(s)\n";
+   }
+}
+
+if ($pwd_file_unknown > 0) {
+   print "\nUsers unknown in password database (pwd_file): $pwd_file_unknown\n";
+}
+
+if ($pwd_file_too_short > 0) {
+   print "\nPassword too short or NULL (pwd_file): $pwd_file_too_short Time(s)\n";
+}
+
+if (keys %{$Connections}) {
+   print "\nConnections:\n";
+   foreach $ThisOne (keys %{$Connections}) {
+      if ($Summarize =~ /\Q$ThisOne\E/) {
+         print "   Service " . $ThisOne . ": " . $Connections->{$ThisOne} . " Connection(s)\n";
+      } else {
+         my $service_check = 0;
+         if ($ENV{"secure_$ThisOne"}) {
+         $service_check = $ENV{"secure_$ThisOne"};
+         print "   Service " . $ThisOne . " [Connection(s) more than $service_check per day]:\n";
+         } else {
+         print "   Service " . $ThisOne . " [Connection(s) per day]:\n";
+         }
+         my $Total_Con = 0;
+         foreach $OtherOne (sort SortIP keys %{$Connections->{$ThisOne}}) {
+            $Total_Con = $Total_Con + $Connections->{$ThisOne}->{$OtherOne};
+            if ( $Connections->{$ThisOne}->{$OtherOne} >= $service_check) {
+            print "      " . $OtherOne . ": " . $Connections->{$ThisOne}->{$OtherOne} . " Time(s)\n";
+            }
+         }
+            print "      Total Connections: $Total_Con\n";
+      }
+   }
+}
+
+if (keys %{$Refused}) {
+   print "\nRefused Connections:\n";
+   foreach $ThisOne (sort {$a cmp $b} keys %{$Refused}) {
+      print "   Service " . $ThisOne . ":\n";
+      foreach $OtherOne (sort SortIP keys %{$Refused->{$ThisOne}}) {
+         print "      " . $OtherOne . ": " . $Refused->{$ThisOne}->{$OtherOne} . " Time(s)\n";
+      }
+   }
+}
+
+if (keys %{$FailedLogins}) {
+   print "\nFailed logins:\n";
+   foreach $ThisOne (sort {$a cmp $b} keys %{$FailedLogins}) {
+      print "   User " . $ThisOne . ":\n";
+      foreach $OtherOne (sort {$a cmp $b} keys %{$FailedLogins->{$ThisOne}}) {
+         print "      " . $OtherOne . ": " . $FailedLogins->{$ThisOne}->{$OtherOne} . " Time(s)\n";
+      }
+   }
+}
+
+if (keys %{$FailedSaver}) {
+   print "\nFailed screensaver disable:\n";
+   foreach $User (sort {$a cmp $b} keys %{$FailedSaver}) {
+      print "   User $User on displays:\n";
+      foreach $Display (sort {$a cmp $b} keys %{$FailedSaver->{$User}}) {
+         print "      $Display : " . $FailedSaver->{$User}->{$Display} . " Time(s)\n";
+      }
+   }
+}
+
+if (keys %DeniedAccess) {
+   print "\ndovecot-auth: Denied access\n";
+   foreach (keys %DeniedAccess) {
+      ($User,$Reason) = split ",";
+      print "   for user " . $User . " (reason: " . $Reason . ") :" . $DeniedAccess{"$User,$Reason"} . " Time(s)\n";
+   }
+}
+
+if (keys %NoIP) {
+   print "\nCouldn't get client IPs for connections to:\n";
+   foreach $ThisOne (sort {$a cmp $b} keys %NoIP) {
+      print "   $ThisOne: $NoIP{$ThisOne} Time(s)\n";
+   }
+}
+
+if (keys %NameVerifyFail) {
+   print "\nHostname verification failed:\n";
+   foreach $Service (sort {$a cmp $b} keys %NameVerifyFail) {
+      print "   Service $Service:\n";
+      foreach my $Namev (sort {$a cmp $b} keys %{$NameVerifyFail{$Service}}) {
+         print "      $Namev:  $NameVerifyFail{$Service}{$Namev} Time(s)\n";
+      }
+   }
+}
+
+if (keys %Error) {
+   print "\nErrors:\n";
+   foreach $Service (sort {$a cmp $b} keys %Error) {
+      print "   Service $Service:\n";
+      foreach $Err (sort {$a cmp $b} keys %{$Error{$Service}}) {
+         print "      $Err: $Error{$Service}{$Err} Time(s)\n";
+      }
+   }
+}
+
+if ($RootLoginTTY) {
+   print "\nRoot logins on ttys: $RootLoginTTY Time(s).\n";
+}
+
+if ($RootLoginXVC) {
+   print "\nRoot logins on xvcs: $RootLoginXVC Time(s).\n";
+}
+
+if (keys %UserLogin) {
+   print "\nUser Logins:\n";
+   foreach $User (sort {$a cmp $b} keys %UserLogin) {
+      print "   $User : $UserLogin{$User} Time(s)\n";
+   }
+}
+
+if (keys %Su_User) {
+   print "\nUsers performing Su Changes:\n";
+      foreach $User (sort {$a cmp $b} keys %Su_User) {
+         print "    $User:\n";
+            foreach $Su ( keys %{$Su_User{$User}}) {
+               my $val = $Su_User{$User}{$Su};
+               print "         $Su $val time(s)\n";
+            }
+     }
+}
+
+if ($ConsoleLock > 0) {
+   print "\nConsole file lock already in place: $ConsoleLock Time(s).\n";
+}
+
+if (keys %AccountExpiry) {
+   print "\nChanged account expiry for users:\n";
+   foreach $User (sort {$a cmp $b} keys %AccountExpiry) {
+      print "   $User : $AccountExpiry{$User} Time(s)\n";
+   }
+}
+
+if (keys %PasswordExpiry) {
+   print "\nChanged password expiry for users:\n";
+   foreach $User (sort {$a cmp $b} keys %PasswordExpiry) {
+      print "   $User : $PasswordExpiry{$User} Time(s)\n";
+   }
+}
+
+if (keys %UserInfChange) {
+   print "\nChanged user information:\n";
+   foreach $User (sort {$a cmp $b} keys %UserInfChange) {
+      print "   $User : $UserInfChange{$User} Time(s)\n";
+   }
+}
+
+if (keys %XauthMessage) {
+   print "\nReported by call_xauth:\n";
+   foreach $Message (sort {$a cmp $b} keys %XauthMessage) {
+      print "   $Message : $XauthMessage{$Message} Time(s)\n";
+   }
+}
+
+if (keys %PopLogin) {
+   print "\nspop3d user connections:\n";
+   foreach $PopUser (sort {$a cmp $b} keys %PopLogin) {
+      print "   $PopUser\:\t$PopLogin{$PopUser} Time(s)\n";
+   }
+}
+
+if (keys %PopErrors) {
+   print "\nspop3d  connection failures:\n";
+   foreach $PopErr (sort {$a cmp $b} keys %PopErrors) {
+      print "   $PopErr\:\t$PopErrors{$PopErr} Time(s)\n";
+   }
+}
+
+if ($spop3d_opened > 0) {
+   print "\nspop3d connections(sum):\t".$spop3d_opened."\n";
+}
+
+if ($spop3d_errors > 0) {
+   print "spop3d connection errors:\t".$spop3d_errors."\n";
+}
+
+if (keys %ChkPasswdPam) {
+   print "\ncheckpassword-pam (SUID root PAM client):\n";
+   foreach $PID (sort {$a cmp $b} keys %ChkPasswdPam) {
+      $ServiceUsernamePair = $ChkPasswdPam{$PID}{'Username'}.' => '.$ChkPasswdPam{$PID}{'Service'};
+      if ($ChkPasswdPam{$PID}{'Success'} eq 'true') {
+         $Successes{$ServiceUsernamePair}++;
+      } else {
+         $Failures{$ServiceUsernamePair}++;
+      }
+   }
+   foreach $ServiceUsernamePair (sort {$a cmp $b} keys %Successes) {
+      $S = $Successes{$ServiceUsernamePair} ? $Successes{$ServiceUsernamePair} : 0;
+      $F = $Failures{$ServiceUsernamePair} ? $Failures{$ServiceUsernamePair} : 0;
+      print "   $ServiceUsernamePair : $S success(es), $F failure(s)\n";
+   }
+}
+
+if (keys %TallyOverflow) {
+   print "\nTally overflowed for user:\n";
+   foreach $User (sort {$a cmp $b} keys %TallyOverflow) {
+      print "   $User : $TallyOverflow{$User} Time(s)\n";
+   }
+}
+
+if (keys %Executed_app) {
+   print "\nUserhelper executed applications:\n";
+   foreach (keys %Executed_app) {
+     ($longapp,$asuser,$user) = split ",";
+     $longapp_orig = $longapp;
+     $i = index($longapp, " ");
+     if ($i > 0) {
+        $longapp = substr($longapp, 0, $i);
+     }
+     $app = substr($longapp,rindex($longapp,"/")+1);
+     print "   $user -> $app as $asuser:  ".$Executed_app{"$longapp_orig,$asuser,$user"}." Time(s)\n";
+   }
+}
+
+if (keys %ChangedUserName) {
+   print "\nChanged users names:\n";
+   foreach (keys %ChangedUserName) {
+     ($Name1,$Name2) = split ",";
+     print "   User " . $Name1 . " change name to " . $Name2 . $ChangedUserName . "\n";
+   }
+}
+
+if (keys %ChangedUID) {
+   print "\nChanged UID:\n";
+   foreach (keys %ChangedUID) {
+     ($Name,$UID1,$UID2) = split ",";
+     print "   User " . $Name . " changed UID from " . $UID1 . " to " . $UID2 . "\n";
+   }
+}
+
+if (keys %ChangedShell) {
+   print "\nChanged users default login shell: \n";
+   foreach (keys %ChangedShell) {
+     ($User,$From,$To) = split ",";
+     if ($From ne '') {
+         print "   User " . $User . " change shell from " . $From . " to " . $To . ": " . $ChangedShell{"$User,$From,$To"} . " Time(s)\n";
+     } else {
+         print "   User " . $User . " change shell to " . $To . ": " . $ChangedShell{"$User,$From,$To"} . " Time(s)\n";
+     }
+   }
+
+}
+
+if (keys %ChangedGID) {
+   print "\nChanged GID:\n";
+   foreach (keys %ChangedGID) {
+      ($Name,$GID) = split ",";
+       print "   Group " . $Name . " change GID to " . $GID . "\n";
+   }
+}
+
+if (keys %cvs_passwd_mismatch) {
+   print "\ncvs:";
+   print "\n   Authentication Failures:\n";
+   foreach $User (keys %cvs_passwd_mismatch) {
+      print "      $User : $cvs_passwd_mismatch{$User} Time(s)\n";
+   }
+}
+
+if (keys %DeprecateModule){
+   print "\nDeprecated pam module:\n";
+   foreach (keys %DeprecateModule) {
+      ($Module,$Service) = split ",";
+      print "   deprecated module $Module called from service $Service: " . $DeprecateModule{"$Module,$Service"} . " Time(s)\n";
+   }
+}
+
+
+if ($RequestKeyFailures) {
+   print "\nRequest Key Failures (nfs-utils/kernel mismatch): $RequestKeyFailures Time(s)\n";
+}
+
+if (keys %KerbList) {
+   print "\nKerberos Entries:\n";
+   foreach my $response (sort {$a cmp $b} keys %KerbList) {
+      print "   $response:\n";
+      foreach my $type (sort {$a cmp $b} keys %{$KerbList{$response}}) {
+        print "      $type:\n";
+        foreach my $from (sort {$a cmp $b} keys %{$KerbList{$response}{$type}}) {
+           print "         $from:\n";
+           foreach my $service (sort {$a cmp $b} keys %{$KerbList{$response}{$type}{$from}}) {
+              print "            $service:\n";
+              foreach my $client (sort {$a cmp $b} keys %{$KerbList{$response}{$type}{$from}{$service}}) {
+                 if(scalar(keys %{$KerbList{$response}{$type}{$from}{$service}{$client}})==1&&defined($KerbList{$response}{$type}{$from}{$service}{$client}{''})){
+                    print "                  $client: $KerbList{$response}{$type}{$from}{$service}{$client}{''} Time(s)\n";
+                 }else{
+                    print "               $client:\n";
+                    foreach my $e (sort {$a cmp $b} keys %{$KerbList{$response}{$type}{$from}{$service}{$client}}) {
+                       print "                  $e: $KerbList{$response}{$type}{$from}{$service}{$client}{$e} Time(s)\n";
+                    }
+                 }
+              }
+           }
+        }
+      }
+   }
+}
+
+if (keys %RootkitHunter) {
+   use integer;
+   my ($mins, $secs) = ($RootkitHunter{'time'} / 60, $RootkitHunter{'time'} % 60);
+   $RootkitHunter{'inspect'} = 0 unless $RootkitHunter{'inspect'};
+   print "\nRootkitHunter:\n";
+   print "   Runs: $RootkitHunter{'runs'}\n";
+   print "   Suggested Inspection: $RootkitHunter{'inspect'} Time(s)\n";
+   print "   Total Runtime: $mins minute(s) $secs second(s)\n";
+}
+
+if (keys %sshguardAttackers) {
+   print "\nSSHGuard blocked:\n";
+   foreach $attacker (sort {$a cmp $b} keys %sshguardAttackers) {
+      my $details = $sshguardAttackers{$attacker};
+      print "   $attacker: $details\n";
+   }
+}
+
+if (keys %OtherList) {
+   print "\n**Unmatched Entries**\n";
+   foreach $line (sort {$a cmp $b} keys %OtherList) {
+      print "   $line: $OtherList{$line} Time(s)\n";
+   }
+}
+
+if (keys %MissingLib) {
+   print "\n Missing libraries:\n";
+   foreach $Lib (keys %MissingLib) {
+      print "   $Lib : $MissingLib{$Lib} Time(s)\n";
+   }
+}
+
+exit(0);
+
+# vi: shiftwidth=3 tabstop=3 syntax=perl et
+# Local Variables:
+# mode: perl
+# perl-indent-level: 3
+# indent-tabs-mode: nil
+# End:

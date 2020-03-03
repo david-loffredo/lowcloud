@@ -30,3 +30,11 @@
     owner=root group=root mode=0755
   with_items:
     - dovecot
+    - secure
+
+# scripts / services / secure does not match a username with a dash
+#   } elsif ($ThisLine =~ /systemd-logind(?:\[\d+\])?: New session \d+ of user (\w+)\./){
+
+# **Unmatched Entries**
+#    systemd-logind: New session 456 of user bacula-tun.: 1 Time(s)
+ 
