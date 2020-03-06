@@ -79,12 +79,12 @@ firewall_block_ips: []
 firewall_block_ips_v6: []
 </PRE>
 
-<p>The firewall services names are used to set up jails for sshd,
-dovecot, postfix and others depending on what names are present.
-These are expanded to a list of hashes describing each jail. Each jail
-hash has a "name" value that matches the key of the enclosing hash,
-plus any other key/value pairs that should appear in the jail config
-as "key = value".  You can also define jails for a named service in
+<p>The <code>fail2ban</code> jails are usually controlled by the
+firewall services names.  Names like "ssh", "mail", or "web" are
+expanded to a list of hashes describing the jails for that
+service. Each jail hash has a "name" that should be enabled, plus any
+other key/value pairs that should appear in the jail config as "key =
+value".  The list of jails for a named service is given by
 a <code>fail2ban_jail_&lt;svc&gt;</code> variable.</p>
 
 <PRE class=code>
@@ -107,12 +107,14 @@ fail2ban_jail_web:
   - name: apache-overflows
 </PRE>
 
-<p>By default, <code>fail2ban_jails</code> just uses the firewall
-services list, but you can customize this and override the defaults by
-adding your own hashes.  The last hash with a given name will be used.
-The example below has the builtin ssh jails, the mail jails, an apache
-jail that operates on the DOCKER-USER chain, and overides the sshd
-jail with a very long ban.</p>
+<p>The firewall services list is used by default, but you can
+set <code>fail2ban_jails</code> to a different list of strings and
+hashes.  Add custom jails or override a built-in definition with a
+hash with the same name towards the end of the list.</p>
+
+<p>The example below has the built-in ssh jails (always present), the
+mail jails, an apache jail that operates on the DOCKER-USER chain, and
+overides the built-in sshd jail definition with a very long ban.</p>
 
 <PRE class=code>
 fail2ban_jails:
@@ -124,6 +126,15 @@ fail2ban_jails:
     bantime: 1000years
 </PRE>
 
+<p>You can also customize the default find and ban times with
+the <code>fail2ban_findtime</code> and <code>fail2ban_bantime</code>
+variables.</p>
+
+<PRE class=code>
+# These are the defaults values
+# fail2ban_findtime: 2h
+# fail2ban_bantime: 24h
+</PRE>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -177,12 +188,12 @@ state.</p>
 <p>It seems like some people are moving to nftables (nft) instead of
 iptables.  Something to keep an eye on for the future.</p>
 
-<p>Fail2ban helps a bit on password protected service like IMAP by
-limiting the number of attempts an attacker can make before switching
-IPs, but is more noise control for the logs than security.  The
-version in Debian 10 is fairly recent so we use it stock.  The Debian
-9 version was old, so we previously added some custom patterns for
-ssh.</p>
+<p>The <code>fail2ban</code> package does not stop attacks, merely
+reduces the rate at which they can occur.  This helps with brute force
+attacks on a password-protected service like IMAP, and provides some
+noise control for the logs.  The version in Debian 10 is fairly recent
+so we use it stock.  The Debian 9 version was old, so we previously
+added some custom patterns for ssh.</p>
 
 <figure>
 <img src="images/network.jpg" alt="10BASE-2 FTW">

@@ -1,0 +1,23 @@
+---
+# Debian 10 versions
+# docker.io        18.09
+# docker-compose   1.21
+
+- name: docker packages are installed
+  package:
+    state: present
+    name:
+      - docker.io
+      - docker-compose
+  register: dockerstate
+
+# force restart before doing anything else to create all of the
+# iptable rules, otherwise docker-compose will throw "Failed to
+# program FILTER" errors because it can not find the DOCKER chain.
+#
+# Could also do as a handler and flush, but we want this done before
+# anything else.
+- name: docker force iptables update
+  service: name=docker state=restarted
+  when: dockerstate.changed
+ 
