@@ -1,36 +1,20 @@
 [DEFAULT]
-ignoreip  = 127.0.0.1 {{ ansible_default_ipv4.address }} {{ friendly_networks|join(' ') }}
-findtime  = 2h
-bantime   = 24h
+ignoreip  = 127.0.0.1 {{ ansible_default_ipv4.address }} {{ fail2ban_ignoreips|join(' ') }}
+findtime  = {{ fail2ban_findtime }}
+bantime   = {{ fail2ban_bantime }}
 destemail = {{ admin_email }}
 banaction = iptables-multiport
 action    = %(action_)s
 maxretry = 3
 
 # JAILS
-[sshd]
-enabled   = true
-mode 	  = aggressive
-
-[pam-generic]
-enabled   = true
-banaction = iptables-allports
-
-{% if 'mail' in firewall_services %}
-[dovecot]
+{% for i in fail2ban_jails_expanded %}
+[{{ i.name }}]
 enabled = true
-
-[postfix]
-enabled  = true
-
-[postfix-sasl]
-enabled  = true
+{% for key, val in i|dictsort %}
+{% if key != 'name' %}
+{{ key }} = {{ val }}
 {% endif %}
+{% endfor %}
 
-{% if 'web' in firewall_services %}
-[apache-auth]
-enabled = true
-
-[apache-overflows]
-enabled = true
-{% endif %}
+{% endfor %}

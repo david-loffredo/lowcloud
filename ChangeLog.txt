@@ -1,3 +1,15 @@
+## [unreleased] - in progress
+
+- Reworked firewall rules to cover both native applications and ones
+  running in Docker containers.  Moved most blocking to the PREROUTING
+  chain of the "mangle" table.  This block at lower cost because it is
+  earlier in the process, for better performance during packet floods.
+  It is also before the split between INPUT (used by native apps) and
+  FORWARD (used by Docker) so it covers both.  Also added rules for
+  DHCP because connection tracking can break in some situations.
+
+- Reworked fail2ban configuration to allow customization of the jails,
+  to change bantimes or retarget to the DOCKER-USER chain.
 
 ## [1.1] - 2020-02-18
 

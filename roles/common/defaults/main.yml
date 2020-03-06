@@ -71,12 +71,12 @@ firewall_services: [ 'ssh' ]
 firewall_opentcp: []
 firewall_openudp: []
   
-# blocked if defined
-firewall_blacklist_ips: []
-
-# Networks with relaxed checking, ignored by fail2ban, allowed to
-# relay mail, etc
-friendly_networks: []
+# Friendly networks that should be ignored by fail2ban, and allowed
+# through the firewall
+firewall_allow_ips: []
+firewall_allow_ips_v6: []
+firewall_block_ips: []
+firewall_block_ips_v6: []
 
 # SSH Ports - Usually 22, but some people change to 2222 or whatnot to
 # avoid the endless log spam from the constant bot attempts.
@@ -128,6 +128,53 @@ firewall_ports_udp: >-
   {{- ns.ports | sort | unique -}}
   
 
+# ========================================  
+# fail2ban
+fail2ban_ignoreips: '{{ firewall_allow_ips }}'
+fail2ban_findtime: 2h
+fail2ban_bantime: 24h
+
+# The expanded list contains a hash of jail hashes.  Each jail hash
+# has a "name" value that matches the key of the enclosing hash, plus
+# any other key/value pairs that should appear in the jail config as
+# "key = value"
+#
+# The expanded list is built from the jails list, which contains
+# strings or hashes.  A string is expanded to a set of pre-defined
+# hashes for that service.  Later elements in the list will replace
+# earlier ones.  The unique() filter takes first seen, so we reverse
+# the list to get the overriding correct.
+# 
+fail2ban_jails: '{{ firewall_services }}'
+fail2ban_jails_expanded: >-
+  {%- set ns = namespace(lst=(fail2ban_jail_ssh)) -%}
+  {%- for i in fail2ban_jails -%} 
+  {%- if i is string -%}
+  {{- ns.lst.extend( lookup('vars', 'fail2ban_jail_' + i, default=[{'name': i}]) ) -}}
+  {%- elif i is mapping -%}
+  {{- ns.lst.append( i ) -}}
+  {%- endif -%}
+  {%- endfor -%}
+  {{- ns.lst|reverse|list|unique(attribute='name')|sort(attribute='name') -}}
+
+# default jails, always added
+fail2ban_jail_ssh:
+  - name: sshd
+    mode: aggressive
+  - name: pam-generic
+    banaction: iptables-allports
+
+fail2ban_jail_mail:
+  - name: dovecot
+  - name: postfix
+  - name: postfix-sasl
+
+fail2ban_jail_web:
+  - name: apache-auth
+  - name: apache-overflows
+
+
+# ========================================  
 # Geoblock certain ports. Will not increase security (if you can
 # afford a $5 Linode in your zone, so can an APT), but it does quiet
 # your logs by removing a constant stream of traffic on otherwise open

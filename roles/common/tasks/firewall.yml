@@ -21,7 +21,7 @@
     msg:
       - OPEN TCP PORTS {{ firewall_ports_tcp }}
       - OPEN UDP PORTS {{ firewall_ports_udp }}
-
+      
 - name: iptables v4 rules
   template:
     src: rules.v4.j2
@@ -43,7 +43,6 @@
   when: ansible_default_ipv6.interface is defined
   notify:
     - reload iptables v6 rules
-
 
 # ipset destroy
 # ipset flush

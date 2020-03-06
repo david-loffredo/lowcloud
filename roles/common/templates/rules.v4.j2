@@ -106,8 +106,14 @@ COMMIT
 -F BLOCK-LIST
 
 # Lists for blanket allow or deny.
-{% if firewall_blacklist_ips|length > 0 %}
-{% for ip in firewall_blacklist_ips %}
+{% if firewall_allow_ips|length > 0 %}
+{% for ip in firewall_allow_ips %}
+-A ALLOW-LIST -s {{ ip }} -j ACCEPT
+{% endfor %}
+{% endif %}
+
+{% if firewall_block_ips|length > 0 %}
+{% for ip in firewall_block_ips %}
 -A BLOCK-LIST -s {{ ip }} -j DROP
 {% endfor %}
 {% endif %}

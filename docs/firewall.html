@@ -22,11 +22,10 @@
 <p><b>ROLE</b> common, firewall.yml
 
 <p>We implement firewall rules directly using <code>iptables</code>,
-with <code>iptables-persistent</code> to reload our configuration on
-boot.  The playbook writes IPv4 and IPv6 rules to the
-<code>/etc/iptables/rules.v4</code> and <code>rules.v6</code> files
-that are loaded at boot.  These files are well commented and explain
-the purpose of each of the rules.</p>
+with <code>iptables-persistent</code> to reload the configuration on
+boot.  The IPv4 and IPv6 rules are in
+<code>/etc/iptables/rules.v4</code> and <code>rules.v6</code>.  These
+files are well commented and explain the purpose of each rule.</p>
 
 <p>The IPv4 and IPv6 rules protect normal applications and those in
 Docker containers.  We only allow incoming connections to ports that
@@ -46,14 +45,9 @@ check the jails if you are having trouble connecting.</p>
 <p>Open ports for new services by adding the symbolic name to
 the <code>firewall_services</code> list.  It recongizes 'ssh', 'mail',
 'web', 'dns', and 'bacula'.  You define your own names for services by
-defining
-<code>&lt;name&gt;_opentcp</code>
+defining variables <code>&lt;name&gt;_opentcp</code>
 and/or <code>&lt;name&gt;_openudp</code> as a list of port numbers.
-It doesn't matter if port numbers are repeated across services.  The
-fail2ban setup also uses these names and sets up jails for sshd,
-dovecot, postfix and a few others depending on what names are
-present.</p>
-
+It doesn't matter if port numbers are repeated across services.</p>
 
 <PRE class=code>
 firewall_services: [ 'ssh' ]
@@ -73,13 +67,63 @@ firewall_opentcp: []
 firewall_openudp: []
 </PRE>
 
-<p>If you want to drop all connections from certain IPs, add them to the
-<code>firewall_blacklist_ips</code> list.</p>
+<p>If you want to drop all connections from certain IPs, or allow all
+connections from others, add them to the following lists.</p>
   
 <PRE class=code>
-# blocked if defined
-firewall_blacklist_ips: []
+# Friendly networks that should be ignored by fail2ban, and allowed
+# through the firewall
+firewall_allow_ips: []
+firewall_allow_ips_v6: []
+firewall_block_ips: []
+firewall_block_ips_v6: []
 </PRE>
+
+<p>The firewall services names are used to set up jails for sshd,
+dovecot, postfix and others depending on what names are present.
+These are expanded to a list of hashes describing each jail. Each jail
+hash has a "name" value that matches the key of the enclosing hash,
+plus any other key/value pairs that should appear in the jail config
+as "key = value".  You can also define jails for a named service in
+a <code>fail2ban_jail_&lt;svc&gt;</code> variable.</p>
+
+<PRE class=code>
+fail2ban_jails: '{{ firewall_services }}'
+
+# ssh jails always added
+fail2ban_jail_ssh:
+  - name: sshd
+    mode: aggressive
+  - name: pam-generic
+    banaction: iptables-allports
+
+fail2ban_jail_mail:
+  - name: dovecot
+  - name: postfix
+  - name: postfix-sasl
+
+fail2ban_jail_web:
+  - name: apache-auth
+  - name: apache-overflows
+</PRE>
+
+<p>By default, <code>fail2ban_jails</code> just uses the firewall
+services list, but you can customize this and override the defaults by
+adding your own hashes.  The last hash with a given name will be used.
+The example below has the builtin ssh jails, the mail jails, an apache
+jail that operates on the DOCKER-USER chain, and overides the sshd
+jail with a very long ban.</p>
+
+<PRE class=code>
+fail2ban_jails:
+  - mail
+  - name: apache-auth
+    chain: DOCKER-USER
+  - name: sshd
+    mode: aggressive
+    bantime: 1000years
+</PRE>
+
 
 <!-- ============================== -->
 <H2 class=rule>
