@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Webmail</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#vars">Variables</a>
+<li><a href="#why">Why These Packages?</a>
+</UL>
+</div>
+
+<div class=main>
+<H1>Webmail</H1>
+
+<p><b>ROLE</b> roundcube, webmail.yml
+
+<p>The <code>webmail.yml</code> top-level playbook configures a
+separate machine with a Roundcube instance that uses
+your <a href="mail.html">mail server</a>.  We build a Docker image
+from the current latest version and set up HTTPS with Letsencrypt
+certs and fail2ban checking to prevent brute-force attacks.</p>
+
+<p>The docker-compose files for this are
+in <code>/srv/roundcube</code>, and several volumes for the config,
+preferences database, and source are mounted there.  Other volumes are
+mounted in <code>/var/log</code>. You can rebuild the image at any
+time with:
+
+<PRE class=code>
+$ cd /srv/roundcube
+$ docker-compose down
+$ docker-compose build
+$ docker-compose up -d
+</PRE>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
+<p>The <code>webmail.yml</code> group vars file holds the webmail
+settings.  The <code>webmail_server_name</code> is the machine name
+that you are using, and <code>webmail_product_name</code> can be set
+to a custom title for the pages.
+
+<PRE class=code>
+webmail_server_name: 'webmail.{{ domain }}'
+webmail_product_name: My Special Webmail
+</PRE>
+
+<p>There are some other settings to configure the firewall, fail2ban,
+and certificates but you should not need to change them.
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why These Packages?</H2>
+
+<p>I did not plan to install a webmail package, or any other PHP-based
+application, but it turns out that Chromebooks do not have a built-in
+IMAP client.  There are ways to install one, but this may not be an
+option in certain situations.</p>
+
+<p>Roundcube is a solid choice and probably the most popular open
+source webmail.  It seems to have twice as many active developers and
+addresses issues quicker than Rainloop.  The new reactive UI is a big
+improvement over the previous layout, although as of this writing, it
+is still too new for the Debian backports.</p>
+
+<p>Since I wanted the latest version, I decided to just use the Docker
+image published by the project.  Running it in a container is also a
+nice way to limit any damage from possible PHP exploits.  It was my
+first experience with Docker and I was quite impressed at having a
+basic image running in about ten minutes.</p>
+
+<p>Getting the firewall and fail2ban working properly took a bit more
+effort though.  We had been doing simple filtering on the INPUT chain,
+and needed to <a href="firewall.html#docker">reorganize our rules to
+protect docker containers</a>.  We also needed to make some changes in
+the docker image to expose the logs so that we could scan them with
+fail2ban.</p>
+
+<p>Ultimately though, I was very impressed with Docker, and would
+happily use it again.</p>
+
+<div class=copyright>
+<p>Copyright &copy; 2020 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

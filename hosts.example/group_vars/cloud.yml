@@ -11,10 +11,15 @@ firewall_services: [ 'mail', 'web' ]
 #firewall_opentcp: [any extra ports]
 #firewall_openudp: [any extra ports]
 
-# fail2ban will ignore these networks
-# firewall_friendly_networks:
+# fail2ban ignores these networks.  If running a webmail machine, add
+# its address here, as it does its own banning upstream, and you don't
+# want the entire webmail machine banned from dovecot because a third
+# party machine is banging on the login page.
+# fail2ban_ignoreips: []
 
- 
+# If you want daily logwatch reports
+# use_logwatch: yes
+
 #==============================
 # Encrypted Directories - Override the directories for various
 # packages to keep the data in an encrypted partition at rest.

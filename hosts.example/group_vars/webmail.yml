@@ -1,0 +1,32 @@
+---
+# Run Roundcube in a docker install, on a separate machine.
+
+webmail_server_name: 'webmail.{{ domain }}'
+# webmail_product_name: Custom Title
+
+firewall_services: [ 'web' ]
+
+# Bans for Docker apps go on the DOCKER-USER chain, not INPUT.
+fail2ban_jails:
+  - name: apache-auth
+    chain: DOCKER-USER
+  - name: apache-overflows
+    chain: DOCKER-USER
+  - name: apache-noscript
+    chain: DOCKER-USER
+  - name: apache-shellshock
+    chain: DOCKER-USER
+  - name: php-url-fopen
+    chain: DOCKER-USER
+
+  # The default logpath seems to be just 'errors'
+  - name: roundcube-auth
+    chain: DOCKER-USER
+    logpath: '/var/log/roundcube/errors.log'
+
+# Pause the entire docker service when requesting certs.
+certbot_certs:
+  - { domains: ["{{ webmail_server_name }}"] }
+
+certbot_service_stop:
+  - docker

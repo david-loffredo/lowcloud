@@ -12,6 +12,7 @@
 <LI><A href=index.html>[home]</A>
 
 <li><a href="#vars">Variables</a>
+<li><a href="#docker">Docker</a>
 <li><a href="#why">Why These Packages?</a>
 </UL>
 </div>
@@ -147,18 +148,25 @@ machine.  Traffic going to a Docker container is then routed to this
 virtual LAN through the iptables FORWARD chain, while traffic going to
 native software is handled by the INPUT chain.</p>
 
-<p>These chains are in the default "filter" table.  Unfortunately,
+<p>These chains are in the default "filter" table, in the center of 
+<a href="https://en.wikipedia.org/wiki/Iptables#/media/File:Netfilter-packet-flow.svg">this
+sprawling diagram of the netfilter packet flow</a>.  Unfortunately,
 most people add their firewall rules to the INPUT chain, which has no
-effect on traffic to Docker containers.  We do most of the blocking on
-the PREROUTING chain of the "mangle" table.  Packets go through this
-chain early in the processing, which has two big benefits.  First, it
-covers both native apps and Docker containers.  Second, the earlier
-you can drop a bad packet, the more bad packets you can handle.</p>
+effect on FORWARD traffic to Docker containers.  There are reams of
+bad and misleading advice on the net about combining firewalls and
+Docker, but the solution is simple, do not use the "filter" table.</p>
 
-<p>We do need to make some accommodations for Docker.  In particular,
-when using fail2ban for a container, we must make sure that it can
-find the logs for the container and put its rules on the DOCKER-USER
-chain.</p>
+<p>We do most blocking on the PREROUTING chain of the "mangle" table.
+Packets go through this chain early in the processing, which has two
+big benefits.  First, it covers both INPUT to native apps and FORWARD
+to Docker containers.  Second, the earlier you can drop a bad packet,
+the more bad packets you can handle.</p>
+
+<p>We do need some accommodations for Docker.  In particular, when
+using fail2ban for a container, we must make sure that it can find the
+logs for the container and put its rules on the DOCKER-USER chain.
+You can find an example of this
+in <code>group_vars/webmail.yml</code>. </p>
 
 
 <!-- ============================== -->

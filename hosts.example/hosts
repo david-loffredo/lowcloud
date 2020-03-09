@@ -15,6 +15,9 @@ example.com		ansible_host=1.2.3.4
 guardian.example.com	ansible_host=5.6.7.8
 
 
+[webmail]
+# runs roundcube in a docker container on a standalone machine
+# webmail.example.com	ansible_host=9.10.11.12
 
 #------------------------------
 # Identify raspberry pi machines for some extra group variables.
