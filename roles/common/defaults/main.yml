@@ -172,7 +172,23 @@ fail2ban_jail_mail:
 fail2ban_jail_web:
   - name: apache-auth
   - name: apache-overflows
+  - name: apache-noscript
+  - name: apache-shellshock
 
+# [apache-auth]
+# [apache-badbots]
+# [apache-noscript]
+# [apache-overflows]
+# [apache-nohome]
+# [apache-botsearch]
+# [apache-fakegooglebot]
+# [apache-modsecurity]
+# [apache-shellshock]
+# [nginx-http-auth]
+# [nginx-limit-req]
+# [nginx-botsearch]
+# [php-url-fopen]
+# [roundcube-auth]
 
 # ========================================  
 # Geoblock certain ports. Will not increase security (if you can

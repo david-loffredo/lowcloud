@@ -1,0 +1,23 @@
+---
+# Defaults for the Roundcube webmail package
+
+webmail_server_name: "webmail.{{ domain }}"
+webmail_product_name: "{{ domain }} Webmail"
+
+webmail_admin:   "{{ admin_email }}"
+webmail_cert:    "/etc/letsencrypt/live/{{ webmail_server_name }}/fullchain.pem"
+webmail_certkey: "/etc/letsencrypt/live/{{ webmail_server_name }}/privkey.pem"
+
+# webmail_conf_extra
+# webmail_conf_extra_http
+# webmail_conf_extra_https
+
+# OCSP Stapling
+# http://httpd.apache.org/docs/2.4/ssl/ssl_howto.html#ocspstapling
+# Add mod_socache_shmcb to mod enabled.  The 32k shared memory cache
+# that is used by default is good for a few certs, but each cert can
+# require up to 10k cache so bump it up if you are running many
+# vhosts.
+webmail_staple_sz: 32768
+webmail_staple_on: no
+

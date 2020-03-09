@@ -61,6 +61,10 @@ certbot_modify_command: >-
 certbot_open_firewall: no
 certbot_service_stop: []
 certbot_service_reload: []
+# general commands to run pre/post
+certbot_command_pre: []
+certbot_command_post: []
+
 
 certbot_need_deploy_hook: "{{ 
         certbot_open_firewall or

@@ -1,0 +1,28 @@
+---
+# Compose file, customize the official roundcube latest image for
+# our own local use.
+#
+# We map the config and db directories so for our own settings and to
+# back up the user account database.   It uses SQLite by default which
+# is good enough for our limited needs.
+#
+# We also map the apache and roundcube logs for fail2ban, and the
+# letsencrypt dir so it can do https directly, rather than wrapping it
+# in a proxy.
+
+version: "3"
+services:
+  webmail:
+    build: ./
+    container_name: roundcube
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /srv/roundcube/config:/var/roundcube/config
+      - /srv/roundcube/src:/var/www/html
+      - /srv/roundcube/db:/var/roundcube/db
+      - /var/log/apache2:/var/log/apache2
+      - /var/log/roundcube:/var/log/roundcube
+      - /etc/letsencrypt:/etc/letsencrypt

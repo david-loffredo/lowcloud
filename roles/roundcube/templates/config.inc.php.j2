@@ -1,0 +1,33 @@
+<?php
+
+// The docker image defaults to stdout, want to use file so that we
+// can scan with fail2ban.   Better than the builtin for stopping the
+// brute force attempts.
+$config['log_driver'] = 'file';
+$config['log_dir'] = '/var/log/roundcube/';
+
+// When giving the hostname, use tls:// prefix for STARTTLS,
+// use ssl:// prefix for straight SSL
+$config['default_host'] = 'ssl://{{ mail_server_hostname }}';
+$config['default_port'] = '993';
+
+$config['smtp_server'] = 'tls://{{ mail_server_hostname }}';
+$config['smtp_port'] = '587';
+
+$config['skin'] = 'elastic';
+
+// Encryption algorithm. You can use any method supported by openssl.
+// Default is set for backward compatibility to DES-EDE3-CBC,
+// but you can choose e.g.  which we consider a better choice.
+$config['cipher_method'] = 'AES-256-CBC';
+    
+// Name your service. This is displayed on the login screen and in the
+// window title
+$config['product_name'] = '{{ webmail_product_name }}';
+
+// replace Roundcube logo with this image
+// specify an URL relative to the document root of this Roundcube installation
+// an array can be used to specify different logos for specific template files, '*' for default logo
+// for example array("*" => "/images/roundcube_logo.png", "messageprint" => "/images/roundcube_logo_print.png")
+$config['skin_logo'] = null;
+

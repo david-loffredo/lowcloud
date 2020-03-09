@@ -6,3 +6,6 @@ iptables -D INPUT -i {{ ansible_default_ipv4.interface }} -p tcp -m multiport --
 {% for n in certbot_service_stop %}
 service {{n}} start
 {% endfor %}
+{% for n in certbot_command_post %}
+{{n}}
+{% endfor %}

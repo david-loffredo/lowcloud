@@ -1,0 +1,60 @@
+<VirtualHost *:443>
+    ServerName {{ webmail_server_name }}
+    ServerAdmin {{ webmail_admin }}
+    DocumentRoot /var/www/html
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    # Recommended SSL intermediate configuration
+    # See https://ssl-config.mozilla.org
+
+    # enable HTTP/2, if available
+    Protocols h2 http/1.1
+    
+    SSLEngine on
+
+    # HTTP Strict Transport Security (need mod_headers, 2years in seconds)
+    Header always set Strict-Transport-Security "max-age=63072000"
+
+    # Content-Security-Policy
+    SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite          ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+    SSLHonorCipherOrder     off
+    SSLSessionTickets       off
+
+    SSLCertificateFile {{ webmail_cert }}
+    SSLCertificateKeyFile {{ webmail_certkey }}
+
+    # Older versions took SSLCertificateFile=cert.pem and 
+    # SSLCertificateChainFile   chain.pem file for apache<2.4.8
+
+{% if webmail_staple_on %}
+    # Stapling is usually done globally, in the mod/ssl.conf
+    # APACHE_RUN_DIR is /var/run/apache2
+    SSLUseStapling On
+    SSLStaplingCache shmcb:${APACHE_RUN_DIR}/ssl_stapling({{webmail_staple_sz}})
+{% endif %}
+
+    #   SSL Engine Options:
+    #   o StdEnvVars:
+    #	 Exports the standard SSL/TLS related `SSL_*' environment variables.
+    #	 Per default this exportation is switched off for performance reasons,
+    #	 because the extraction step is an expensive operation and is usually
+    #	 useless for serving static content. So one usually enables the
+    #	 exportation for CGI and SSI requests only.
+    #   o OptRenegotiate:
+    #	 This enables optimized SSL connection renegotiation handling when SSL
+    #	 directives are used in per-directory context.
+    #SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+    SSLOptions +StrictRequire
+    <FilesMatch "\.(cgi|shtml|phtml|php)$">
+	SSLOptions +StdEnvVars +StrictRequire
+    </FilesMatch>
+    <Directory /usr/lib/cgi-bin>
+	SSLOptions +StdEnvVars +StrictRequire
+    </Directory>
+
+{{ webmail_conf_extra|default('') }}
+{{ webmail_conf_extra_https|default('') }}
+</VirtualHost>

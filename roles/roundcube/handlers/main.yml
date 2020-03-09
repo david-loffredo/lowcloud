@@ -1,0 +1,16 @@
+---
+# Use docker-compose to build a customized roundcube image and start
+# it detached (-d).   
+
+- name: rebuild roundcube
+  command:
+    cmd: docker-compose build
+    chdir: /srv/roundcube
+  notify:
+    - reload roundcube
+
+- name: reload roundcube
+  command:
+    cmd: docker-compose up -d
+    chdir: /srv/roundcube
+    

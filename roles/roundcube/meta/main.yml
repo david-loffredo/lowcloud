@@ -1,0 +1,5 @@
+---
+dependencies:
+  - docker
+  - mail-dflts
+  - certbot

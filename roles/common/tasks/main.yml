@@ -9,3 +9,12 @@
 
 # Only install logwatch if we specifically request it for a machine
 - { include_tasks: logwatch.yml,        when: use_logwatch }
+
+# Can add alias to root .bashrc
+# alias fail2ban-all="fail2ban-client status | sed -n 's/,//g;s/.*Jail list://p' | xargs -n1 fail2ban-client status"
+
+# Add bash completion too.
+#  if [ -f /usr/share/bash-completion/bash_completion ]; then
+#    . /usr/share/bash-completion/bash_completion
+#  elif [ -f /etc/bash_completion ]; then
+#    . /etc/bash_completion

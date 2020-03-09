@@ -1,0 +1,74 @@
+---
+# Roundcube in a docker container
+# https://hub.docker.com/r/roundcube/roundcubemail
+
+# Rather than trying to run apache in the container and secure it
+# through https, perhaps we can reverse proxy an outside apache to it
+# over localhost:9080 or something.  Bounce apache as normal for the
+# certbot renewal, and perhaps bounce the docker-compose to update
+# daily at that point.
+#
+
+# When run by docker-compose with restart:always, the server comes up
+# at boot when the docker service comes up, so we don't have to do
+# anything special.
+
+- name: roundcube docker config dirs present
+  file: path={{ item }} recurse=yes state=directory
+  with_items:
+    - /srv/roundcube/custom
+    - /srv/roundcube/config
+
+# Needs to be present with a particular permission
+- name: roundcube log dir present
+  file: path=/var/log/roundcube recurse=yes state=directory
+        owner=www-data group=www-data mode=0750
+
+- name: roundcube log present
+  copy:
+    content: ""
+    dest: /var/log/roundcube/errors.log
+    force: no
+    owner: www-data
+    group: www-data
+    mode: 0640
+    
+- name: roundcube docker config present
+  template:
+    src: '{{ item }}.j2'
+    dest: /srv/roundcube/{{ item }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - docker-compose.yml
+    - Dockerfile
+  notify:
+    - rebuild roundcube
+
+- name: roundcube docker customization present
+  template:
+    src: '{{ item }}.j2'
+    dest: /srv/roundcube/custom/{{ item }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - 000-default.conf
+    - default-ssl.conf
+    - apache2.conf
+  notify:
+    - rebuild roundcube
+
+- name: roundcube php customization present
+  template:
+    src: '{{ item }}.j2'
+    dest: /srv/roundcube/config/{{ item }}
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - config.inc.php
+  notify:
+    - reload roundcube
+    

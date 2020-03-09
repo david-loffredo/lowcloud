@@ -1,0 +1,18 @@
+---
+# All tasks are run as the deploy user, which can sudo when needed.
+
+# DNS needs to be up first so that certbot can find us to issue a
+# cert.  This probably means a two phase thing - common firewall and
+# dns, wait for propogation, and then the rest.   
+- hosts: webmail
+  remote_user: "{{ deploy_acct }}"
+  become: True
+  force_handlers: True
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
+    ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
+  roles:
+    - { role: common, tags: common }
+    - { role: mailnull, tags: mail }
+    - { role: docker, tags: docker }
+    - { role: roundcube, tags: roundcube }

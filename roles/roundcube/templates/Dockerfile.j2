@@ -1,0 +1,21 @@
+#
+# Docker makefile for a roundcube instance with https support.
+#
+FROM roundcube/roundcubemail:latest
+
+# Copy apache config into the image
+COPY custom/000-default.conf /etc/apache2/sites-available/
+COPY custom/default-ssl.conf /etc/apache2/sites-available/
+COPY custom/apache2.conf /etc/apache2/
+
+# Make roundcube log directory with good perms
+RUN mkdir -p /var/log/roundcube
+RUN chown www-data:www-data /var/log/roundcube
+
+RUN a2enmod ssl
+RUN a2enmod headers
+RUN a2ensite default-ssl
+
+# make sure that the apache and roundcube logs are shared
+VOLUME /var/log/apache2
+VOLUME /var/log/roundcube
