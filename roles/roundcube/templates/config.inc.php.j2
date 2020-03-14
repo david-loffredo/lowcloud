@@ -31,3 +31,10 @@ $config['product_name'] = '{{ webmail_product_name }}';
 // for example array("*" => "/images/roundcube_logo.png", "messageprint" => "/images/roundcube_logo_print.png")
 $config['skin_logo'] = null;
 
+// Enable the manage sieve plugin
+array_push($config['plugins'], 'managesieve');
+$config['managesieve_host'] = 'tls://{{ mail_server_hostname }}';
+$config['managesieve_port'] = 4190;
+$config['managesieve_auth_type'] = 'plain';
+$config['managesieve_vacation'] = 1;
+$config['managesieve_forward'] = 1;

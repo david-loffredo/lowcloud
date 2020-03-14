@@ -1,15 +1,21 @@
-## [unreleased] - in progress
+## [1.2] - 2020-03-14
 
-- Reworked firewall rules to cover both native applications and ones
-  running in Docker containers.  Moved most blocking to the PREROUTING
-  chain of the "mangle" table.  This block at lower cost because it is
-  earlier in the process, for better performance during packet floods.
-  It is also before the split between INPUT (used by native apps) and
-  FORWARD (used by Docker) so it covers both.  Also added rules for
-  DHCP because connection tracking can break in some situations.
+- Added roles for Docker and Roundcube, plus a webmail playbook that
+  sets up a Roundcube container on a separate machine.
+
+- Reworked firewall to cover both native applications and Docker
+  containers.  Now blocking in the PREROUTING chain of the "mangle"
+  table. This is lower cost because it is early in the process, and
+  before the split between INPUT (used by native apps) and FORWARD
+  (used by Docker) so it covers both.  Also added rules for DHCP
+  because connection tracking can break in some situations.
 
 - Reworked fail2ban configuration to allow customization of the jails,
-  to change bantimes or retarget to the DOCKER-USER chain.
+  to change bantimes or retarget to the DOCKER-USER chain.  
+
+- Tightened permissions on DKIM folder.
+
+- Added managesieve plugins for Dovecot and Roundcube.
 
 ## [1.1] - 2020-02-18
 

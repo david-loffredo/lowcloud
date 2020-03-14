@@ -80,10 +80,10 @@ firewall_block_ips_v6: []
 
 # SSH Ports - Usually 22, but some people change to 2222 or whatnot to
 # avoid the endless log spam from the constant bot attempts.
-ssh_opentcp: [22]
+firewall_opentcp_ssh: [22]
 
 # Web Ports - HTTP and HTTPS
-web_opentcp: [80, 443]
+firewall_opentcp_web: [80, 443]
 
 # Mail Ports - Just submission and imaps, no plain imap or pop3
 #
@@ -98,13 +98,14 @@ web_opentcp: [80, 443]
 #    SMTP | Port 25 (Outdated and not recommended. username/password
 #               authentication MUST be enabled if using this port.)
 #
-mail_opentcp: [25, 465, 587, 993]
+firewall_opentcp_mail: [25, 465, 587, 993]
+firewall_opentcp_sieve: [4190]
 
 # DNS - UDP port 53
-dns_openudp: [53]
+firewall_openudp_dns: [53]
 
 # Bacula Ports - Director (9101), File (9102), Storage (9103)
-bacula_opentcp: [9101, 9102, 9103]
+firewall_opentcp_bacula: [9101, 9102, 9103]
 
 
 # Construct the list of open TCP and UDP ports from the known services
@@ -114,16 +115,16 @@ bacula_opentcp: [9101, 9102, 9103]
 # that service.  
 #
 firewall_ports_tcp: >-
-  {%- set ns = namespace(ports=(firewall_opentcp + ssh_opentcp)) -%}
+  {%- set ns = namespace(ports=(firewall_opentcp + firewall_opentcp_ssh)) -%}
   {%- for i in firewall_services -%}
-  {{- ns.ports.extend( lookup('vars', i + '_opentcp', default=[]) ) -}}
+  {{- ns.ports.extend( lookup('vars', 'firewall_opentcp_'+i, default=[]) ) -}}
   {%- endfor -%}
   {{- ns.ports | sort | unique -}}
 
 firewall_ports_udp: >-
   {%- set ns = namespace(ports=(firewall_openudp)) -%}
   {%- for i in firewall_services -%}
-  {{- ns.ports.extend( lookup('vars', i + '_openudp', default=[]) ) -}}
+  {{- ns.ports.extend( lookup('vars', 'firewall_openudp_'+i, default=[]) ) -}}
   {%- endfor -%}
   {{- ns.ports | sort | unique -}}
   
@@ -168,6 +169,9 @@ fail2ban_jail_mail:
   - name: dovecot
   - name: postfix
   - name: postfix-sasl
+
+fail2ban_jail_sieve:
+  - name: sieve
 
 fail2ban_jail_web:
   - name: apache-auth

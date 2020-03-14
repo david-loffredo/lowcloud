@@ -100,7 +100,7 @@
 
 - name: DKIM key directory present
   file: path={{ mail_dkim_root }} state=directory
-        owner=_rspamd group=_rspamd mode=0755
+        owner=_rspamd group=_rspamd mode=0750
   tags: dkim
 
 - name: DKIM keys generated

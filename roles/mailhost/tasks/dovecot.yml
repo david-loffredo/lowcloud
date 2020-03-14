@@ -18,9 +18,12 @@
       - dovecot-imapd
       - dovecot-lmtpd
       - dovecot-sqlite
-      - dovecot-sieve    # spam filing and learning
-
-#      - dovecot-managesieved   # managesieve server
+      # sieve for moving spam to the junk folder and piping it through
+      # the learning process, managesieve server for client access to
+      # personal sieve scripts.  Add "sieve" to the firewall to open
+      # up the ports.
+      - dovecot-sieve    
+      - dovecot-managesieved
 
 # Do not start dovecot at boot, Wait until the encrypted spool is
 # mounted.  Our "mailboot" script mounts and starts.  
@@ -53,6 +56,7 @@
     - 15-mailboxes.conf
     - 20-imap.conf
     - 20-lmtp.conf
+    - 20-managesieve.conf
     - 90-sieve.conf
     - auth-sql.conf.ext
   notify: restart dovecot
