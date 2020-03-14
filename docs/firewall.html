@@ -45,9 +45,10 @@ check the jails if you are having trouble connecting.</p>
 
 <p>Open ports for new services by adding the symbolic name to
 the <code>firewall_services</code> list.  It recongizes 'ssh', 'mail',
-'web', 'dns', and 'bacula'.  You define your own names for services by
-defining variables <code>&lt;name&gt;_opentcp</code>
-and/or <code>&lt;name&gt;_openudp</code> as a list of port numbers.
+'sieve', 'web', 'dns', and 'bacula'.  You define your own names for
+services by defining variables
+<code>firewall_opentcp_&lt;name&gt;</code> and/or
+<code>firewall_openudp_&lt;name&gt;</code> as a list of port numbers.
 It doesn't matter if port numbers are repeated across services.</p>
 
 <PRE class=code>
@@ -81,8 +82,8 @@ firewall_block_ips_v6: []
 </PRE>
 
 <p>The <code>fail2ban</code> jails are usually controlled by the
-firewall services names.  Names like "ssh", "mail", or "web" are
-expanded to a list of hashes describing the jails for that
+firewall services names.  Names like "ssh", "mail", "sieve", or "web"
+are expanded to a list of hashes describing the jails for that
 service. Each jail hash has a "name" that should be enabled, plus any
 other key/value pairs that should appear in the jail config as "key =
 value".  The list of jails for a named service is given by
@@ -102,6 +103,9 @@ fail2ban_jail_mail:
   - name: dovecot
   - name: postfix
   - name: postfix-sasl
+
+fail2ban_jail_sieve:
+  - name: sieve
 
 fail2ban_jail_web:
   - name: apache-auth
