@@ -1,0 +1,9 @@
+# local.d/arc.conf
+
+{% if dkim_selector_is_set %}
+sign_inbound = true;
+use_domain_sign_inbound = "recipient";
+
+path = "{{ mail_dkim_root }}/$domain.$selector.key";
+selector = "{{ dkim_selector }}";
+{% endif %}

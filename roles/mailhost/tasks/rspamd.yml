@@ -53,6 +53,7 @@
   template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
     owner=redis group=redis mode=640
   with_items:
+    - arc.conf
     - classifier-bayes.conf
     - dkim_signing.conf
     - logging.inc

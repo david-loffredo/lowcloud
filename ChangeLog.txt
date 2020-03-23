@@ -1,3 +1,8 @@
+## [xx] - in progress
+
+- Configured ARC signing by rspamd for incoming messages.  This will
+  improve delivery if messages are forwarded to an offsite address.
+
 ## [1.2] - 2020-03-14
 
 - Added roles for Docker and Roundcube, plus a webmail playbook that
@@ -16,7 +21,7 @@
 - Tightened permissions on DKIM folder.
 
 - Added managesieve plugins for Dovecot and Roundcube.
-
+ 
 ## [1.1] - 2020-02-18
 
 - Added 'www' user account for uploading website data.  Also reworked
