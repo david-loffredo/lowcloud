@@ -28,5 +28,16 @@ fail2ban_jails:
 certbot_certs:
   - { domains: ["{{ webmail_server_name }}"] }
 
-certbot_service_stop:
-  - docker
+# This just bounces all docker containers.  We do something a little
+# more sophisticated below with the compose commands.
+#certbot_service_stop: [ 'docker' ]
+
+# stop/start these during the challenge response period
+certbot_command_pre:
+  - 'cd /srv/roundcube && docker-compose down'
+
+# use this as an opportunity to refresh the image
+certbot_command_post:
+  - 'cd /srv/roundcube && docker-compose pull'
+  - 'cd /srv/roundcube && docker-compose up -d'
+  

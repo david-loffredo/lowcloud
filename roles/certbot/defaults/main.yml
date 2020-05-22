@@ -64,14 +64,18 @@ certbot_service_reload: []
 # general commands to run pre/post
 certbot_command_pre: []
 certbot_command_post: []
+certbot_command_deploy: []
 
+certbot_need_prepost_hook: "{{ 
+        certbot_open_firewall or
+        certbot_service_stop | length > 0 or
+        certbot_command_pre | length > 0 or
+        certbot_command_post | length > 0 
+        }}"
 
 certbot_need_deploy_hook: "{{ 
-        certbot_open_firewall or
-        certbot_service_stop | length > 0 
-        }}"
-certbot_need_prepost_hook: "{{ 
-        certbot_service_reload | length > 0 
+        certbot_service_reload | length > 0 or
+        certbot_command_deploy | length > 0 
         }}"
 
 #========================================

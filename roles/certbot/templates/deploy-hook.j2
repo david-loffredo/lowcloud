@@ -3,3 +3,6 @@
 {% for n in certbot_service_reload %}
 service {{n}} reload
 {% endfor %}
+{% for n in certbot_command_deploy %}
+{{n}}
+{% endfor %}
