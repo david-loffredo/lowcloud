@@ -141,8 +141,12 @@ smtpd_helo_required = yes
 smtp_always_send_ehlo = yes
 #smtpd_hard_error_limit = 1
 smtpd_timeout = 30s
-smtp_helo_timeout = 15s
-smtp_rcpt_timeout = 15s
+
+## these timeouts are too aggressive and result in abandoned delivery if
+## the receiving system delays.   Just use the defaults, which are 300s
+#smtp_helo_timeout = 15s
+#smtp_rcpt_timeout = 15s
+
 #smtpd_recipient_limit = 40
 # should be >= queue_run_delay
 #minimal_backoff_time = 180s
