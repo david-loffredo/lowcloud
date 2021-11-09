@@ -1,7 +1,8 @@
 ---
 # Debian 10 version
-# rspamd        1.9.4   is in backports and good
-# rspamd        1.8.1   is in stable and NOT recommended
+# rspamd        2.7-1   is in buster-backports, bullseye
+# rspamd        1.9.4   is in buster-backports, OK
+# rspamd        1.8.1   is in buster stable, NOT recommended
 # redis         5:5.0.3
 
 # DEBIAN SPECIFIC - Need to call apt directly because we need the
@@ -51,7 +52,7 @@
 # local.d is merged, override.d overrides
 - name: rspamd local configuration
   template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
-    owner=redis group=redis mode=640
+    owner=root group=root mode=644
   with_items:
     - arc.conf
     - classifier-bayes.conf
