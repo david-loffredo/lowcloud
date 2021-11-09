@@ -3,6 +3,9 @@
 - Configured ARC signing by rspamd for incoming messages.  This will
   improve delivery if messages are forwarded to an offsite address.
 
+- Fixes for rspamd 2.7 where we had some bad config file perms and the
+  default storage for bayes changed from sqlite to redis.
+
 ## [1.2] - 2020-03-14
 
 - Added roles for Docker and Roundcube, plus a webmail playbook that
