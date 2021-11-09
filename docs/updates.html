@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Updates</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+</UL>
+</div>
+
+<div class=main>
+<H1>Updates</H1>
+
+<p><b>ROLE</b> common, upgrades.yml, logwatch.yml
+
+<p>We set up the unattended upgrades package to install security
+patches once a day.  The <code>unattended-upgrades</code> package
+installs the updates, the <code>needrestart</code> package bounces
+services with changed libraries, and the <code>apt-listchanges</code>
+package emails changelogs to the <code>admin_email</code> address.</p>
+
+<p>We configure the <code>logwatch</code> package to send a daily
+summary of activity to the <code>admin_email</code> address.  The
+report contains basic information about SSH logins, disk usage, mail
+traffic, web traffic, and fail2ban activity.</p>
+
+<p>Occasionally a kernel update or other change will require a reboot.
+The email report will note this.  Log in and run <code>sudo shutdown
+-r now</code> at your convenience.  Patches to postfix or dovecot may
+not restart the servers properly, so if you don't see the normal
+backula and logwatch messages on a particular morning, you may need to
+manually restart them (or just reboot and then run mailboot).</p>
+
+<p>Very rarely, an update may need operator input.  These will be
+deferred and you will get a message about it.  To manually install an
+update to a package:</p>
+
+<PRE class=code>
+% sudo apt update 	     	# fetch latest package index
+% sudo apt list --upgradable	# list available upgrades
+
+% sudo apt install &lt;pkg&gt;	# update just foobar pkg
+% sudo apt --only-upgrade install &lt;pkg&gt;   # same, won't install new packages
+</PRE>
+
+<p>This is specific to Debian and its derivitives.  For Red Hat,
+Gentoo, etc. you'll need to figure out how they handle automatic
+security updates.</p>
+
+
+<div class=copyright>
+<p>Copyright &copy; 2020-2021 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

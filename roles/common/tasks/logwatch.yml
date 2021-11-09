@@ -5,7 +5,7 @@
 - name: logwatch packages are installed
   package:
     state: present
-    name: ntp
+    name: logwatch
 
 # install some custom configs so that it recognizes where we put
 # everything and in particular, the dateext log rotation.
@@ -24,6 +24,7 @@
     - syslog.conf
 
 # Install newer patched 7.5.2 scripts to fix broken sieve parsing
+# NOT NEEDED on bullseye because that runs 7.5.5
 - name: logwatch updated service scripts are installed
   copy: src=logwatch/scripts-{{ item }}
     dest=/etc/logwatch/scripts/services/{{ item }}
