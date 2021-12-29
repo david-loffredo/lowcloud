@@ -16,6 +16,22 @@
   with_items:
     - { src: apache2.conf, dst: apache2.conf }
     - { src: conf-security.conf, dst: conf-available/security.conf }
+    - { src: conf-expires.conf, dst: conf-available/expires.conf }
+  notify:
+    - restart apache
+
+# make the link manually rather than call a2enconf
+- name: apache modules present
+  file:
+    dest: /etc/apache2/conf-enabled/{{ item }}
+    src: ../conf-available/{{ item }}
+    state: link
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - security.conf
+    - expires.conf
   notify:
     - restart apache
 
@@ -28,6 +44,8 @@
   notify:
     - restart apache
 
+
+    
 # Should already be present on Debian.  Use for the web management
 # user accounts for each website.
 - name: www-data group present
