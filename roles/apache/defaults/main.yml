@@ -38,3 +38,9 @@ apache_host_dflt_certkey:   "/etc/letsencrypt/live/{{host.name}}/privkey.pem"
 # older versions of apache needed both of these
 #apache_host_dflt_cert:      "/etc/letsencrypt/live/{{host.name}}/cert.pem"
 #apache_host_dflt_certchain: "/etc/letsencrypt/live/{{host.name}}/chain.pem"
+
+apache_csp_policy: 
+#apache_csp_policy: "default-src 'self'; style-src 'self' 'unsafe-inline'; frame-src *; frame-ancestors 'self'; object-src 'none'; upgrade-insecure-requests"
+
+apache_referrer_policy:
+#apache_referrer_policy: strict-origin-when-cross-origin

@@ -75,14 +75,36 @@ TraceEnable Off
 # else than declared by the content type in the HTTP headers.
 # Requires mod_headers to be enabled.
 #
-#Header set X-Content-Type-Options: "nosniff"
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
 
 #
 # Setting this header will prevent other sites from embedding pages from this
 # site as frames. This defends against clickjacking attacks.
 # Requires mod_headers to be enabled.
 #
-#Header set X-Frame-Options: "sameorigin"
+# Header set X-Frame-Options: "sameorigin"
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "DENY" "expr=%{CONTENT_TYPE} =~ m#text/html#i"
+</IfModule>
+
+{% if apache_csp_policy %}
+# Content Security Policy -- Fine grained permissions for site.
+# Tailor your CSP to your particular site with an online generator
+# such as: https://report-uri.com/home/generate/
+<IfModule mod_headers.c>
+    Header always set Content-Security-Policy "{{ apache_csp_policy }}" "expr=%{CONTENT_TYPE} =~ m#text\/(html|javascript|css)|application\/(javascript|pdf)|xml#i"
+</IfModule>
+{% endif %}
+
+{% if apache_referrer_policy %}
+# Set a strict Referrer Policy in responses for resources that are
+# able to request (or navigate to) other resources.  
+<IfModule mod_headers.c>
+    Header always set Referrer-Policy "{{ apache_referrer_policy }}" "expr=%{CONTENT_TYPE} =~ m#text\/(html|javascript|css)|application\/(javascript|pdf)|xml#i"
+</IfModule>
+{% endif %}
 
 
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet

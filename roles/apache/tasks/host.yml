@@ -7,8 +7,8 @@
 #
 - name: "{{ host.name }} : defaults calculated"
   set_fact:
-    host_conf: "{{ '000-' if host.default|default(False) }}{{ host.name }}" 
-    host_oppo: "{{ '000-' if not host.default|default(False) }}{{ host.name }}" 
+    host_conf: "{{ '000-' if host.default|default(False) else '' }}{{ host.name }}" 
+    host_oppo: "{{ '000-' if not host.default|default(False) else '' }}{{ host.name }}" 
 
 - name: "{{ host.name }} : document root present {{ apache_host_dflt_root }}"
   file:
