@@ -44,3 +44,11 @@ apache_csp_policy:
 
 apache_referrer_policy:
 #apache_referrer_policy: strict-origin-when-cross-origin
+
+# expire times
+apache_cache_long:      "access plus 1 month"
+apache_cache_med:       "access plus 1 week"
+apache_cache_short:     "access plus 1 day"
+apache_cache_visit:     "access plus 1 hour"
+apache_cache_none:      "access plus 0 seconds"
+

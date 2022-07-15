@@ -2,114 +2,51 @@
 # | Cache expiration                                                   |
 # ----------------------------------------------------------------------
 
-# Serve resources with a far-future expiration date.
-#
-# (!) If you don't control versioning with filename-based cache busting, you
-# should consider lowering the cache times to something like one week.
+# Control how long clients should reuse resources.  Note that
+# ExpiresByType appears to override ExpiresDefault, so it prevents you
+# from giving a custom expires for particular files in the site config.
 #
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Expires
 # https://httpd.apache.org/docs/current/mod/mod_expires.html
 
+# apache_cache_long:   "access plus 1 month"
+# apache_cache_med:    "access plus 1 week"
+# apache_cache_short:  "access plus 1 day"
+# apache_cache_visit:  "access plus 1 hour"
+# apache_cache_none:   "access plus 0 seconds"
+
 <IfModule mod_expires.c>
 
+    # defaults for image files, javascript, and anything else.
     ExpiresActive on
-    ExpiresDefault                                      "access plus 1 month"
+    ExpiresDefault				"{{ apache_cache_long }}"
 
-  # CSS
+    # Do not cache html, cache CSS for a day or so.  Both of these
+    # tend to be small and we may adjust them from time to time.
+    ExpiresByType text/html			"{{ apache_cache_none }}"
+    ExpiresByType text/css			"{{ apache_cache_short }}"
 
-    ExpiresByType text/css                              "access plus 1 day"
+    # Data interchange
 
-  # Data interchange
+    ExpiresByType application/atom+xml		"{{ apache_cache_visit }}"
+    ExpiresByType application/rdf+xml		"{{ apache_cache_visit }}"
+    ExpiresByType application/rss+xml		"{{ apache_cache_visit }}"
 
-    ExpiresByType application/atom+xml                  "access plus 1 hour"
-    ExpiresByType application/rdf+xml                   "access plus 1 hour"
-    ExpiresByType application/rss+xml                   "access plus 1 hour"
+    ExpiresByType application/jsno		"{{ apache_cache_none }}"
+    ExpiresByType application/ld+json		"{{ apache_cache_none }}"
+    ExpiresByType application/schema+json	"{{ apache_cache_none }}"
+    ExpiresByType application/geo+json 		"{{ apache_cache_none }}"
+    ExpiresByType application/xml 		"{{ apache_cache_none }}"
+    ExpiresByType text/calendar			"{{ apache_cache_none }}"
+    ExpiresByType text/xml			"{{ apache_cache_none }}"
 
-    ExpiresByType application/json                      "access plus 0 seconds"
-    ExpiresByType application/ld+json                   "access plus 0 seconds"
-    ExpiresByType application/schema+json               "access plus 0 seconds"
-    ExpiresByType application/geo+json                  "access plus 0 seconds"
-    ExpiresByType application/xml                       "access plus 0 seconds"
-    ExpiresByType text/calendar                         "access plus 0 seconds"
-    ExpiresByType text/xml                              "access plus 0 seconds"
+    # Manifest files
+    ExpiresByType application/manifest+json            "{{ apache_cache_med }}"
+    ExpiresByType application/x-web-app-manifest+json  "{{ apache_cache_none }}"
+    ExpiresByType text/cache-manifest 		       "{{ apache_cache_none }}"
 
-
-  # Favicon (cannot be renamed!) and cursor images
-
-    ExpiresByType image/vnd.microsoft.icon              "access plus 1 week"
-    ExpiresByType image/x-icon                          "access plus 1 week"
-
-  # HTML
-
-    ExpiresByType text/html                             "access plus 0 seconds"
-
-
-  # JavaScript
-
-    ExpiresByType application/javascript                "access plus 1 month"
-    ExpiresByType application/x-javascript              "access plus 1 month"
-    ExpiresByType text/javascript                       "access plus 1 month"
-
-
-  # Manifest files
-
-    ExpiresByType application/manifest+json             "access plus 1 week"
-    ExpiresByType application/x-web-app-manifest+json   "access plus 0 seconds"
-    ExpiresByType text/cache-manifest                   "access plus 0 seconds"
-
-  # Media files
-
-    ExpiresByType audio/ogg                             "access plus 1 month"
-    ExpiresByType image/apng                            "access plus 1 month"
-    ExpiresByType image/avif                            "access plus 1 month"
-    ExpiresByType image/avif-sequence                   "access plus 1 month"
-    ExpiresByType image/bmp                             "access plus 1 month"
-    ExpiresByType image/gif                             "access plus 1 month"
-    ExpiresByType image/jpeg                            "access plus 1 month"
-    ExpiresByType image/jxl                             "access plus 1 month"
-    ExpiresByType image/png                             "access plus 1 month"
-    ExpiresByType image/svg+xml                         "access plus 1 month"
-    ExpiresByType image/webp                            "access plus 1 month"
-    ExpiresByType video/mp4                             "access plus 1 month"
-    ExpiresByType video/ogg                             "access plus 1 month"
-    ExpiresByType video/webm                            "access plus 1 month"
-
-
-  # WebAssembly
-
-    ExpiresByType application/wasm                      "access plus 1 month"
-
-
-  # Web fonts
-
-    # Collection
-    ExpiresByType font/collection                       "access plus 1 month"
-
-    # Embedded OpenType (EOT)
-    ExpiresByType application/vnd.ms-fontobject         "access plus 1 month"
-    ExpiresByType font/eot                              "access plus 1 month"
-
-    # OpenType
-    ExpiresByType font/opentype                         "access plus 1 month"
-    ExpiresByType font/otf                              "access plus 1 month"
-
-    # TrueType
-    ExpiresByType application/x-font-ttf                "access plus 1 month"
-    ExpiresByType font/ttf                              "access plus 1 month"
-
-    # Web Open Font Format (WOFF) 1.0
-    ExpiresByType application/font-woff                 "access plus 1 month"
-    ExpiresByType application/x-font-woff               "access plus 1 month"
-    ExpiresByType font/woff                             "access plus 1 month"
-
-    # Web Open Font Format (WOFF) 2.0
-    ExpiresByType application/font-woff2                "access plus 1 month"
-    ExpiresByType font/woff2                            "access plus 1 month"
-
-
-  # Other
-
-    ExpiresByType text/x-cross-domain-policy            "access plus 1 week"
+    # Other
+    ExpiresByType text/x-cross-domain-policy	"{{ apache_cache_med }}"
 
 </IfModule>

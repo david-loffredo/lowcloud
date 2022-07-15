@@ -117,6 +117,23 @@ fine choice.  Any site of mine is likely to be mostly static HTML,
 perhaps a few CGI scripts, and unlikely to spark worldwide interest,
 so any server would be fine.</p>
 
+<p>About a year after putting this in place, I was updating my website
+and found the <a href="https://html5boilerplate.com/">HTML 5
+Boilerplate</a> project.  This has good recommendations for server
+configs that I have incorporated.  The
+<a href="https://observatory.mozilla.org/">Mozilla Observatory/</a> is
+also useful for checking your configuration.</p>
+
+<!--
+
+# Block site from being framed with X-Frame-Options and CSP
+Content-Security-Policy: frame-ancestors 'none'
+X-Frame-Options: DENY
+# Block pages from loading when they detect reflected XSS attacks
+X-XSS-Protection: 1; mode=block
+Content Security Policy that disables the use of inline JavaScript ('unsafe-inline'), 
+ -->
+
 <figure>
 <img src="images/mosaic_step1995.png" alt="STEP Data ca. 1995">
 <figcaption>Back in 1995, we ran NCSA HTTPs and looked at everything
