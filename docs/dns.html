@@ -70,10 +70,13 @@ it simpler to move to a new one.</p>
 
 <p>Create simple SPF record that says all mail must come from our MX
 and to ignore anything else.  Add a DMARC entry that says quarantine
-anything that doesn't pass relaxed DKIM or SPF checks.</p>
+anything that doesn't pass relaxed DKIM or SPF checks.  Note that SPF
+records do not cover subdomains, so when sending from a subdomain like
+"mail", you should add a record to cover that.</p>
 
 <PRE class=code>
 example.com.  IN TXT "v=spf1 mx a -all"
+mail.example.com.  IN TXT "v=spf1 mx a -all"
 _DMARC.example.com IN TXT "v=DMARC1; p=quarantine; rua=mailto:postmaster@example.com;"
 </PRE>
 
