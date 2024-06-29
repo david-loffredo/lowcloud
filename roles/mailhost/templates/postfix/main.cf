@@ -51,6 +51,8 @@ mailbox_size_limit = 0
 inet_interfaces = all
 inet_protocols = all
 
+# prefer send with v4
+smtp_address_preference=ipv4
 
 # dovecot db
 virtual_transport = lmtp:unix:private/dovecot-lmtp
