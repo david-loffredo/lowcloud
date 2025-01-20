@@ -242,9 +242,9 @@ playbook with the <code>--tags</code> flag.</p>
 # run the playbook only on the cloud group
 $ ansible-playbook -K --ask-vault-pass -i ../myhosts site.yml --limit cloud
 
-# run apache tagged tasks only on the cloud group
+# run web tagged tasks only on the cloud group
 $ ansible-playbook -K --ask-vault-pass -i ../myhosts site.yml \
-    --limit cloud  --tags apache
+    --limit cloud  --tags web
 </PRE>
 
 <p>Most roles have their own tags, so you can call them selectively.

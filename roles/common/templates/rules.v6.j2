@@ -39,19 +39,18 @@
 -A PREROUTING -i {{ fw_interface }} -p tcp -m conntrack --ctstate NEW -m tcpmss ! --mss 1220:65535 -j DROP
 
 # Drop packets with all flags (XMAS), no flags, and other bogus combinations
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,SYN FIN,SYN -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags SYN,RST SYN,RST -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,RST FIN,RST -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,ACK FIN -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,URG URG -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,FIN FIN -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,PSH PSH -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL ALL -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL NONE -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP 
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL ALL -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL NONE -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,SYN,PSH,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,SYN,RST,ACK,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,SYN FIN,SYN -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,RST FIN,RST -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,ACK FIN -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,URG URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,FIN FIN -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,PSH PSH -j DROP
 
 # Must allow ICMP 133-137 for router and neighbor solicitation or
 # advertisement, plus redirect.  Used for stateless address autoconfig
@@ -84,7 +83,7 @@
 # Drop new connections on certain ports from banned places
 
 # Allow open ports from anywhere else.   Split if more than 15 ports.
--A PREROUTING -i {{ fw_interface }} -p tcp -m multiport --dport {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p tcp -m multiport --dports {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
 
 {% for udp in firewall_ports_udp %}
 -A PREROUTING -i {{ fw_interface }} -p udp --dport {{ udp }} -m conntrack --ctstate NEW -j ACCEPT
@@ -150,7 +149,7 @@ COMMIT
 # allow outgoing link-local and multicast for DHCPv6
 -A OUTPUT -d ff00::/8 -j ACCEPT
 -A OUTPUT -s fe80::/10 -j ACCEPT
--A OUTPUT -o {{ fw_interface }} -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
+-A OUTPUT -o {{ fw_interface }} -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
 
 #--------------------

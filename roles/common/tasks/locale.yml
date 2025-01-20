@@ -11,6 +11,7 @@
   command: localectl status
   register: locale_status
   changed_when: false
+  check_mode: false
 
 - name: current locale analysis
   set_fact:

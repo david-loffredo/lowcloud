@@ -28,7 +28,7 @@ admin_email: "admin@{{ domain }}"
 # UTC is default, see paths under /usr/share/zoneinfo
 # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 #timezone: 'Etc/UTC' 
-#timezone: 'US/Eastern'
+#timezone: 'America/New_York'
 
 
 # Can set LANG and LANGUAGE separately, hack common/tasks/locale.yml

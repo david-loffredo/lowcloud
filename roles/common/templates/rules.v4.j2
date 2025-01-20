@@ -13,7 +13,7 @@
 # traversed after defragmenting and connection tracking, but before
 # "nat" and "filter".  Rules found here will execute with less cost
 # than waiting until later tables, so it is the best place to guard
-# against DOS traffic.
+# against DOS traffic. 
 #
 # Apply rules to packets coming in on the public interface (eth0,
 # wlan0, etc), which skips the loopback interface and the private
@@ -38,7 +38,11 @@
 -A PREROUTING -i {{ fw_interface }} -p tcp -m conntrack --ctstate NEW -m tcpmss ! --mss 536:65535 -j DROP
 
 # Drop packets with all flags (XMAS), no flags, and other bogus combinations
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL ALL -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL NONE -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,SYN,PSH,URG -j DROP
+-A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,SYN,RST,ACK,URG -j DROP
 -A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,SYN FIN,SYN -j DROP
 -A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
 -A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags FIN,RST FIN,RST -j DROP
@@ -46,11 +50,6 @@
 -A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,URG URG -j DROP
 -A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,FIN FIN -j DROP
 -A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ACK,PSH PSH -j DROP
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL ALL -j DROP
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL NONE -j DROP
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP
--A PREROUTING -i {{ fw_interface }} -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
 
 # Allow certain inbound ICMP types (ping, traceroute) at certain rates
 -A PREROUTING -i {{ fw_interface }} -p icmp -m icmp --icmp-type destination-unreachable -m limit --limit 10/second -j ACCEPT
@@ -70,7 +69,7 @@
 # Drop new connections on certain ports from banned places
 
 # Allow open ports from anywhere else.   Split if more than 15 ports.
--A PREROUTING -i {{ fw_interface }} -p tcp -m multiport --dport {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
+-A PREROUTING -i {{ fw_interface }} -p tcp -m multiport --dports {{ firewall_ports_tcp|join(',') }} -m conntrack --ctstate NEW -j ACCEPT
 
 {% for udp in firewall_ports_udp %}
 -A PREROUTING -i {{ fw_interface }} -p udp --dport {{ udp }} -m conntrack --ctstate NEW -j ACCEPT
@@ -133,7 +132,7 @@ COMMIT
 #--------------------
 # OUTPUT - Allow loopback and all the external interface
 -A OUTPUT -o lo -j ACCEPT
--A OUTPUT -o {{ fw_interface }} -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
+-A OUTPUT -o {{ fw_interface }} -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT
 
 #--------------------
 # DOCKER TRAFFIC - I believe that this sees inbound and outbound traffic.

@@ -95,7 +95,11 @@ bacula_storage_datadir: /backup/bacula
 <p>The client does not need many settings.
 The <code>bacula_client_fileset</code> variable describes the
 directories you want backed up.  There are many knobs other knobs to
-play with if you want to do something fancy.
+play with if you want to do something fancy.</p>
+
+<p>This defines the behavior for the client, but the fileset
+data <b>LIVES ON THE DIRECTOR</b>.  When changed, you must refresh the
+director, not the client.</p>
 
 <PRE class=code>
 bacula_client_fileset:
