@@ -1,5 +1,10 @@
 ## [xx] - in progress
 
+- Removed duplicate iptable rules, obsolete TZ refs, fixed problems
+  with tasks that  set facts from a command not firing on --check.
+
+- Added expire configuration for apache.
+
 - Configured ARC signing by rspamd for incoming messages.  This will
   improve delivery if messages are forwarded to an offsite address.
 
