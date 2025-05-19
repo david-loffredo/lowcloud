@@ -1,0 +1,54 @@
+---
+# Debian 12 versions
+# gocryptfs         2.3-1+b4
+
+- name: gocryptfs and related packages present
+  package:
+    state: present
+    name:
+      - fuse
+      - gocryptfs
+
+- name: encrypted and cleartext directories present
+  file: state=directory path={{ item }}
+  with_items:
+    - "{{ cryptdir_root }}"
+    - "{{ cryptdir_gocryptfs_dir }}"
+
+##
+## Private Directory
+##
+# Check for the presence of files in the crypt directory to see if the
+# filesystem has been initialized yet.  The find just looks at the top
+# level and does not recurse. On first call, Gocryptfs gathers info and
+# inits the filesystem.  The "p" is for paranoia mode.
+# 
+- name: encrypted data directory is initialized
+  find: paths={{ cryptdir_gocryptfs_dir }} hidden=yes file_type=any
+  register: gocryptfs_spool_check
+  changed_when: gocryptfs_spool_check.matched == 0
+
+- name: encrypted data directory, test if mounted
+  command: "/bin/mountpoint -q {{ cryptdir_root }}"
+  register: gocryptfs_spool_mount
+  changed_when: gocryptfs_spool_mount.rc != 0
+  failed_when: false
+
+- name: encrypted data directory empty, creating new
+  shell: set -o pipefail && printf '{{ cryptdir_pw }}' |
+        gocryptfs --init {{ cryptdir_gocryptfs_dir }}
+  args: { executable: /bin/bash }
+  when: gocryptfs_spool_check.matched == 0
+  no_log: True
+
+- name: encrypted data directory present, mounting existing
+  shell: set -o pipefail && printf '{{ cryptdir_pw }}' |
+        gocryptfs {{ cryptdir_gocryptfs_dir }} {{ cryptdir_root }}
+  args: { executable: /bin/bash }
+  when: gocryptfs_spool_mount.rc != 0
+  no_log: True
+
+- name: encrypted data directory, verified as mounted
+  command: "/bin/mountpoint -q {{ cryptdir_root }}"
+  changed_when: false
+

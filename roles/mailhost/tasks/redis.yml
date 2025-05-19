@@ -1,0 +1,59 @@
+---
+# redis         5:7.0.15-1~deb12u4: in debian 12 bookworm
+# redis         5:5.0.3 in debian 10 buster
+
+- name: redis server package present
+  package:
+    state: present
+    name:
+      - redis-server
+
+- name: redis configuration
+  template: src={{ item }}.j2 dest=/etc/redis/{{ item }}
+    owner=redis group=redis mode=640
+  with_items:
+    - redis.conf
+  notify: restart redis
+
+# If using a custom dbdir need to tell systemd to allow read/write
+# access to it.  Manually, you can run 'systemctl edit redis' which
+# will create an override drop-in file
+# /etc/systemd/system/redis.service.d/override.conf, in which you can
+# place your changes (and the proper section):
+# [Service]
+# ReadWriteDirectories=-/my/custom/data/dir
+
+# You may also create that directory and place files ending in .conf
+# in it manually. But do not leave the directory empty, as this will
+# disable the service.
+
+# In either case, run systemctl daemon-reload and you are ready to
+# restart your service.
+
+- name: redis custom database directory
+  file: state=directory path={{ redis_dbdir }}
+    owner=redis group=redis mode=0750
+  notify: restart redis
+  when: redis_dbdir is defined
+  
+- name: redis service override directory
+  file: state=directory
+    path=/etc/systemd/system/redis-server.service.d
+    owner=root group=root mode=0755
+  notify: restart redis
+  when: redis_dbdir is defined
+  
+- name: redis service directory permissions
+  template: src=redis.override.conf.j2
+    dest=/etc/systemd/system/redis-server.service.d/override.conf
+    owner=root group=root mode=644
+  notify: restart redis
+  when: redis_dbdir is defined
+
+  
+# Do not enable at boot because it may need data from the encrypted
+# mail directories, perhaps only if we use a custom dbdir?
+- name: redis start at boot - {{ mail_services_bootstart }}
+  service: name={{ item }} state=started enabled={{ mail_services_bootstart }}
+  with_items:
+    - redis-server

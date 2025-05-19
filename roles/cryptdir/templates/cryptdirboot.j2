@@ -29,6 +29,13 @@ else
     echo "cryptdir: mounting encrypted data"
     encfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }} --public
 fi
+{% elif cryptdir_type == 'gocryptfs' %}
+if /bin/mountpoint -q {{cryptdir_root}}; then
+    echo "cryptdir: encrypted data is mounted"
+else
+    echo "cryptdir: mounting encrypted data"
+    gocryptfs {{ cryptdir_encfs_dir }} {{ cryptdir_root }}
+fi
 {% else %}
 # no encryption used for mail vault
 {% endif %}

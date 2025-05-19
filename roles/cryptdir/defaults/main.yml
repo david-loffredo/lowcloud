@@ -2,29 +2,38 @@
 # Cleartext directory for encrypted data.
 cryptdir_root: /vault
 
-# The encryption technology can be luks, encfs, or none.
+# The encryption technology can be luks, gocryptfs, encfs, or none.
 #
-# With LUKS, we need a separate disk partition that will be encrypted
-# at the block level, mounted as cleartext block device through the
-# mapper and then have a normal Ext4 filesystem,
+# LUKS needs a separate disk partition that is encrypted at the block
+# level, mounted as cleartext block device through the mapper and then
+# have a normal Ext4 filesystem,
 #
-# With EncFS, a separate directory containing individually encrypted
-# files is mounted loopback as cleartext through FUSE.  It is outdated
-# but simple to drop anywhere.  Useful if you are not in a position to
-# allocate a separate partition.   
+# Gocryptfs and the deprecated EncFS use a separate directory with
+# individually encrypted files that is mounted loopback as cleartext
+# through FUSE.  Useful if you are not in a position to allocate a
+# separate partition.
 #
 # With none, this role does no encryption.
 #
-cryptdir_type: encfs
+cryptdir_type: gocryptfs
 cryptdir_pw:   "{{vault_cryptdir_pw}}"
 
-# For LUKS block level encryption
+
+# LUKS block level encryption
 cryptdir_luks_dev:      "/dev/replace-with-real-device"
 cryptdir_luks_mapname:  vault-blk
 
-# For EncFS loopback file level encryption
+
+# Gocryptfs loopback file level encryption
 #
-# EncFS has some limits over things that work at the block level.
+# This may have limits for things that work at the block level as
+# described below.  See notes on EncFS below. More testing needed.
+cryptdir_gocryptfs_dir: "{{cryptdir_root}}_crypt"
+
+
+# EncFS loopback file level encryption
+#
+# EncFS may have limits on things that work at the block level.
 # Dovecot had issues with "Error: Couldn't create mailbox list lock
 # file_create_locked() failed" on the mail spool, but changing
 # lock_method to "dotlock" from the default "fcntl" fixed it.

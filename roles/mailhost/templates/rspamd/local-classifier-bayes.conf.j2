@@ -1,5 +1,5 @@
-# use per user statistics.  This still uses sqlite for the storage.
-# Should we switch it to redis?
+# use per user statistics.  RSPAMD used to support sqlite for the storage
+# but has now switched everything to redis.
 
 {% if spam_per_user_bayes %}
 # Needs to be called at local delivery, see settings.conf for
@@ -7,9 +7,19 @@
 per_user = true;
 {% endif %}
 
-backend = "sqlite";
+# Autolearn sample
+autolearn {
+  # When to learn spam (score >= threshold and action is reject)
+  spam_threshold = 6.0; 
 
-# redis is the new default
-#servers = "127.0.0.1";
-#backend = "redis";
+  # When to learn spam (score >= threshold and action is rewrite
+  # subject or add header, and has two or more positive results)
+  junk_threshold = 4.0;
 
+   # When to learn ham (score <= threshold and action is no action,
+   # and score is negative or has three or more negative results)
+  ham_threshold = -0.5;
+
+  check_balance = true; # Check spam and ham balance
+  min_balance = 0.9; # Keep diff for spam/ham learns for at least this value
+}

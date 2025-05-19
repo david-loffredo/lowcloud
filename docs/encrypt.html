@@ -184,8 +184,8 @@ certbot_service_reload:
 <p><b>ROLE</b> cryptdir
 
 <p>We create one directory for all data encrypted at rest.  The
-encryption technology can be LUKS, EncFS, or none.  With none, this
-role does no encryption.</p>
+encryption technology can be LUKS, Gocryptfs, EncFS, or none.  With
+none, this role does no encryption.</p>
 
 <p>We keep the mail spool, mail user database, DKIM keys, and sieve
 files in this directory.  The mail queue is in there when using LUKS
@@ -206,17 +206,18 @@ mounts it as a cleartext block device through the mapper.  The
 cleartext device contains a plain Ext4 filesystem and is mounted
 normally.  <a href="luks.html">Some LUKS notes</a>. </p>
 
-<p>With EncFS, a separate directory contains individually encrypted
-files and is mounted loopback as cleartext through FUSE.  EncFS can be
-used anywhere, but it is rather outdated, as is eCryptfs.  Useful if
-you are not in a position to allocate a separate partition.</p>
+<p>With Gocryptfs and the older, deprecated EncFS, a separate
+directory contains individually encrypted files and is mounted
+loopback as cleartext through FUSE.  Useful if you are not in a
+position to allocate a separate partition.</p>
 
 <p>EncFS works at the file level, so it is not entirely transparent.
-When using it for the mail spool, Dovecot had problems with "Error:
+When using EncFS for the mail spool, Dovecot had problems with "Error:
 Couldn't create mailbox list lock file_create_locked() failed".
 Changing the <b>lock_method</b> to "dotlock" instead of the default
 (fcntl) fixed the issue, but block-level encryption avoids this sort
-of thing.</p>
+of thing.  Gocryptfs may have the same problem but more testing is
+needed.</p>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -224,12 +225,12 @@ of thing.</p>
 
 <p>You must set the password, usually through the
 <code>vault_cryptdir_pw</code> value in the hosts.example.
-Set <code>cryptdir_type</code> to 'encfs', 'luks', or 'none' to change
-the technology.  The default is EncFS and does not need any other
-settings.</p>
+Set <code>cryptdir_type</code> to 'gocryptfs', 'encfs', 'luks', or
+'none' to change the technology.  The default is Gocryptfs and does
+not need any other settings.</p>
 
 <PRE class=code>
-# EncFS encryption, no other settings needed.
+# Gocryptfs or EncFS encryption, no other settings needed.
 # Data in /vault, ciphertext version in /vault_crypt
 </PRE>
 
@@ -300,11 +301,11 @@ against a rogue employee in the data center, but probably not a nation
 state.  </p>
 
 <p>The encryption method depends on your situation.  If you can create
-partitions, use LUKS, otherwise EncFS.  If you have physical control
-of your server, you might choose 'none'.  Another possibility is
-per-directory ext4 encryption with fscrypt.  I don't have much
-experience with that, but it might do a better job than EncFS without
-needing a separate partition.</p>
+partitions, use LUKS, otherwise Gocryptfs.  If you have physical
+control of your server, you might choose 'none'.  Another possibility
+is per-directory ext4 encryption with fscrypt.  I don't have much
+experience with that, but it might do a better job than Gocryptfs
+without needing a separate partition.</p>
 
 <figure>
 <img src="images/sun2.jpg" alt="Sun 2/170 CPU">

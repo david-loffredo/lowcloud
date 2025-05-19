@@ -1,53 +1,15 @@
 ---
 # Debian 10 version
+# rspamd        3.4-1   is in bookworm
 # rspamd        2.7-1   is in buster-backports, bullseye
 # rspamd        1.9.4   is in buster-backports, OK
 # rspamd        1.8.1   is in buster stable, NOT recommended
-# redis         5:5.0.3
-
-# DEBIAN SPECIFIC - Need to call apt directly because we need the
-# backports version of rspamd. The version in the stable repo is
-# wicked old and rspamd.com is emphatic to not use it.  If you are
-# using a different distro, adjust as needed.
-#
-- name: backports repository is configured as a source
-  lineinfile:
-    dest: /etc/apt/sources.list.d/{{ item }}-backports.list
-    line: "deb http://deb.debian.org/debian {{ item }}-backports main"
-    state: present
-    create: yes
-    owner: root
-    group: root
-    mode: 0644
-  with_items:
-    - "{{ ansible_distribution_release }}"
-  register: backportconfig
-
-- name: backports cache updated
-  apt: update_cache=yes
-  when: backportconfig is changed
-
-
-- name: rspamd present from {{ ansible_distribution_release }}-backports
-  apt:
-    name: rspamd
-    state: present
-    default_release: "{{ ansible_distribution_release }}-backports"
-    update_cache: yes
-  tags: install-rspamd
 
 - name: rspamd related packages present
   package:
     state: present
     name:
-      - redis-server
-
-- name: redis configuration
-  template: src={{ item }}.j2 dest=/etc/redis/{{ item }}
-    owner=redis group=redis mode=640
-  with_items:
-    - redis.conf
-  notify: restart redis
+      - rspamd
 
 # local.d is merged, override.d overrides
 - name: rspamd local configuration
@@ -130,10 +92,45 @@
   when: dkim_selector_next_is_set
   tags: dkim
 
-# we do not enable these at boot because they may need data from the
+# we do not enable at boot because they may need data from the
 # encrypted mail directories
 - name: spam services start at boot - {{ mail_services_bootstart }}
   service: name={{ item }} state=started enabled={{ mail_services_bootstart }}
   with_items:
-    - redis-server
     - rspamd
+
+
+    
+## --------------
+## DEBIAN 10 install from backports, no longer needed in DEBIAN 12
+##
+# DEBIAN SPECIFIC - Need to call apt directly because we need the
+# backports version of rspamd. The version in the stable repo is
+# wicked old and rspamd.com is emphatic to not use it.  If you are
+# using a different distro, adjust as needed.
+#
+# - name: backports repository is configured as a source
+#   lineinfile:
+#     dest: /etc/apt/sources.list.d/{{ item }}-backports.list
+#     line: "deb http://deb.debian.org/debian {{ item }}-backports main"
+#     state: present
+#     create: yes
+#     owner: root
+#     group: root
+#     mode: 0644
+#   with_items:
+#     - "{{ ansible_distribution_release }}"
+#   register: backportconfig
+
+# - name: backports cache updated
+#   apt: update_cache=yes
+#   when: backportconfig is changed
+
+# - name: rspamd present
+#   apt:
+#     name: rspamd
+#     state: present
+#     default_release: "{{ ansible_distribution_release }}-backports"
+#     update_cache: yes
+#   tags: install-rspamd
+

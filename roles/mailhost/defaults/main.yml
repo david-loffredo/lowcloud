@@ -86,6 +86,9 @@ redis_maxmen: 500mb
 # volatile data.  Not setting at the moment.
 # redis_maxmen_policy: 
 
+# Place the redis dump file someplace else
+# redis_dbdir: /var/lib/redis
+# redis_dbfile: dump.rdb
 
 
 # Will do DKIM signing if the selector is set.  Usually follow a year

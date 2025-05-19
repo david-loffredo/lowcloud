@@ -8,6 +8,10 @@
   include_tasks: encfs.yml
   when: cryptdir_type == 'encfs'
 
+- name: Gocryptfs encrypted data directory
+  include_tasks: gocryptfs.yml
+  when: cryptdir_type == 'gocryptfs'
+
 - name: LUKS encrypted data directory
   include_tasks: luks.yml
   when: cryptdir_type == 'luks'
