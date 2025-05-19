@@ -1,9 +1,9 @@
 ---
-# Debian 10 version
-# rspamd        3.4-1   is in bookworm
-# rspamd        2.7-1   is in buster-backports, bullseye
-# rspamd        1.9.4   is in buster-backports, OK
-# rspamd        1.8.1   is in buster stable, NOT recommended
+# 
+# rspamd        3.4-1   Debian 12 bookworm
+# rspamd        2.7-1   Debian 11 bullseye, buster-backports
+# rspamd        1.9.4   Debian 10 buster-backports, OK
+# rspamd        1.8.1   Debian 10 buster stable, NOT recommended
 
 - name: rspamd related packages present
   package:

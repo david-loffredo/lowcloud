@@ -11,6 +11,8 @@
 <UL>
 <LI><A href=index.html>[home]</A>
 <p>
+<li><a href="#os">OS Updates</a>
+<li><a href="#os">Other Manual Updates</a>
 </UL>
 </div>
 
@@ -37,6 +39,74 @@ not restart the servers properly, so if you don't see the normal
 backula and logwatch messages on a particular morning, you may need to
 manually restart them (or just reboot and then run mailboot).</p>
 
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=os></A>OS Update</H2>
+
+<p>Eventually, the distribution that you are using will fall out of
+long term support, and will no longer get security updates.  Debian
+versions are typically released every two years, with full support for
+three years, and long term support out to five years.  It is wise to
+update before your machine  falls out of long term support.</p>
+
+<p>Most distributions have a process for an in-place update to the
+next major version.  Instructions can be found online.  I prefer to
+use a clean OS install, but this requires a bit of preparation.</p>
+
+<p>Ideally, you have separated your system and data disks onto
+different partitions.  Then you can simply replace the system
+partition with a fresh OS image, then configure with Ansible as usual.
+The small amount of data on the system disk (like certbot keys) can be
+handled by the <a href="snapshot.html">snapshot</a> role.</p>
+
+<p>On Linode, I create <code>/dev/sda</code> from an OS image, swap
+as <code>/dev/sdb</code>, then create <code>/dev/sdc</code> for a LUKS
+encrypted data disk.  Using their online manager, you can delete
+the <code>sda</code> system disk, create a new disk from any given OS
+image, then use the configuration manager to assign it
+to <code>sda</code>.</p>
+
+<p>The general process looks like this:
+
+<PRE class=code>
+# system on /dev/sda
+# swap on /dev/sdb
+# data (plain or crypt) on /dev/sdc
+
+# make snapshot/machine.name directory
+$ ansible-playbook -K --ask-vault-pass -i ../myhosts site.yml --tags snapshot
+
+# manually cache anything this missed to the data disk
+
+# REPLACE /dev/sda WITH A NEW OS IMAGE.
+
+# boot and configure the new OS image
+$ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml
+$ ansible-playbook -K --ask-vault-pass -i ../myhosts site.yml
+
+# manually restore anything that needs it
+# delete snapshot/machine.name directory
+</PRE>
+
+<p>I will typically test out everything on a scrap machine before
+updating the live one, There may still be some manual operations when
+packages have changed how they do things, like rspamd retiring support
+for sqlite.</p>
+
+<UL>
+<LI><a href="#update_deb12.html">Debian 12 Notes</a>
+</UL>
+
+<p>If you put everything on a single disk, and do not want to in-place
+upgrade, you may have to reimage the entire machine and restore from
+backup.</p>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=manual></A>Other Manual Updates</H2>
+
 <p>Very rarely, an update may need operator input.  These will be
 deferred and you will get a message about it.  To manually install an
 update to a package:</p>
@@ -52,6 +122,7 @@ update to a package:</p>
 <p>This is specific to Debian and its derivitives.  For Red Hat,
 Gentoo, etc. you'll need to figure out how they handle automatic
 security updates.</p>
+
 
 
 <div class=copyright>

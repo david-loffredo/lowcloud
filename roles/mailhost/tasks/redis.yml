@@ -1,6 +1,6 @@
 ---
-# redis         5:7.0.15-1~deb12u4: in debian 12 bookworm
-# redis         5:5.0.3 in debian 10 buster
+# redis         5:7.0.15-1  Debian 12 bookworm
+# redis         5:5.0.3     Debian 10 buster
 
 - name: redis server package present
   package:

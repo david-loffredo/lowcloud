@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Updates</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#os">OS Updates</a>
+<li><a href="#os">Other Manual Updates</a>
+</UL>
+</div>
+
+<div class=main>
+<H1>Debian 12 Update Notes</H1>
+
+<p>In going from Debian 10 to Debian 12, there are a few notes.</p>
+
+<p>Rspamd has moved over completely to redis.  Previously we were
+using sqlite to store the classifier statistics.  You should be sure
+to copy the spam/ham sqlite someplace safe.  Once you have the new
+installation in place, import them as below:</p>
+
+<PRE class=code>
+% rspamadm statconvert --redis-host 127.0.0.1 \
+   --spam-db bayes.spam.sqlite --symbol-spam BAYES_SPAM
+   --ham-db bayes.ham.sqlite --symbol-ham BAYES_HAM
+</PRE>
+
+<p>Going forward, you should make sure that the redis database is part
+of your backup set.  You can specify <code>redis_dbdir</code> to move
+it to your encrypted directory or another backed up location.
+
+
+<div class=copyright>
+<p>Copyright &copy; 2020-2023 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

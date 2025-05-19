@@ -1,6 +1,7 @@
 ---
-# Debian 10 versions
-# apache2        2.4.38
+#
+# apache2        2.4.62     Debian 12
+# apache2        2.4.38     Debian 10
 
 - name: apache packages are installed
   package:

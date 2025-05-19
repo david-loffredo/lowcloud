@@ -1,6 +1,7 @@
 ---
-# Debian 10 versions
-# postfix       3.4.7
+# 
+# postfix       3.7.11  Debian 12
+# postfix       3.4.7   Debian 10
 
 ##
 ## VMAIL user/group and permissions

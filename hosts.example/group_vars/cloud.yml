@@ -26,7 +26,7 @@ firewall_services: [ 'mail', 'web' ]
 #
 cryptdir_root: /vault
 
-# Default is EncFS, use LUKS if we have a separate partition
+# Default is gocryptfs, use LUKS if we have a separate partition
 #cryptdir_type: luks
 #cryptdir_luks_dev: "/dev/replace-with-real-device"
 
@@ -47,6 +47,7 @@ mail_spool_root:        "{{cryptdir_root}}/vmail"
 mail_db_root:           "{{cryptdir_root}}/maildb"
 mail_sieve_root:        "{{cryptdir_root}}/sieve"
 mail_dkim_root:         "{{cryptdir_root}}/dkim"
+redis_dbdir:            "{{cryptdir_root}}/redis"
 # only if using luks
 #mail_queue_dir:        "{{cryptdir_root}}/postfix"
 
@@ -71,14 +72,17 @@ certbot_service_reload:
 
 #==============================
 # Backup Directories - for mail and web server
+# WHEN LIST CHANGES, REBUILD BACKUP SERVER, NOT CLIENT
 #
 # Should we include the rspamd dbdir /var/lib/rspamd
-# What about /var/log?
 #
 bacula_client_fileset:
   include:
     - /etc/letsencrypt
+    - /var/log
     - "{{mail_db_root}}"
     - "{{mail_dkim_root}}"
+    - "{{mail_sieve_root}}"
     - "{{mail_spool_root}}"
+    - "{{redis_dbdir|default('/var/lib/redis', true)}}"
     - "{{webdata_root}}"

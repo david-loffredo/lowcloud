@@ -1,8 +1,14 @@
 ---
-# Debian 10 versions
-# iptables-persistent   1.0.11
-# iptables              1.8.2
-# fail2ban              0.10.2
+# package versions
+#
+# iptables              1.8.9    Debian 12
+# iptables              1.8.2    Debian 10
+#
+# iptables-persistent   1.0.20   Debian 12
+# iptables-persistent   1.0.11   Debian 10
+#
+# fail2ban              1.0.2-2  Debian 12
+# fail2ban              0.10.2   Debian 10
 #
 # netfilter-persistent?
 # iproute2 has the new ss command
