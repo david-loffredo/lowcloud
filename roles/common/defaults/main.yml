@@ -38,6 +38,14 @@ ntp_servers:
   - 3.pool.ntp.org
   
 
+#========================================
+# For quick reimaging, the 'snapshot' tag will copy locally unique
+# system data (like keys and certs) to the following directory, where
+# it will be restored if present as part of a normal run. Afterwards,
+# you can use bacula to restore any user data, like the mail spool.
+#
+snapshot_dir: "{{playbook_dir}}/snapshot/{{inventory_hostname}}"
+
 
 #========================================
 # Network and Firewall settings

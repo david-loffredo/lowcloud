@@ -50,6 +50,23 @@
     insertafter: EOF
     state: present
 
+- name: Check for local host key backup
+  become: False
+  delegate_to: localhost
+  stat: path="{{ snapshot_dir }}/ssh_host_keys.tgz"
+  register: ssh_host_key_backup
+
+- name: restore local host key backup
+  unarchive:
+    src: "{{ snapshot_dir }}/ssh_host_keys.tgz"
+    dest: /etc/ssh
+    owner: root
+    group: root
+  when: ssh_host_key_backup.stat.exists
+  notify:
+    - reload ssh
+    - flush local known_hosts
+    
 - name: modern host key enabled
   lineinfile:
     path: /etc/ssh/sshd_config

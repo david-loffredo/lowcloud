@@ -1,6 +1,7 @@
 ---
-# Debian 10 versions
-# openssh-server 1:7.9p1-10
+#
+# openssh-server 1:9.2p1-2       Debian 12
+# openssh-server 1:7.9p1-10      Debian 10
 
 # An hour is good enough for packages where we want the latest 
 pkg_cache_life: 3600
@@ -26,3 +27,13 @@ ssh_weak_macs:
   - umac-128@openssh.com
   - umac-64-etm@openssh.com
   - umac-64@openssh.com
+
+
+#========================================
+# For quick reimaging, the 'snapshot' tag will copy locally unique
+# system data (like keys and certs) to the following directory, where
+# it will be restored if present as part of a normal run. Afterwards,
+# you can use bacula to restore any user data, like the mail spool.
+#
+snapshot_dir: "{{playbook_dir}}/snapshot/{{inventory_hostname}}"
+  

@@ -18,3 +18,20 @@
 #    . /usr/share/bash-completion/bash_completion
 #  elif [ -f /etc/bash_completion ]; then
 #    . /etc/bash_completion
+
+
+# Preserve ssh host keys to avoid churning everyones known_hosts.
+# The snapshot data is used by the first.yml SSH setup, not by any
+# Of the tasks in this common role.
+#
+# The when rule is needed to restrict to only these explicit tags,
+# otherwise it fires on any inherited tags (like 'mail') too.
+#
+# Unfortunately, the combo of tag/never+when always prints skipped,
+# unlike tag/never which is silent unless it fires.  We load this
+# dynamically so it just prints skipped for the include_tasks action
+# rather than skipped for each task within an import_tasks.
+- name: create snapshot of ssh host keys
+  include_tasks: snapshot.yml
+  when: ansible_run_tags | intersect(['snapshot']) | length
+  tags: [never, snapshot]

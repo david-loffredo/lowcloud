@@ -1,0 +1,23 @@
+---
+# Snapshot of ssh host keys
+
+# Restore snapshot from existing machine if needed
+- name: backup ssh host keys
+  archive:
+    path: "/etc/ssh/ssh_host_*"
+    format: gz
+    dest: /tmp/ssh_host_keys.tgz
+  tags: [never, snapshot]
+
+- name: return ssh host keys to mothership
+  fetch:
+    src: /tmp/ssh_host_keys.tgz
+    dest: "{{ snapshot_dir }}/"
+    flat: yes
+  tags: [never, snapshot, web-snapshot]
+
+- name: clean up temporary archive
+  file:
+    path: /tmp/ssh_host_keys.tgz
+    state: absent
+  tags: [never, snapshot]

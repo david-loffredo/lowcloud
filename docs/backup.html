@@ -37,7 +37,9 @@ tunnel, as described in
 the <a href="https://wiki.bacula.org/doku.php?id=sshtunnel">Bacula
 wiki</a>.  We can back up a mix of many machines, some needing a
 tunnel (like a cloud machine) and some that can directly connect (like
-a local PC).</p>
+a local PC).  Note that if the host key on a machine changes, you will
+need to clear the <code>known_hosts</code> entry on the director,
+usually in the working directory <code>/var/lib/bacula</code>.</p>
 
 <p>We back up user data like the mail spool and document roots for the
 web sites, as well as system data like certs, DKIM keys, and so forth.

@@ -24,20 +24,20 @@ and user data from backups after the machine is running.  During the
 install we would end up generating a bunch of keys and certs, perhaps
 from third parties like LetsEncrypt, that we would then abandon.</p>
 
-<p>If we are reimaging or migrating to a new machine in a pre-planned
+<p>When reimaging or migrating to a new machine in a pre-planned
 fashion, we can collect small amounts of unique local system data like
-certs, host keys, mail passwords, and DKIM keys for use when doing the
-initial install.  This avoids churning the certs and keys.  Once the
-machine is up and running, you can use Bacula to restore the larger
-volume of user data like the mail spool and web roots.</p>
+certs, host keys, mail passwords, and DKIM keys and use them during
+our initial install.  This avoids churning the certs and keys.  Once
+the machine is up and running, you can use Bacula if needed to restore
+other user data if needed.</p>
 
 <p>Use the <code>snapshot</code> tag with <code>site.yml</code> to
 create a <code>snapshot/&lt;hostname&gt;</code> local directory for
-each machine.  This will contain tarfiles with system data collected
-from the machine.  The various roles in the playbook this directory
-exists and restores the data if it is present.</p>
+each machine.  This contains tarfiles with system data collected from
+the machine.  Roles in the playbook check if this directory exists and
+restores the system data if it is present.</p>
 
-<p>After the machine is configured, remove the snapshot directory so
+<p>Remove the snapshot directory after the machine is configured so
 that it does not go stale and inadvertantly overwrite good data weeks
 or months later.</p>
 

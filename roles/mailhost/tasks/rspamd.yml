@@ -53,6 +53,9 @@
   register: dkim_key_backup
   tags: dkim
 
+# The tarfile contains dkim/foo, dkim/bar, so restore it to one level
+# up from the dkim dir to accommodate the included dir path.  Need to
+# manually adjust if we ever change the name of the directory.
 - name: restore local dkim key backup to {{ mail_dkim_root|dirname }}
   unarchive:
     src: "{{ snapshot_dir }}/dkim_keys.tgz"
