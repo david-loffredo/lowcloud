@@ -21,10 +21,31 @@
 
 <p>In going from Debian 10 to Debian 12, there are a few notes.</p>
 
+<h2>Journal Logging</h2>
+
+<p>Debian 12 has moved to systemd journals by default and no longer
+installs rsyslog.  Consequently, things that examine the logs like
+fail2ban and logwatch require some configuration rework.
+
+<p>When updating, I ran into a problem with permissions on the postfix
+spool directory and it wasn't starting.  I was suprised that there was
+no mail.log in /var/log anymore, but now you use journalctl to get the
+logs for everything.  To see the log for postfix, now you do:</p>
+
+<PRE class=code>
+% journalctl -u postfix@-.service
+</PRE>
+
+<p>You can check service name by bash auto complete. Or view the list
+from "systemctl status" command.</p>
+
+
+<h2>Rspamd and Redis</h2>
+
 <p>Rspamd has moved over completely to redis.  Previously we were
 using sqlite to store the classifier statistics.  The stats are under
 <code>/var/lib</code> and will be lost when replacing the system disk.
-Copy the spam/ham sqlite someplace safe.  They are at:
+Copy the spam/ham sqlite someplace safe.  They are at:</p>
 
 <PRE class=code>
 /var/lib/rspamd/bayes.spam.sqlite
@@ -46,18 +67,6 @@ as below:</p>
 backup set.  You can specify <code>redis_dbdir</code> to move it to
 your encrypted directory or another backed up location.</p>
 
-<p>There is no mail.log in /var/log anymore because rsyslog is no
-longer installed by default in debian 12. systemd journals is used for
-collecting logs from services.  I ran into a problem with permissions
-on the postfix spool directory and it wasn't starting.  To see the log
-for postfix, now you do:</p>
-
-<PRE class=code>
-% journalctl -u postfix@-.service
-</PRE>
-
-<p>You can check service name by bash auto complete. Or view the list
-from "systemctl status" command.</p>
 
 <div class=copyright>
 <p>Copyright &copy; 2020-2025 David Loffredo, licensed under

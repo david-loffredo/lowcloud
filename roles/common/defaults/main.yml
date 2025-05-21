@@ -1,6 +1,11 @@
 ---
 main_user_shell: "/bin/bash"
 
+# System logs can be in files or the systemd journal.  Debian 12+
+# default to the journal, while older distros still use files and
+# rsyslog.
+use_journalctl: yes
+  
 # Admin email
 # apticron, fail2ban reports will be sent to this address
 admin_email: "root@{{ domain }}"

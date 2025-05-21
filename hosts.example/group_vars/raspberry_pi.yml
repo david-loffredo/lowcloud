@@ -5,3 +5,6 @@
 # Tried defining in the INI under [raspberry_pi:vars] but the value
 # did not seem to get picked up.
 first_acct: pi 
+
+# still on old-style log files
+use_journalctl: no

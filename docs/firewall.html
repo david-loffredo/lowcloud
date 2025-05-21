@@ -141,6 +141,20 @@ variables.</p>
 # fail2ban_bantime: 24h
 </PRE>
 
+<p>Debian 12+ now use systemd journals by default and no longer
+generate log files.  The configurations for things that examine the
+logs like fail2ban and logwatch have been adjusted, but if you are
+working on a machine that still uses files, change the following
+variable to no.
+
+<PRE class=code>
+# System logs can be in files or the systemd journal.  Debian 12+
+# default to the journal, while older distros still use files and
+# rsyslog.
+use_journalctl: yes
+</PRE>
+
+
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=docker></A>Docker</H2>

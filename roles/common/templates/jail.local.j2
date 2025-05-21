@@ -7,6 +7,10 @@ banaction = iptables-multiport
 action    = %(action_)s
 maxretry = 3
 
+{% if use_journalctl %}
+backend = systemd
+{% endif %}
+
 # JAILS
 {% for i in fail2ban_jails_expanded %}
 [{{ i.name }}]
