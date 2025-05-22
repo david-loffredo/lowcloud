@@ -22,6 +22,7 @@
     - logging.inc
     - milter_headers.conf
     - options.inc
+    - redis.conf
     - settings.conf
     - worker-proxy.inc
   notify: restart rspamd
