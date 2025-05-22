@@ -11,18 +11,38 @@
 # install some custom configs so that it recognizes where we put
 # everything and in particular, the dateext log rotation.
 - name: logwatch logfile configs are installed
-  copy: src=logwatch/log-{{ item }}
+  template: src=logwatch/log-{{ item }}.j2
+    dest=/etc/logwatch/conf/logfiles/{{ item }}
+    owner=root group=root mode=0644
+  with_items:
+    - fail2ban.conf
+    - http.conf
+    - http-error.conf
+    - maillog.conf
+    - kernel.conf
+    
+# install service configs with a custom journalctl query for each.
+- name: logwatch service configs are installed
+  template: src=logwatch/svc-{{ item }}.j2
+    dest=/etc/logwatch/conf/services/{{ item }}
+    owner=root group=root mode=0644
+  with_items:
+    - fail2ban.conf
+    - sshd.conf
+    - sudo.conf
+
+# Not used with journalctl, but on traditional systems we need 
+# to configure our dateext log rotation.
+- name: logwatch logfile syslog configs are installed
+  template: src=logwatch/log-{{ item }}.j2
     dest=/etc/logwatch/conf/logfiles/{{ item }}
     owner=root group=root mode=0644
   with_items:
     - daemon.conf
-    - fail2ban.conf
-    - http.conf
-    - http-error.conf
-    - kernel.conf
-    - maillog.conf
     - secure.conf
     - syslog.conf
+  when: not use_journalctl
+    
 
 # Basics are in /usr/share/logwatch/scripts/services
 

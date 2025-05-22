@@ -141,11 +141,10 @@ variables.</p>
 # fail2ban_bantime: 24h
 </PRE>
 
-<p>Debian 12+ now use systemd journals by default and no longer
-generate log files.  The configurations for things that examine the
-logs like fail2ban and logwatch have been adjusted, but if you are
-working on a machine that still uses files, change the following
-variable to no.
+<p>Debian 12 uses the systemd journal and no longer creates log files.
+The configurations for things that examine the logs like fail2ban and
+logwatch have been adjusted, but if you are working on a machine that
+still uses files, change the following variable to no.
 
 <PRE class=code>
 # System logs can be in files or the systemd journal.  Debian 12+
@@ -217,9 +216,7 @@ iptables.  Something to keep an eye on for the future.</p>
 <p>The <code>fail2ban</code> package does not stop attacks, merely
 reduces the rate at which they can occur.  This helps with brute force
 attacks on a password-protected service like IMAP, and provides some
-noise control for the logs.  The version in Debian 10 is fairly recent
-so we use it stock.  The Debian 9 version was old, so we previously
-added some custom patterns for ssh.</p>
+noise control for the logs.</p>
 
 <figure>
 <img src="images/network.jpg" alt="10BASE-2 FTW">

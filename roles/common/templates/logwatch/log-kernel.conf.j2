@@ -1,0 +1,19 @@
+{% if use_journalctl %}
+# combined query for all kernel messages on journald system, effectively
+# what would be in kern.log
+LogFile =
+LogFile = /dev/null
+
+*JournalCtl = "--no-pager -t kernel"
+*ApplyStdDate
+{% else %}
+# builtin config assumes num, add dateext rotation
+LogFile =
+LogFile = kern.log
+LogFile = kern.log.1
+LogFile = kern.log-*
+
+Archive =
+Archive = kern.log.*.gz
+Archive = kern.log-*.gz
+{% endif %}

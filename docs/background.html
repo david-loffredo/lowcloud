@@ -24,9 +24,9 @@
 <p>A recent move of some mail and web from an in-house machine, where
 they had been for 25 years, to a VPS in the cloud, gave me a chance to
 look at the setup with fresh eyes.  The result is a familiar, modern
-pattern: virtual users, Postfix, Dovecot, and Apache running on
-Debian, but with some differences in the details.  I also wanted to do
-the configuration entirely with Ansible.</p>
+pattern: virtual users, Postfix, Dovecot, and Apache on Debian, but
+with some differences in the details.  I also wanted to do the
+configuration entirely with Ansible.</p>
 
 
 <p>All who lived through the dark times, when bits were hewn from the
@@ -46,9 +46,8 @@ together a perl script to handle the common tasks, like adding new
 accounts and changing passwords, from the command line.</p>
 
 <p>Not having physical posession of a cloud machine motivated me to
-spend some time on several options for disk encryption, mostly for the
-mail spool and user database, although you could apply it more
-broadly.
+examine several options for disk encryption, mostly for the mail spool
+and user database, although you could apply it more broadly.
 
 <p>Backups also differ from common examples.  We use Bacula, and
 control the backups from a separate machine, ideally isolated behind a
@@ -118,9 +117,9 @@ for nothing!)</p>
 <p>I wanted to target a single distro, just to keep the playbooks
 clean and understandable.  Debian was the winner simply because of
 numbers &mdash; 80% of the examples that I ran across used Debian, and
-it is the origin of a hundred other downstream distros, like Ubuntu
-and Mint.  I started with Debian 9 (Stretch) but moved to Debian 10
-(Buster) shortly after it was released.</p>
+it originated a hundred other downstream distros, like Ubuntu and
+Mint.  I started with Debian 9 (Stretch), moved to 10 (Buster), and
+now 12 (Bookworm).</p>
 
 <p>It shouldn't take too much work to adapt this to other distros.  In
 most places, the Ansible playbooks use the <code>package:</code>

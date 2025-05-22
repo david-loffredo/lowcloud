@@ -19,13 +19,16 @@
 <div class=main>
 <H1>Debian 12 Update Notes</H1>
 
-<p>In going from Debian 10 to Debian 12, there are a few notes.</p>
+<p>In going from Debian 10 to 12, there are a few notes.</p>
 
 <h2>Journal Logging</h2>
 
 <p>Debian 12 has moved to systemd journals by default and no longer
-installs rsyslog.  Consequently, things that examine the logs like
-fail2ban and logwatch require some configuration rework.
+installs rsyslog.  Things that examine the logs like fail2ban and
+logwatch require different configuration.  The
+<code>use_journalctl</code> variable now controls this and defaults to
+true.  Set to false if still using file-based logging.  We still
+install logrotate because some packages still use log files. </p>
 
 <p>When updating, I ran into a problem with permissions on the postfix
 spool directory and it wasn't starting.  I was suprised that there was

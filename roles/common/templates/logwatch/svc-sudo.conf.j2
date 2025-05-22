@@ -1,0 +1,13 @@
+{% if use_journalctl %}
+# sudo on journald system
+LogFile =
+LogFile = none
+
+*JournalCtl = "--no-pager /usr/bin/sudo"
+*ApplyStdDate
+*RemoveHeaders
+{% else %}
+# traditional, no change
+{% endif %}
+
+

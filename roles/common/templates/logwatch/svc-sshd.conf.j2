@@ -1,0 +1,11 @@
+{% if use_journalctl %}
+# SSH on journald system
+LogFile =
+LogFile = none
+
+*JournalCtl = "--no-pager -u ssh"
+*ApplyStdDate
+*RemoveHeaders
+{% else %}
+# traditional, no change
+{% endif %}
