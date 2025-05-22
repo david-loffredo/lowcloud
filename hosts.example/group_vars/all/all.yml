@@ -132,3 +132,11 @@ bacula_tunnel_sshkey:   "{{ vault_bacula_tunnel_sshkey }}"
 bacula_storage_datadir: /backup/bacula
 
 #bacula_client_tunnel: no
+
+
+#========================================
+# Roundcube
+# Session data encryption. For DES must be 24char, but we use AES
+# webmail_des_key:      "{{ vault_webmail_des_key }}"
+
+

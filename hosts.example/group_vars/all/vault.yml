@@ -51,7 +51,7 @@ vault_mbox_user1_pw: [change me to cleartext password]
 vault_mbox_user2_pw: [change me to cleartext password]
 vault_mbox_user3_pw: [change me to cleartext password]
 
-# This key is used to encrypt the users imap password which is stored
-# in the session record. For the default cipher method it must be
-# exactly 24 characters long.
-# webmail_des_key: '123456789012345678901234'
+
+# Session data encryption. For DES must be 24char, but we use AES
+vault_webmail_des_key: '123456789012345678901234'
+

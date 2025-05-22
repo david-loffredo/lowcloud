@@ -1,4 +1,4 @@
-## [xx] - in progress
+## [2.0] - 2025-05-22
 
 - Moved to Debian 12, with many fixes to logwatch and fail2ban to
   accommodate the new journalctl way of handling system logs.
@@ -8,6 +8,8 @@
   docs explaining how to convert existing spam/ham stats into redis.
 
 - Updated Roundcube configuration to latest variables and format.
+  Added session encryption key and tightened the permissions for the
+  config files.
 
 - The snapshot target now backs up the ssh host keys.
 

@@ -40,6 +40,13 @@ $ docker-compose build
 $ docker-compose up -d
 </PRE>
 
+<p>To get a shell in a running container and look around, just exec a
+shell in the container id shown by <code>docker ps</code>.</p>
+
+<PRE class=code>
+$ docker ps    <em>list running containers</em>
+$ docker exec -it &lt;container-id&gt; sh
+</PRE>
 
 <!-- ============================== -->
 <H2 class=rule>

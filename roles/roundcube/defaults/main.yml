@@ -11,7 +11,6 @@ webmail_certkey: "/etc/letsencrypt/live/{{ webmail_server_name }}/privkey.pem"
 # This key is used to encrypt the users imap password which is stored
 # in the session record. For the default cipher method it must be
 # exactly 24 characters long.
-# YOUR KEY MUST BE DIFFERENT THAN THE SAMPLE VALUE FOR SECURITY REASONS
 # webmail_des_key: '123456789012345678901234'
 
 

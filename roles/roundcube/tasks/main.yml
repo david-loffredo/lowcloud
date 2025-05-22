@@ -16,22 +16,17 @@
 # This key is used to encrypt the users imap password which is stored
 # in the session record. For the default cipher method it must be
 # exactly 24 characters long.
-- fail:
-    msg: 'Must define webmail_des_key to random 24 char string'
-  when: webmail_des_key is not defined
+- name: test roundcube session encryption
+  fail:
+    msg: 'Define webmail_des_key to random 24 char string'
+  when: webmail_des_key is not defined or webmail_des_key == ''
     
 - name: roundcube docker root present
   file: path={{ item }} recurse=yes state=directory
-    owner=root group=root mode=0755
+    owner=root group=docker mode=0750
   with_items:
     - /srv/roundcube
 
-- name: roundcube docker config dirs present
-  file: path={{ item }} recurse=yes state=directory
-    owner=root group=root mode=0755
-  with_items:
-    - /srv/roundcube/custom
-    - /srv/roundcube/config
     
 # Needs to be present with a particular permission
 - name: roundcube log dir present
@@ -46,27 +41,29 @@
     owner: www-data
     group: www-data
     mode: 0640
+
     
 - name: roundcube docker config present
-  template:
-    src: '{{ item }}.j2'
-    dest: /srv/roundcube/{{ item }}
-    owner: root
-    group: root
-    mode: 0644
+  template: src='{{ item }}.j2'
+    dest='/srv/roundcube/{{ item }}'
+    owner=root group=root mode=0644
   with_items:
     - docker-compose.yml
     - Dockerfile
   notify:
     - rebuild roundcube
 
-- name: roundcube docker customization present
-  template:
-    src: '{{ item }}.j2'
-    dest: /srv/roundcube/custom/{{ item }}
-    owner: root
-    group: root
-    mode: 0644
+    
+- name: roundcube docker apache config dir present
+  file: path={{ item }} recurse=yes state=directory
+    owner=root group=root mode=0755
+  with_items:
+    - /srv/roundcube/custom
+    
+- name: roundcube docker apache config present
+  template: src='{{ item }}.j2'
+    dest='/srv/roundcube/custom/{{ item }}'
+    owner=root group=root mode=0644
   with_items:
     - 000-default.conf
     - default-ssl.conf
@@ -74,13 +71,17 @@
   notify:
     - rebuild roundcube
 
-- name: roundcube php customization present
-  template:
-    src: '{{ item }}.j2'
-    dest: /srv/roundcube/config/{{ item }}
-    owner: root
-    group: root
-    mode: 0644
+    
+- name: roundcube docker php config dir present
+  file: path={{ item }} recurse=yes state=directory
+    owner=www-data group=www-data mode=0750
+  with_items:
+    - /srv/roundcube/config
+
+- name: roundcube docker php config present
+  template: src='{{ item }}.j2'
+    dest='/srv/roundcube/config/{{ item }}'
+    owner=www-data group=www-data mode=0640
   with_items:
     - config.inc.php
   notify:
