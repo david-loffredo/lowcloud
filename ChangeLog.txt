@@ -1,5 +1,22 @@
 ## [xx] - in progress
 
+- Moved to Debian 12, with many fixes to logwatch and fail2ban to
+  accommodate the new journalctl way of handling system logs.
+
+- Moved to rspamd 3.4, and changed the config to use redis for the
+  classification statistics instead of sqlite.  Added some transition
+  docs explaining how to convert existing spam/ham stats into redis.
+
+- Updated Roundcube configuration to latest variables and format.
+
+- The snapshot target now backs up the ssh host keys.
+
+- Discussed updating to new OS versions in the documentation, with
+  some suggestions on partitioning disks to reduce the amount of work
+  needed when the time comes to do that.
+
+- Added gocryptfs for encrypted dirs, since EncFS is very old.
+
 - Removed duplicate iptable rules, obsolete TZ refs, fixed problems
   with tasks that  set facts from a command not firing on --check.
 

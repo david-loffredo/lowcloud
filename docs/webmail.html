@@ -48,11 +48,15 @@ $ docker-compose up -d
 <p>The <code>webmail.yml</code> group vars file holds the webmail
 settings.  The <code>webmail_server_name</code> is the machine name
 that you are using, and <code>webmail_product_name</code> can be set
-to a custom title for the pages.
+to a custom title for the pages.  You must also set
+a <code>webmail_des_key</code> to a random string for use by the
+application when encrypting session data.</p>
 
 <PRE class=code>
 webmail_server_name: 'webmail.{{ domain }}'
 webmail_product_name: My Special Webmail
+
+webmail_des_key: [long random text]
 </PRE>
 
 <p>There are some other settings to configure the firewall, fail2ban,

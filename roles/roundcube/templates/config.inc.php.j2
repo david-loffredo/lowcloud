@@ -6,13 +6,11 @@
 $config['log_driver'] = 'file';
 $config['log_dir'] = '/var/log/roundcube/';
 
+
 // When giving the hostname, use tls:// prefix for STARTTLS,
 // use ssl:// prefix for straight SSL
-$config['default_host'] = 'ssl://{{ mail_server_hostname }}';
-$config['default_port'] = '993';
-
-$config['smtp_server'] = 'tls://{{ mail_server_hostname }}';
-$config['smtp_port'] = '587';
+$config['imap_host'] = 'ssl://{{ mail_server_hostname }}:993';
+$config['smtp_host'] = 'tls://{{ mail_server_hostname }}:587';
 
 $config['skin'] = 'elastic';
 
@@ -20,7 +18,9 @@ $config['skin'] = 'elastic';
 // Default is set for backward compatibility to DES-EDE3-CBC,
 // but you can choose e.g.  which we consider a better choice.
 $config['cipher_method'] = 'AES-256-CBC';
-    
+
+$config['des_key'] = '{{ webmail_des_key }}';
+
 // Name your service. This is displayed on the login screen and in the
 // window title
 $config['product_name'] = '{{ webmail_product_name }}';
