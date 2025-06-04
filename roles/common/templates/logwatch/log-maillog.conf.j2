@@ -1,11 +1,11 @@
 {% if use_journalctl %}
 # combined query for all mail things on journald system, effectively
 # what would be in mail.log
+# 2025-06-04 - Removed *ApplyStdDate
 LogFile =
 LogFile = /dev/null
 
 *JournalCtl = "--no-pager -u dovecot -u postfix@-"
-*ApplyStdDate
 {% else %}
 # builtin config assumes num, add dateext rotation
 LogFile =
