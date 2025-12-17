@@ -50,6 +50,14 @@
     insertafter: EOF
     state: present
 
+- name: ssh root login disabled
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PermitRootLogin"
+    line: 'PermitRootLogin no'
+    insertafter: EOF
+    state: present
+
 - name: Check for local host key backup
   become: False
   delegate_to: localhost
