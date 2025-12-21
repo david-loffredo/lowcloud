@@ -204,6 +204,9 @@ your local machine to do password-based login to a remote machine.  If
 you can pre-install an ssh key for root, you could use
 the <code>--private-key</code> flag instead.</p>
 
+<p>If sudo is not installed, like with a some stock installs, you can
+call the playbook with <code>--become-method=su</code></p>
+
 <PRE class=code>
 $ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit cloud
 $ ansible-playbook -k --ask-vault-pass -i ../myhosts first.yml --limit backup_server

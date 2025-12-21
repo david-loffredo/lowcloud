@@ -7,6 +7,9 @@
 # LIMIT THE PLAY to the just the machine that you want set up.
 # ansible-playbook first.yml --limit foobar
 
+# If sudo is not installed, like with a stock debian install, you
+# can call the playbook with --become-method=su
+
 - name: first setup of new server
   hosts: all
   gather_facts: no
