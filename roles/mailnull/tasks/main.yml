@@ -16,7 +16,7 @@
 
 - name: mail config present
   template: src=main.cf.j2 dest="{{ mail_cfg_dir }}/main.cf"
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   notify: restart postfix
 
 
@@ -27,7 +27,7 @@
 #  
 - name: sasl_passwd present
   template: src=sasl_passwd.j2 dest="{{ mail_cfg_dir }}/sasl_passwd"
-    owner=root group=root mode=0600
+    owner=root group=root mode='0600'
   register: postfix_sasl_passwd_result
   notify: restart postfix
 
@@ -38,7 +38,7 @@
 
 - name: sasl_passwd db perms correct
   file: dest="{{ mail_cfg_dir }}/sasl_passwd.db"
-    owner=root group=root mode=0600
+    owner=root group=root mode='0600'
   notify: restart postfix
 
 - name: postfix started

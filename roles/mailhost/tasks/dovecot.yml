@@ -34,13 +34,13 @@
 
 - name: spool directories for mail domain are present
   file: state=directory path="{{ mail_spool_root }}/{{ item }}"
-    owner=vmail group=vmail mode=0770
+    owner=vmail group=vmail mode='0770'
   with_items: "{{ mail_domains }}"
 
 # This appears ok to be root own/group and all readable
 - name: dovecot etc files present
   template: src="dovecot/{{ item }}" dest="/etc/dovecot/{{ item }}"
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - dovecot.conf
   notify: restart dovecot
@@ -48,14 +48,14 @@
 # These appear to be default to  group readable to dovecot  
 - name: dovecot etc sql files present
   template: src="dovecot/{{ item }}" dest="/etc/dovecot/{{ item }}"
-    owner=root group=dovecot mode=0640
+    owner=root group=dovecot mode='0640'
   with_items:
     - dovecot-sql.conf.ext
   notify: restart dovecot
 
 - name: dovecot conf.d files present
   template: src="dovecot/{{ item }}" dest="/etc/dovecot/conf.d/{{ item }}"
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - 10-auth.conf
     - 10-mail.conf
@@ -80,7 +80,7 @@
 #
 - name: sieve directories are present
   file: state=directory path="{{ mail_sieve_root }}/{{ item }}"
-    owner=vmail group=vmail mode=0770
+    owner=vmail group=vmail mode='0770'
   with_items: "{{ mail_domains + ['after.d', 'before.d', 'global'] }}"
 
 # sieve scripts are installed by rspamd

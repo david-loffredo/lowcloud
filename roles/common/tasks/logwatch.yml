@@ -13,7 +13,7 @@
 - name: logwatch logfile configs are installed
   template: src=logwatch/log-{{ item }}.j2
     dest=/etc/logwatch/conf/logfiles/{{ item }}
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - fail2ban.conf
     - http.conf
@@ -25,7 +25,7 @@
 - name: logwatch service configs are installed
   template: src=logwatch/svc-{{ item }}.j2
     dest=/etc/logwatch/conf/services/{{ item }}
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - fail2ban.conf
     - sshd.conf
@@ -36,7 +36,7 @@
 - name: logwatch logfile syslog configs are installed
   template: src=logwatch/log-{{ item }}.j2
     dest=/etc/logwatch/conf/logfiles/{{ item }}
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - daemon.conf
     - secure.conf
@@ -51,7 +51,7 @@
 # - name: logwatch updated service scripts are installed
 #   copy: src=logwatch/scripts-{{ item }}
 #     dest=/etc/logwatch/scripts/services/{{ item }}
-#     owner=root group=root mode=0755
+#     owner=root group=root mode='0755'
 #   with_items:
 #     - dovecot
 #     - secure

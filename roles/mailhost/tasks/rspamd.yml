@@ -14,7 +14,7 @@
 # local.d is merged, override.d overrides
 - name: rspamd local configuration
   template: src=rspamd/local-{{ item }}.j2 dest=/etc/rspamd/local.d/{{ item }}
-    owner=root group=root mode=644
+    owner=root group=root mode='0644'
   with_items:
     - arc.conf
     - classifier-bayes.conf
@@ -32,14 +32,14 @@
 
 - name: sieves for pre-filter present
   copy: src={{ item }} dest={{ mail_sieve_root }}/before.d/{{ item }}
-    owner=vmail group=vmail mode=640
+    owner=vmail group=vmail mode='0640'
   with_items:
     - separate_spam.sieve
   notify: restart dovecot
 
 - name: sieves for training present
   copy: src={{ item }} dest={{ mail_sieve_root }}/global/{{ item }}
-    owner=vmail group=vmail mode=640
+    owner=vmail group=vmail mode='0640'
   with_items:
     - learn_ham.sieve
     - learn_spam.sieve
@@ -68,7 +68,7 @@
 
 - name: DKIM key directory present
   file: path={{ mail_dkim_root }} state=directory
-        owner=_rspamd group=_rspamd mode=0750
+        owner=_rspamd group=_rspamd mode='0750'
   tags: dkim
 
 - name: DKIM keys generated
@@ -121,7 +121,7 @@
 #     create: yes
 #     owner: root
 #     group: root
-#     mode: 0644
+#     mode: '0644'
 #   with_items:
 #     - "{{ ansible_distribution_release }}"
 #   register: backportconfig

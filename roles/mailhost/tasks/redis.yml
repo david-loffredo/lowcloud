@@ -10,7 +10,7 @@
 
 - name: redis configuration
   template: src={{ item }}.j2 dest=/etc/redis/{{ item }}
-    owner=redis group=redis mode=640
+    owner=redis group=redis mode='0640'
   with_items:
     - redis.conf
   notify: restart redis
@@ -32,21 +32,21 @@
 
 - name: redis custom database directory
   file: state=directory path={{ redis_dbdir }}
-    owner=redis group=redis mode=0750
+    owner=redis group=redis mode='0750'
   notify: restart redis
   when: redis_dbdir is defined
   
 - name: redis service override directory
   file: state=directory
     path=/etc/systemd/system/redis-server.service.d
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
   notify: restart redis
   when: redis_dbdir is defined
   
 - name: redis service directory permissions
   template: src=redis.override.conf.j2
     dest=/etc/systemd/system/redis-server.service.d/override.conf
-    owner=root group=root mode=644
+    owner=root group=root mode='0644'
   notify: restart redis
   when: redis_dbdir is defined
 

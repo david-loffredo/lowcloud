@@ -13,7 +13,7 @@
 - name: apache global configurations present
   template: src={{ item.src }}.j2
     dest=/etc/apache2/{{ item.dst }}
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - { src: apache2.conf, dst: apache2.conf }
     - { src: conf-security.conf, dst: conf-available/security.conf }
@@ -29,7 +29,7 @@
     state: link
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   with_items:
     - security.conf
     - expires.conf
@@ -71,7 +71,7 @@
     state: directory
     owner: www
     group: www-data
-    mode: 0755
+    mode: '0755'
     
 - name: configurations present for each host
   include_tasks: host.yml

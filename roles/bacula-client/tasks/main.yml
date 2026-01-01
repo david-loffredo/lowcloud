@@ -20,7 +20,7 @@
 # because that is the expected config.
 - name: bacula working directory present
   file: state=directory path="{{ bacula_client_workdir }}"
-    owner=bacula group=bacula mode=0700
+    owner=bacula group=bacula mode='0770'
 
 ## Since the client is in the cloud and our director will likely be
 ## NATed and behind a firewall, we leave the Bacula ports blocked on

@@ -36,13 +36,20 @@
 # the running environment.  Don't know if these tools work any better
 # on the other distros, but they seem to use /etc/locale.conf
 #
+# - name: locale as '{{ host_locale }}' and language as '{{ host_language }}'
+#   command: localectl set-locale
+#         LANG={{ host_locale }} LANGUAGE={{ host_language }}
+#   changed_when: calc_lang != host_locale or
+#         calc_language != host_language
+
+# - name: /etc/default/locale contains proper defaults
+#   template: src=locale.j2 dest=/etc/default/locale
+#     owner=root group=root mode='0644'
+
+# Debian 13 uses update-locale which fixes the problem with LANGUAGE
+# and commenting described above.  Also set-locale throws an access
+# denied error now, even when running as root.
 - name: locale as '{{ host_locale }}' and language as '{{ host_language }}'
-  command: localectl set-locale
-        LANG={{ host_locale }} LANGUAGE={{ host_language }}
+  command: update-locale LANG={{ host_locale }} LANGUAGE={{ host_language }}
   changed_when: calc_lang != host_locale or
         calc_language != host_language
-
-- name: /etc/default/locale contains proper defaults
-  template: src=locale.j2 dest=/etc/default/locale
-    owner=root group=root mode=0644
-

@@ -33,6 +33,7 @@
     line: '%wheel ALL=(ALL) ALL'
     validate: 'visudo -cf %s'
 
+# debian uses the "sudo" group instead of wheel    
 - name: deploy account with wheel group present
   user:
     name: "{{ deploy_acct }}"

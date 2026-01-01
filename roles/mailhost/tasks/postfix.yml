@@ -15,12 +15,12 @@
 
 # use mode=02775 to setgid
 - name: mail spool directory and permissions
-  file: state=directory path={{ mail_spool_root }} group=vmail mode=0775
+  file: state=directory path={{ mail_spool_root }} group=vmail mode='0775'
 
 # The queue directory must be present or else the chroot will not be
 # populated.
 - name: other mail directories and permissions
-  file: state=directory path={{ item }} mode=0755
+  file: state=directory path={{ item }} mode='0755'
   with_items:
     - "{{ mail_queue_dir }}"
     - "{{ mail_db_root }}"
@@ -80,7 +80,7 @@
 # Mail user database    
 - name: mail account utilities present
   template: src=mailcfg.j2 dest={{ mail_db_util }}
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
 
 # Restore snapshot from existing machine if needed
 - name: check for mail database backup
@@ -95,7 +95,7 @@
     dest: "{{ mail_db }}"
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   when: mail_db_backup.stat.exists
 
 
@@ -122,5 +122,5 @@
 
 # Use vmail group so that dovecot can also see it.
 - name: mail database permissions set
-  file: path={{ mail_db }} owner=root group=vmail mode=0640
+  file: path={{ mail_db }} owner=root group=vmail mode='0640'
 

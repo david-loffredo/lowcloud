@@ -20,5 +20,5 @@
 - name: encrypted data boot script {{ cryptdir_boot_script|default('[NONE]') }}
   template: src=cryptdirboot.j2
     dest={{ cryptdir_boot_script }}
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
   when: cryptdir_type != 'none'

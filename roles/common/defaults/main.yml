@@ -42,6 +42,13 @@ ntp_servers:
   - 2.pool.ntp.org
   - 3.pool.ntp.org
   
+# Debian 13 retired ntp, replaced with ntpsec.  Available on older
+# Debian 12 and 11 too.
+
+# ntp_package: ntp
+ntp_package:    ntpsec
+
+
 
 #========================================
 # For quick reimaging, the 'snapshot' tag will copy locally unique
@@ -120,6 +127,12 @@ firewall_openudp_dns: [53]
 # Bacula Ports - Director (9101), File (9102), Storage (9103)
 firewall_opentcp_bacula: [9101, 9102, 9103]
 
+# Samba Ports - mix of UDP and TCP.   
+firewall_openudp_samba: [137, 138]
+firewall_opentcp_samba: [139, 445]
+
+firewall_openudp_smb: '{{ firewall_openudp_samba }}'
+firewall_opentcp_smb: '{{ firewall_opentcp_samba }}'
 
 # Construct the list of open TCP and UDP ports from the known services
 # and any extra ports.  A group or host var could override this, but
@@ -140,7 +153,16 @@ firewall_ports_udp: >-
   {{- ns.ports.extend( lookup('vars', 'firewall_openudp_'+i, default=[]) ) -}}
   {%- endfor -%}
   {{- ns.ports | sort | unique -}}
-  
+
+
+# Want to also support opening ports to connections from a specific
+# subnet like 192.168.1.0/24.   Build into prerouting chain like the
+# global connections but add a -s source
+# subnet_services:
+#   - source: 192.168.1.0/24
+#     source_v6: fe80::/10
+#     tcp: samba
+#     udp: samba
 
 # ========================================  
 # fail2ban

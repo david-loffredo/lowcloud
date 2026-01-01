@@ -16,7 +16,7 @@
     state: directory
     owner: www
     group: www-data
-    mode: 0755
+    mode: '0755'
 
 - name: "{{ host.name }} : site content present"
   template:
@@ -24,7 +24,7 @@
     dest: "{{ host.root | default(apache_host_dflt_root) }}/index.html"
     owner: www
     group: www-data
-    mode: 0644
+    mode: '0644'
     force: no    # only add if it does not exist
 
 - name: "{{ host.name }} : http config present"
@@ -33,7 +33,7 @@
     dest: /etc/apache2/sites-available/{{ host_conf }}.conf
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   notify:
     - restart apache
 
@@ -46,7 +46,7 @@
     state: link
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   notify:
     - restart apache
 

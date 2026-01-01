@@ -32,7 +32,7 @@
 
 - name: certificate testing script present
   copy: src=testcertnames dest={{ certbot_test_util }}
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
 
 - include_tasks: certbot_create.yml
   with_items: "{{ certbot_certs }}"
@@ -57,18 +57,18 @@
 - name: add pre-renew hook to stop services
   template: src=pre-hook.j2
     dest=/etc/letsencrypt/renewal-hooks/pre/pre-hook
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
   when: certbot_need_prepost_hook
 
 - name: add post-renew hook to start services
   template: src=post-hook.j2
     dest=/etc/letsencrypt/renewal-hooks/post/post-hook
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
   when: certbot_need_prepost_hook
 
 - name: add deploy hook to reload services
   template: src=deploy-hook.j2
     dest=/etc/letsencrypt/renewal-hooks/deploy/deploy-hook
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
   when: certbot_need_deploy_hook
 

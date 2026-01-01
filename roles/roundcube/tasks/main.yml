@@ -23,7 +23,7 @@
     
 - name: roundcube docker root present
   file: path={{ item }} recurse=yes state=directory
-    owner=root group=docker mode=0750
+    owner=root group=docker mode='0750'
   with_items:
     - /srv/roundcube
 
@@ -31,7 +31,7 @@
 # Needs to be present with a particular permission
 - name: roundcube log dir present
   file: path=/var/log/roundcube recurse=yes state=directory
-        owner=www-data group=www-data mode=0750
+        owner=www-data group=www-data mode='0750'
 
 - name: roundcube log present
   copy:
@@ -40,13 +40,13 @@
     force: no
     owner: www-data
     group: www-data
-    mode: 0640
+    mode: '0640'
 
     
 - name: roundcube docker config present
   template: src='{{ item }}.j2'
     dest='/srv/roundcube/{{ item }}'
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - docker-compose.yml
     - Dockerfile
@@ -56,14 +56,14 @@
     
 - name: roundcube docker apache config dir present
   file: path={{ item }} recurse=yes state=directory
-    owner=root group=root mode=0755
+    owner=root group=root mode='0755'
   with_items:
     - /srv/roundcube/custom
     
 - name: roundcube docker apache config present
   template: src='{{ item }}.j2'
     dest='/srv/roundcube/custom/{{ item }}'
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   with_items:
     - 000-default.conf
     - default-ssl.conf
@@ -74,14 +74,14 @@
     
 - name: roundcube docker php config dir present
   file: path={{ item }} recurse=yes state=directory
-    owner=www-data group=www-data mode=0750
+    owner=www-data group=www-data mode='0750'
   with_items:
     - /srv/roundcube/config
 
 - name: roundcube docker php config present
   template: src='{{ item }}.j2'
     dest='/srv/roundcube/config/{{ item }}'
-    owner=www-data group=www-data mode=0640
+    owner=www-data group=www-data mode='0640'
   with_items:
     - config.inc.php
   notify:

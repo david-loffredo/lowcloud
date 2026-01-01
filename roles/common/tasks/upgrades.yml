@@ -38,14 +38,14 @@
 - name: unattended upgrades run every day
   copy: src=apt-20auto-upgrades
     dest=/etc/apt/apt.conf.d/20auto-upgrades
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
   notify:
     - restart unattended-upgrades
 
 - name: apt install changelog to {{ admin_email }}
   template: src=listchanges.conf.j2
     dest=/etc/apt/listchanges.conf
-    owner=root group=root mode=0644
+    owner=root group=root mode='0644'
 
 - name: automatic restart of services with stale libraries
   lineinfile:

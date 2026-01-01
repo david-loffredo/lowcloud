@@ -17,7 +17,7 @@
     dest: "{{ item.dst }}/.emacs"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
-    mode: 0644
+    mode: '0644'
   with_items:
     - { dst: '/root', owner: 'root', group: 'root' }
     - { dst: '/etc/skel', owner: 'root', group: 'root' }
