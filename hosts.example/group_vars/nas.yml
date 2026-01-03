@@ -1,0 +1,97 @@
+---
+# NAS/BACKUP SERVER MACHINE
+
+firewall_services: [ 'samba' ]
+
+
+# 
+# ZFS Filesystems
+#
+# Use the disk ID from /dev/disk/by-id when creating the pool because
+# it is more stable than sda/sdb if disks are moved around.
+#
+# The default settings enable case sensitive filesystem, utf8
+# filenames and formD comparison (for Mac compatibility).  Those need
+# to be specified at create time.  Can add quotas later if desired to
+# limit filesystem sizes.
+#      quota: 200G
+
+zfs_pools: 
+  - name: tank
+    vdev: >-
+       mirror 
+       ata-BIGDRIVE1
+       ata-BIGDRIVE2
+       cache
+       nvme-FASTDRIVE
+
+# Data for media files and other general public stuff
+# Vault for backups, private system stuff
+# Might want samba users homedirs on ZFS, sys accts still /home
+zfs_filesystems: 
+  - name: tank/data
+    properties:
+      mountpoint: /data
+      casesensitivity: mixed
+      
+  - name: tank/vault
+    properties:
+      mountpoint: /vault
+      
+samba_shares:
+  - name: homes
+    comment: Home Directories
+    browseable: false
+
+    # By default, the home directories are exported read-only. Change the
+    # next parameter to 'no' if you want to be able to write to them.
+    read only: true
+
+    # File creation mask is set to 0700 for security reasons. If you want to
+    # create files with group=rw permissions, set next parameter to 0775.
+    create mask: '0700'
+
+    # Directory creation mask is set to 0700 for security reasons. If you want to
+    # create dirs. with group=rw permissions, set next parameter to 0775.
+    directory mask: '0700'
+
+    # By default, \\server\username shares can be connected to by anyone
+    # with access to the samba server.
+    # The following parameter makes sure that only "username" can connect
+    # to \\server\username
+    # This might need tweaking when using external authentication schemes
+    valid users: '%S'
+
+  - name: data
+    comment: Data Share
+    path: /data
+    browseable: true
+    writable: true
+    create mask: '0755'
+    directory mask: '0775'
+    force user: nas-data
+    force group: nas-data
+    
+# read only = !writable
+# allow delete readonly?  Lets user delete file if readonly like on unix but not dos.
+# fake directory create times if doing nmake builds on the share
+# force user = nas-data to make all files owned by nas-data
+
+# invalid users = root deploy admin @wheel 
+
+# make everything on here owned by nas-data for simplicity
+nas_data_shares:
+  - /data
+
+
+# NAS users
+# Set smbonly if the unix account exists already from some other
+# action and you just want to set the smb password.  The account must
+# already exist at this point if you set to true.
+
+nas_salt: "{{ vault_nas_salt }}"
+nas_users:
+  - name: someuser
+    pw: "{{ vault_nas_someuser_pw }}"
+    # home: /homenas/someuser   if want homedir elsewhere
+    # smbonly: true             skip create unix acct

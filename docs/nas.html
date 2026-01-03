@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>NAS Service</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#vars">Variables</a>
+<li><a href="#why">Why These Packages?</a>
+</UL>
+</div>
+
+<div class=main>
+<H1>NAS Service</H1>
+ 
+<p><b>ROLES</b> zfs, samba
+
+<p>The NAS service configuration is primarily handled by the "zfs" and
+"samba" roles.  ZFS is used for software raid/mirroring and Samba is
+used for file sharing to Windows/MacOS clients.  Samba is configured
+on the standard ports.</p>
+
+<p>Everyone's use case will be different, but my need here is a simple
+home fileserver with a common data area shared among the entire family
+and individual home areas.</p>
+
+<p>The <code>zfs</code> role creates zpools and filesystems.  We just
+use the default Debian monthly scrub/trim cron job.  I trimmed the zfs
+role to the basics.  Look at
+<a href=https://github.com/aisbergg/ansible-role-zfs.git>this role</a>
+if you want something that does ZVOLs, custom scrubs, zrepl, and other
+things.  We use the following ansible galaxy modules:</p>
+<ul>
+<li>community.general.zfs</li>
+<li>community.general.zfs_facts</li>
+<li>community.general.zpool_facts</li>
+</ul>
+
+<p>If they are not already present, you can install by doing:</p>
+<PRE class=code>
+% ansible-galaxy collection install community.general
+</PRE>
+
+<p>The <code>samba</code> role installs the samba server and creates
+local accounts with samba access.  You can create whatever shares you
+want, but we can call out certain ones to be owned by the 'nas-data'
+user and 'nas-data' group for common areas accessible by all users
+(media files, family pictures, etc.)</p>
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
+<p>The <code>zfs_pools</code> variable is a list of pools, with a
+string describing the vdev, along any other settings.  It looks
+something like this.  
+
+<PRE class=code>
+zfs_pools: 
+  - name: tank
+    vdev: &gt;-
+       mirror 
+       ata-BIGDRIVE1
+       ata-BIGDRIVE2
+       cache
+       nvme-FASTDRIVE
+</PRE>
+
+Specify pool <code>properties:</code> for a specific ashift,
+or <code>filesystem_properties:</code> for things like compression or
+case sensitivity. </p>
+
+<p>The <code>zfs_filesystems</code> variable gives a list of
+filesystems, with a list of properties.  The contents
+of <code>zfs_filesystems_properties_defaults:</code> are applied to
+every filesystem.</p>
+
+<PRE class=code>
+zfs_filesystems:
+  - name: tank/myfs
+    properties:
+       mountpoint: /myfs
+       casesensitivity: mixed
+</PRE>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why These Packages?</H2>
+
+<p>The simplest option is to buy a commercial NAS, set things up with
+their web interface and move on.  I preferred to build my own box, but
+did give TrueNAS a try.  It was quite slick, but was meant to act as
+an appliance. I prefer a general purpose machine that serves files,
+but can easily be used for other things.</p>
+
+<p>I was impressed by ZFS, and decided to use that in a simple
+mirrored setup.  Disk sizes have gotten so stupendously huge that I
+really didn't feel comfortable running a straight ext4 filesystem.
+I've rarely had disk problems, but resilvering a replacement disk is a
+lot simpler than finding and restoring double digit terabytes from
+backups.</p>
+
+<p>Samba is an obvious choice if you are going to support Windows
+clients.  NFS is also an obvious choice if any UNIX machines are in
+the mix.  I originally built this for home use, which is mostly
+Windows with the occasional Linux box, so we'll see if that is
+sufficient.
+
+<figure>
+<img src="images/bigiron.jpg" alt="Big Iron Fileserver">
+<figcaption>Your NAS box should be big iron, like a Pentium 4 box
+serving out 120G of pure disk goodness.
+</figcaption>
+</figure>
+
+<div class=copyright>
+<p>Copyright &copy; 2020-2026 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>
