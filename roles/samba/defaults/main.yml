@@ -1,0 +1,56 @@
+---
+
+samba_daemon: smbd
+
+# Settings to add to the global section.  Turn off setting +x for the
+# archive flag.  Files from windows should never have +x, but we don't
+# want to force that in the mask.
+samba_global_defaults:
+  map archive: false
+
+# list of shares to create.  name, path, and comment in the top, any
+# other properties in the overflow.
+samba_shares:
+  - name: homes
+    comment: Home Directories
+    browseable: false
+
+    # By default, the home directories are exported read-only. Change the
+    # next parameter to 'no' if you want to be able to write to them.
+    read only: true
+
+    # File creation mask is set to 0700 for security reasons. If you want to
+    # create files with group=rw permissions, set next parameter to 0775.
+    create mask: 0700
+
+    # Directory creation mask is set to 0700 for security reasons. If you want to
+    # create dirs. with group=rw permissions, set next parameter to 0775.
+    directory mask: 0700
+
+    # By default, \\server\username shares can be connected to by anyone
+    # with access to the samba server.
+    # The following parameter makes sure that only "username" can connect
+    # to \\server\username
+    # This might need tweaking when using external authentication schemes
+    valid users: '%S'
+
+   
+samba_share_defaults: {}
+
+
+# Make everything on these shares owned by nas-data for simplicity
+nas_data_shares: []
+
+# Salt must be [./0-9A-Za-z]+
+# nas_user_salt: 12345kjasflak
+
+
+# nas_users:
+#   - name: username
+#     pw: cleartext
+#     home: homedir (optional)
+#     smbonly: true/false (optional)
+#
+# Set smbonly if the unix account exists already from some other
+# action and you just want to set the smb password.  The account must
+# already exist at this point if you set to true.

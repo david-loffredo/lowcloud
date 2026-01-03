@@ -1,0 +1,117 @@
+---
+# Debian 13 version
+# zfsutils-linux      2.3.2-2   in contrib
+
+# DEBIAN SPECIFIC - Need to configure apt to look in the contrib area
+# for the zfs packages.  In 12 and earlier, zfs was in the backports
+# area.  Adjust as needed if using a different distro.
+#
+# zfs-dkms is installed as a dependency.  Installing the kernel
+# headers will keep the zfs kernel module in sync for a new kernel
+# installed through unattended-upgrades.  If you use ZFS on the root
+# filesystem there may be additional config to force a rebuild for
+# initramfs.  Do "sudo dpkg-reconfigure zfs-dkms" to rebuild the
+# modules manually.
+#
+# Adapted from https://github.com/aisbergg/ansible-role-zfs.git but
+# simplified to just do zpool and filesystems, nothing about zvols or
+# setting up cron jobs to scrub and trim (we just use the default cron
+# that does it once a month) Also ignoring zrepl for now.
+#
+# Uses the following ansible galaxy modules:
+#   community.general.zfs
+#   community.general.zfs_facts
+#   community.general.zpool_facts
+#
+#  If they are not already present, you can install by doing:
+#   ansible-galaxy collection install community.general
+#
+- name: contrib repository is configured as a source
+  template: src=apt.source.j2
+    dest=/etc/apt/sources.list.d/{{ item }}-contrib.sources
+    owner=root group=root mode='0644'
+  with_items:
+    - "{{ ansible_distribution_release }}"
+  notify:
+    - update contrib cache
+
+- name: zfs packages are installed
+  package:
+    state: present
+    name:
+      - "{{ zfs_kernel_headers }}"
+      - zfsutils-linux
+
+- name: find available zpools
+  ansible.builtin.shell: "set -o pipefail; zpool list | awk 'FNR >1' | awk '{print $1}'"
+  args:
+    executable: /bin/bash
+  register: available_zpools
+  changed_when: false
+  check_mode: false
+
+- name: find importable zpools
+  ansible.builtin.shell: "set -o pipefail; zpool import | sed -nr 's/^\\s*pool: (.*)/\\1/p'"
+  args:
+    executable: /bin/bash
+  register: importable_zpools
+  changed_when: false
+  check_mode: false
+
+- name: configure each zpool
+  ansible.builtin.include_tasks: manage_pool.yml
+  vars:
+    zfs_pool: "{{ zfs_pools_defaults | combine(_zfs_pool) }}"
+    zfs_dataset_properties: "{{
+        zfs_filesystems_properties_defaults |
+        combine(zfs_pool.filesystem_properties |
+        default({}))
+      }}"
+  loop: "{{ zfs_pools }}"
+  loop_control:
+    loop_var: _zfs_pool
+
+
+- name: include filesystem management tasks
+  ansible.builtin.include_tasks: manage_filesys.yml
+  vars:
+    zfs_filesystem_properties: "{{
+        zfs_filesystems_properties_defaults |
+        combine(zfs_filesystem.properties |
+        default({}))
+      }}"
+  loop: "{{ zfs_filesystems }}"
+  loop_control:
+    loop_var: zfs_filesystem
+   
+- name: samba packages are installed
+  package:
+    state: present
+    name:
+      - samba
+
+
+      
+# create pools as needed
+#  zpool create tank mirror scsi-35000cca2735cbc38 scsi-35000cca266cc4b3c
+#  zpool add tank cache nvme-MT001600KWHAC_S3M0NA0K700264
+
+# make filesystem
+#  zfs create -o casesensitivity=mixed -o xattr=sa -o dnodesize=auto tank/data
+
+# For dumping detailed info use /usr/sbin/zdb -C
+
+# Scrub monthly or biweekly to check for corruption.  Debian has a
+# cron job by default that scrubs and trims all pools on the second
+# Sunday of every month at 24 minutes past midnight.  
+
+#    zfs set mountpoint=/data tank/data
+#    zfs set sharesmb=on tank/data
+#    zfs share tank/data
+
+#    zfs unshare tank/data
+#    # If you want to disable the share forever, do the following
+#    zfs sharesmb=off tank/data
+
+# run smart monitoring tools
+

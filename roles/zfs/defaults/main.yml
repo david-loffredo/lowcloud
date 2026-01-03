@@ -1,0 +1,69 @@
+---
+# Defaults, properties are only set at pool or filesystem creation
+# https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html
+# https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html
+
+# Normalize arch reported by Ansible to the Debian usage.  The header
+# packages are linux-headers-amd64 or linux-headers-arm64.  Check your
+# setup if using a different architecture.
+zfs_debian_arch: "{{ {
+        'x86_64': 'amd64',
+        'aarch64': 'arm64'
+        } [ansible_architecture] |
+        default(ansible_architecture) }}"
+zfs_kernel_headers: "linux-headers-{{ zfs_debian_arch }}"
+
+
+# Use the disk ID from /dev/disk/by-id when creating the pool because
+# it is more stable than sda/sdb if disks are moved around.
+#
+zfs_pools: []
+#   - name: mypool
+#     vdev: >-
+#       mirror
+#         dev1
+#         dev1
+#       mirror
+#         dev1
+#         dev2
+#       log dd
+#     dont_enable_features: false
+#     properties:
+#       ashift: 9
+#     filesystem_properties:
+#     extra_import_options: ""
+#     extra_create_options: ""
+# https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html
+zfs_pools_defaults: {}
+
+
+zfs_filesystems: []
+#   - name: mypool/myfs
+#     properties:
+#        mountpoint: /myfs
+#        casesensitivity: mixed
+# 
+
+
+# Casesensitivity, encryption, keyformat, pbkdf2iters, utf8only, and
+# normalization can only be set at creation time.  formD normalization
+# is the recommended value for interoperation with MacOS.
+# 
+# Can add quotas later if desired to limit filesystem sizes.
+#    quota: 200G
+
+zfs_filesystems_properties_defaults:
+  acltype: posix
+  atime: false
+  canmount: true
+  casesensitivity: sensitive
+  compression: lz4
+  dedup: false
+  normalization: formD
+  setuid: true
+  snapdir: hidden
+  sync: standard
+  utf8only: true
+  xattr: sa
+
+  

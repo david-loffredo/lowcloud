@@ -1,0 +1,43 @@
+---
+# Debian 13 version
+# samba      2:4.22.6
+
+- name: samba packages are installed
+  package:
+    state: present
+    name:
+      - samba
+
+- name: configure for nas-data
+  include_tasks: nas-data.yml
+  when: nas_data_shares | default([])
+
+- name: samba configuration present
+  template: src=smb.conf.j2
+    dest=/etc/samba/smb.conf
+    owner=root group=root mode='0644'
+    validate='testparm -s %s'
+  notify:
+    - restart samba
+
+- name: samba start on boot
+  service:
+    name: "{{ samba_daemon }}"
+    state: started
+    enabled: true
+
+- name: configure for nas users
+  include_tasks: nas-user.yml
+  with_items: "{{ nas_users }}"
+  loop_control:
+    loop_var: nasuser
+  when: nas_users | default([])
+
+
+  # Need to let samba in through the firewall  ports 137, 138, 139, 445
+#iptables -A INPUT -p udp --dport 137 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
+#iptables -A INPUT -p udp --dport 138 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
+#iptables -A INPUT -p tcp --dport 139 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
+#iptables -A INPUT -p tcp --dport 445 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
+
+

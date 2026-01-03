@@ -1,0 +1,38 @@
+---
+# From https://github.com/aisbergg/ansible-role-zfs.git. Uses
+# community.general.zfs_facts to get current filesystem settings
+
+- name: assert correctness of ZFS filesystem parameters
+  ansible.builtin.assert:
+    that:
+      - zfs_filesystem.name is defined and zfs_filesystem.name is string
+      - (zfs_filesystem.properties | default({})) is mapping
+      - (zfs_filesystem.state | default('present')) in ['present', 'absent']
+    quiet: true
+    fail_msg: ZFS filesystem parameters are invalid
+
+# Filesystem may not exist, so clear fact from any previous call, then
+# try to get facts for the thing.    
+- name: clear filesystem properties
+  ansible.builtin.set_fact:
+    ansible_zfs_datasets: []
+
+- name: gather properties of '{{ zfs_filesystem.name | mandatory }}'
+  community.general.zfs_facts:
+    name: "{{ zfs_filesystem.name }}"
+  failed_when: false
+  changed_when: false
+
+- name: prepare filesystem properties
+  prepare_zfs_properties:
+    new_properties: "{{ zfs_filesystem_properties }}"
+    current_properties: "{{ ansible_zfs_datasets[0] | default({}) }}"
+    type: filesystem
+  register: prepared_filesystem_properties
+  changed_when: false
+
+- name: manage filesystem '{{ zfs_filesystem.name }}'
+  community.general.zfs:
+    name: "{{ zfs_filesystem.name }}"
+    state: "{{ zfs_filesystem.state | default('present') }}"
+    extra_zfs_properties: "{{ prepared_filesystem_properties.properties }}"

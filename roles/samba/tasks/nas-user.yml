@@ -1,0 +1,28 @@
+---
+# Create unix and smb account settings for a single user
+
+- name: "{{ nasuser.name }} account present"
+  user:
+    name: "{{ nasuser.name }}"
+    group: nas-data
+    groups: users
+    append: yes
+    shell: /bin/bash
+    home: "{{ nasuser.home | default(omit) }}"
+    password: "{{ nasuser.pw | ansible.builtin.password_hash(hashtype='sha512', salt=nas_salt) }}"
+    update_password: on_create
+    state: present
+  when: not (nasuser.smbonly | default(false))
+
+- name: "{{ nasuser.name }} test samba user exists"
+  shell: >
+    pdbedit -L | grep {{ nasuser.name }} 2>&1 > /dev/null
+  register: user_exists
+  failed_when: false
+  changed_when: false
+
+- name: "{{ nasuser.name }} create samba user"
+  shell: >
+    (echo {{ nasuser.pw }}; echo {{ nasuser.pw }}) \
+    | smbpasswd -s -a {{ nasuser.name }}
+  when: user_exists.rc != 0
