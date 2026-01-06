@@ -1,0 +1,33 @@
+---
+# Jellyfin in a docker container
+
+- name: jellyfin docker root present
+  file: path={{ item }} state=directory
+    owner=root group=docker mode='0750'
+  with_items:
+    - /srv/jellyfin
+
+- name: jellyfin docker support dirs present
+  file: path={{ item }} recurse=yes state=directory
+    owner="{{jellyfin_user}}" group=docker mode='0775'
+  with_items:
+    - "{{ jellyfin_cfgdir }}"
+    - "{{ jellyfin_cachedir }}"
+
+- name: Get media user info
+  ansible.builtin.getent:
+    database: passwd
+    
+- name: Get media group info
+  ansible.builtin.getent:
+    database: group
+    
+- name: jellyfin docker config present
+  template: src='{{ item }}.j2'
+    dest='/srv/jellyfin/{{ item }}'
+    owner=root group=docker mode='0644'
+  with_items:
+    - docker-compose.yml
+  notify:
+    - reload jellyfin
+

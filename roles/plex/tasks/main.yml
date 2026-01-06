@@ -1,0 +1,34 @@
+---
+# Plex in a docker container
+
+- name: plex docker root present
+  file: path={{ item }} recurse=yes state=directory
+    owner=root group=docker mode='0750'
+  with_items:
+    - /srv/plex
+
+- name: plex docker support dirs present
+  file: path={{ item }} recurse=yes state=directory
+    owner="{{plex_user}}" group=docker mode='0775'
+  with_items:
+    - "{{ plex_cfgdir }}"
+    - "{{ plex_transdir }}"
+
+- name: Get media user info
+  ansible.builtin.getent:
+    database: passwd
+    
+- name: Get media group info
+  ansible.builtin.getent:
+    database: group
+    
+- name: plex docker config present
+  template: src='{{ item }}.j2'
+    dest='/srv/plex/{{ item }}'
+    owner=root group=root mode='0644'
+  with_items:
+    - docker-compose.yml
+  notify:
+    - reload plex
+
+

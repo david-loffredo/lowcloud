@@ -12,6 +12,7 @@ admin_email: "root@{{ domain }}"
 
 # dont install unless requested
 use_logwatch: no
+use_autofs: no
 
 # UTC is default, see paths under /usr/share/zoneinfo
 # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
@@ -26,7 +27,7 @@ hostname_ipv6:  "{{ ansible_default_ipv6.address | default('') }}"
 # something finer grained.
 host_locale:    en_US.UTF-8
 host_language:  "{{ host_locale }}"
-  
+
 #========================================
 # NTP - use nearby ntp servers by default
 #
@@ -133,6 +134,12 @@ firewall_opentcp_samba: [139, 445]
 
 firewall_openudp_smb: '{{ firewall_openudp_samba }}'
 firewall_opentcp_smb: '{{ firewall_opentcp_samba }}'
+
+firewall_openudp_plex: [1900, 32410, 32412, 32413, 32414]
+firewall_opentcp_plex: [32400, 8324, 32469]
+
+firewall_openudp_jellyfin: [7359]
+firewall_opentcp_jellyfin: [8096, 8920]
 
 # Construct the list of open TCP and UDP ports from the known services
 # and any extra ports.  A group or host var could override this, but

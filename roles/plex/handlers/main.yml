@@ -1,0 +1,16 @@
+---
+# Use docker-compose to build a customized plex image and start
+# it detached (-d).   
+
+- name: rebuild plex
+  command:
+    cmd: docker-compose build
+    chdir: /srv/plex
+  notify:
+    - reload plex
+
+- name: reload plex
+  command:
+    cmd: docker-compose up -d
+    chdir: /srv/plex
+    

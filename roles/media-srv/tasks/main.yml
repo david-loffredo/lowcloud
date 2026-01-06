@@ -1,0 +1,13 @@
+---
+# Media Server(s) like Jellyfin or Plex
+
+- name: include jellyfin media server
+  ansible.builtin.include_role:
+    name: jellyfin
+  when: "'jellyfin' in media_servers"
+
+- name: include plex media server
+  ansible.builtin.include_role:
+    name: plex
+  when: "'plex' in media_servers"
+

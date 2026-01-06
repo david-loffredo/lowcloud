@@ -1,0 +1,19 @@
+---
+
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: jellyfin/jellyfin:latest
+    pull_policy: always
+    user: {{ ansible_facts.getent_passwd[jellyfin_user].1}}:{{ ansible_facts.getent_group[jellyfin_group].1}}
+    network_mode: bridge
+    ports:
+      - 8096:8096
+      - 8920:8920
+    volumes:
+      - {{ jellyfin_cfgdir}}:/config
+      - {{ jellyfin_cachedir}}:/cache
+{% for v in jellyfin_volumes %}            
+      - {{ v }}
+{% endfor %}            
+    restart: unless-stopped

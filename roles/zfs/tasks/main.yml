@@ -26,6 +26,14 @@
 #  If they are not already present, you can install by doing:
 #   ansible-galaxy collection install community.general
 #
+# Auto snapshots are configured through zfs properties, can be set on
+# the pool and will be inherited by all filesystems.  Properties are
+# daily, monthly, weekly, or hourly.
+#
+#    com.sun:auto-snapshot:daily=true tank
+#    com.sun:auto-snapshot:daily=false tank
+#    com.sun:auto-snapshot:weekly=true,keep=52 tank
+
 - name: contrib repository is configured as a source
   template: src=apt.source.j2
     dest=/etc/apt/sources.list.d/{{ item }}-contrib.sources
@@ -41,6 +49,7 @@
     name:
       - "{{ zfs_kernel_headers }}"
       - zfsutils-linux
+      - zfs-auto-snapshot
 
 - name: find available zpools
   ansible.builtin.shell: "set -o pipefail; zpool list | awk 'FNR >1' | awk '{print $1}'"

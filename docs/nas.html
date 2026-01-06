@@ -91,29 +91,42 @@ zfs_filesystems:
        casesensitivity: mixed
 </PRE>
 
+<p>Automatic snapshots are configured through zfs properties, can be
+set on the pool and will be inherited by all filesystems.  Properties
+are daily, monthly, weekly, hourly, or frequent (~15min).  Quote the
+property value.  Quote the true/false When setting the properties in
+yaml to keep them from being changed to on/off.</p>
+
+<PRE class=code>
+    filesystem_properties:   (when setting on zpool)
+    properties:
+    	"com.sun:auto-snapshot:frequent": "false"
+    	"com.sun:auto-snapshot:daily": "true"
+    	"com.sun:auto-snapshot:daily": "true,keep=52"
+</PRE>
+
 
 <!-- ============================== -->
 <H2 class=rule>
 <A NAME=why></A>Why These Packages?</H2>
 
-<p>The simplest option is to buy a commercial NAS, set things up with
-their web interface and move on.  I preferred to build my own box, but
-did give TrueNAS a try.  It was quite slick, but was meant to act as
-an appliance. I prefer a general purpose machine that serves files,
-but can easily be used for other things.</p>
+<p>The easy path is to buy a commercial NAS, set things up with their
+web interface and move on.  I wanted to build my own box, but did give
+TrueNAS a try.  It was very nice, but intended to be an appliance. I
+prefer a general purpose machine that serves files, but can easily be
+used for other things.</p>
 
-<p>I was impressed by ZFS, and decided to use that in a simple
-mirrored setup.  Disk sizes have gotten so stupendously huge that I
-really didn't feel comfortable running a straight ext4 filesystem.
-I've rarely had disk problems, but resilvering a replacement disk is a
-lot simpler than finding and restoring double digit terabytes from
-backups.</p>
+<p>I was impressed by ZFS, and wanted to use a simple mirrored setup.
+Disk sizes have gotten so stupendously huge that I really didn't feel
+comfortable running a straight ext4 filesystem.  I've rarely had disk
+problems, but resilvering a replacement disk is a lot simpler than
+finding and restoring double digit terabytes from backups.</p>
 
 <p>Samba is an obvious choice if you are going to support Windows
 clients.  NFS is also an obvious choice if any UNIX machines are in
 the mix.  I originally built this for home use, which is mostly
 Windows with the occasional Linux box, so we'll see if that is
-sufficient.
+sufficient.</p>
 
 <figure>
 <img src="images/bigiron.jpg" alt="Big Iron Fileserver">

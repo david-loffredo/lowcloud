@@ -1,0 +1,18 @@
+---
+# Use docker-compose to build a customized jellyfin image and start
+# it detached (-d).   
+
+# need to open 8096 and 8920
+
+- name: rebuild jellyfin
+  command:
+    cmd: docker-compose build
+    chdir: /srv/jellyfin
+  notify:
+    - reload jellyfin
+
+- name: reload jellyfin
+  command:
+    cmd: docker-compose up -d
+    chdir: /srv/jellyfin
+    

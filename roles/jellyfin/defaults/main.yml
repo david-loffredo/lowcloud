@@ -1,0 +1,15 @@
+---
+# Defaults for the Jellyfin media server
+jellyfin_user:     nas-data
+jellyfin_group:    nas-data
+
+jellyfin_cfgdir:   /vault/jellyfin/config
+jellyfin_cachedir: /var/cache/jellyfin
+
+jellyfin_volumes:
+  - "/data/media:/media"
+
+# - type: bind
+#   source: /path/to/media2
+#   target: /media2
+#   read_only: true

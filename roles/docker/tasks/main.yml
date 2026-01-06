@@ -11,6 +11,12 @@
       - docker-compose
   register: dockerstate
 
+- name: service directory present
+  file: path={{ item }} state=directory
+    owner=root group=root mode='0755'
+  with_items:
+    - /srv
+    
 # force restart before doing anything else to create all of the
 # iptable rules, otherwise docker-compose will throw "Failed to
 # program FILTER" errors because it can not find the DOCKER chain.
