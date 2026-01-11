@@ -4,5 +4,5 @@ plex_user:     nas-data
 plex_group:    nas-data
 
 plex_libdir:   /data/media
-plex_cfgdir:   /vault/jellyfin/config
+plex_cfgdir:   /vault/plex/config
 plex_transdir: /var/cache/plex

@@ -1,0 +1,26 @@
+---
+# All tasks are run as the deploy user, which can sudo when needed.
+
+# NAS box will not be public, will live inside the firewall, serve
+# files with SAMBA, run bacula to back up cloud and local machines, do
+# docker plus jellyfin or maybe plex.  Automount USB drives for backup
+# and so forth.
+
+- hosts: nas
+  remote_user: "{{ deploy_acct }}"
+  become: True
+  force_handlers: True
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
+    ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
+  roles:
+    - { role: common, tags: common }
+    - { role: mailnull, tags: mail }
+    - { role: zfs, tags: zfs }
+    - { role: samba, tags: samba }
+    - { role: usbdrive, tags: usbdrive }
+    - { role: bacula-client, tags: bacula-client }
+    - { role: bacula-director, tags: bacula-director }
+    - { role: media-srv, tags: media-srv }
+
+## Need smartmontools, 

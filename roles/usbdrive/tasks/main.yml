@@ -1,0 +1,39 @@
+---
+# Install settings necessary to automount USB disks.  FAT32/vfat is
+# well supported, need extra packages for NTFS filesystems.
+
+- name: USB automount and NTFS installed
+  package:
+    state: present
+    name:
+      - autofs
+      - ntfs-3g
+
+- name: media mount directory present
+  file: path="{{ usbdrive_mountdir }}" state=directory
+    owner=root group=root mode='0755'
+
+
+# Get lookup information if we
+# want to mount with uid=1000,gid=1000,umask=002
+- name: Get usbdrive user info
+  ansible.builtin.getent:
+    database: passwd
+  when: usbdrive_user
+    
+- name: Get usbdrive group info
+  ansible.builtin.getent:
+    database: group
+  when: usbdrive_group
+
+# install some custom configs so that it recognizes where we put
+# everything and in particular, the dateext log rotation.
+- name: autofs usb configs are installed
+  template: src=autofs/{{ item }}.j2
+    dest=/etc/auto.master.d/{{ item }}
+    owner=root group=root mode='0644'
+  with_items:
+    - auto.usb
+    - usb.autofs
+    
+

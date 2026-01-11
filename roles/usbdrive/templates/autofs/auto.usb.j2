@@ -1,0 +1,20 @@
+
+# Configure /etc/auto.usb
+
+# When you use async, you will need to unmount the drive explicitly. If
+# you use sync, access time is slower, but you can just remove the drive
+# and it will automatically unmounted. Take you pick about which is more
+# important (convenience or speed).
+#
+
+*	-fstype=auto,{{ usbdrive_sync }},noatime
+{%- if usbdrive_user -%}
+,uid={{ ansible_facts.getent_passwd[usbdrive_user].1}}
+{%- endif -%}
+{%- if usbdrive_group -%}
+,uid={{ ansible_facts.getent_group[usbdrive_group].1}}
+{%- endif -%}
+{%- if usbdrive_umask -%}
+,umask={{ usbdrive_umask }}
+{%- endif %}	:/dev/sd&
+

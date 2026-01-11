@@ -1,0 +1,16 @@
+---
+
+#========================================
+# USB Drive Mount Flags
+#
+usbdrive_mountflags:
+usbdrive_mountdir: /media
+
+# change to async for faster performance, but must umount before
+# removing it.
+usbdrive_sync: sync
+
+
+usbdrive_user:
+usbdrive_group: 
+usbdrive_umask: '002'

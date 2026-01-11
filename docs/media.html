@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Media Service</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+<li><a href="#vars">Variables</a>
+<li><a href="#why">Why These Packages?</a>
+</UL>
+</div>
+
+<div class=main>
+<H1>Media Service</H1>
+ 
+<p><b>ROLES</b> media-srv, jellyfin, plex
+
+<p>The media service configuration is primarily handled by either
+"jellyfin" or "plex" roles.  These applications are installed using
+the latest docker images and export the standard ports.</p>
+
+<p>The docker-compose files for this are
+in <code>/srv/jellyfin</code>, and several volumes for the config,
+cache, and media are mounted there.  Plex is configured similarly.
+The docker compose file is set to automatically pull the latest every
+time it is started.  You can refresh the image at any time with:
+
+<PRE class=code>
+$ cd /srv/jellyfin
+$ docker-compose down
+$ docker-compose up -d
+</PRE>
+
+<p>To get a shell in a running container and look around, just exec a
+shell in the container id shown by <code>docker ps</code>.</p>
+
+<PRE class=code>
+$ docker ps    <em>list running containers</em>
+$ docker exec -it &lt;container-id&gt; sh
+</PRE>
+
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=vars></A>Variables</H2>
+
+<p>The <code>media_servers</code> variable is a list of servers to
+install, currently limited to 'jellyfin' and 'plex'.
+
+<PRE class=code>
+media_servers: [ 'jellyfin', 'plex' ]
+</PRE>
+
+<p>The Jellyfin install has variables for the user/group to run under,
+as well as cache, config, and content volumes.  Multiple content
+volumes can be specified.</p>
+
+<PRE class=code>
+jellyfin_user:     nas-data
+jellyfin_group:    nas-data
+
+jellyfin_cfgdir:   /vault/jellyfin/config
+jellyfin_cachedir: /var/cache/jellyfin
+
+jellyfin_volumes:
+  - "/data/media:/media"
+</PRE>
+
+<p>The Plex install has variables for cache, config, and a content
+volume.  This role is currently quite basic, as Plex has changed
+packaging to require an account for install</p>
+
+<PRE class=code>
+plex_libdir:   /data/media
+plex_cfgdir:   /vault/plex/config
+plex_transdir: /var/cache/plex
+</PRE>
+
+<!-- ============================== -->
+<H2 class=rule>
+<A NAME=why></A>Why These Packages?</H2>
+
+<p>I ran the Plex server on a Windows box for quite a few years, and
+was planning to do so on a NAS box when I discovered that they no
+longer let servers run completely standalone.  At that point I
+switched to Jellyfin, so the Plex role should be seen as more of a
+starting point than a finished install.</p>
+
+<figure>
+<img src="images/movietime.jpg" alt="Anytime Is Movie Time">
+<figcaption>The average 4K TV may actually be approaching the size of
+the old mall multiplex screens.
+</figcaption>
+</figure>
+
+<div class=copyright>
+<p>Copyright &copy; 2020-2026 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

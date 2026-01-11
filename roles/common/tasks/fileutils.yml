@@ -1,0 +1,10 @@
+---
+
+# rsync is usually present, but may not be on minimal OS installs
+
+- name: rsync installed
+  package:
+    state: present
+    name:
+      - rsync
+

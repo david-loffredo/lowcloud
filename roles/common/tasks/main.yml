@@ -6,10 +6,11 @@
 - { import_tasks: upgrades.yml,         tags: unattended-upgrades }
 - { import_tasks: logrotate.yml,        tags: logrotate }
 - { import_tasks: editor.yml,           tags: editor }
+- { import_tasks: fileutils.yml,        tags: fileutils }
 
 # Only install if we specifically request it for a machine
 - { include_tasks: logwatch.yml,        when: use_logwatch }
-- { include_tasks: autofs.yml,          when: use_autofs }
+
 
 # Can add alias to root .bashrc
 # alias fail2ban-all="fail2ban-client status | sed -n 's/,//g;s/.*Jail list://p' | xargs -n1 fail2ban-client status"

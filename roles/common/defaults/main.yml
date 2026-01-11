@@ -12,7 +12,6 @@ admin_email: "root@{{ domain }}"
 
 # dont install unless requested
 use_logwatch: no
-use_autofs: no
 
 # UTC is default, see paths under /usr/share/zoneinfo
 # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
@@ -58,6 +57,7 @@ ntp_package:    ntpsec
 # you can use bacula to restore any user data, like the mail spool.
 #
 snapshot_dir: "{{playbook_dir}}/snapshot/{{inventory_hostname}}"
+
 
 
 #========================================
