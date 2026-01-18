@@ -105,6 +105,18 @@ yaml to keep them from being changed to on/off.</p>
     	"com.sun:auto-snapshot:daily": "true,keep=52"
 </PRE>
 
+<p>SMART monitoring can be enabled on disks by listing them in the
+<code>smartd_drives</code> variable.  This sets up periodic short and
+long testing with email to the admin address.  You can customize the
+checks by setting <code>smartd_scan_opts</code>, or can put your own
+freeform lines into the config file with <code>smartd_extra_scanlines</code>.
+
+<PRE class=code>
+smartd_drives: 
+  - /dev/disk/by-id/ata-BIGDRIVE1
+  - /dev/disk/by-id/ata-BIGDRIVE2
+</PRE>
+
 
 <!-- ============================== -->
 <H2 class=rule>
