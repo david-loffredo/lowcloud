@@ -10,6 +10,7 @@
 
 # Only install if we specifically request it for a machine
 - { include_tasks: logwatch.yml,        when: use_logwatch }
+- { include_tasks: smartctl.yml,        when: use_smartctl }
 
 
 # Can add alias to root .bashrc

@@ -1,0 +1,42 @@
+---
+
+# if using gtk, smart-notifier 
+# exec "update-smart-drivedb" if needed to recognize drives
+
+# Get information about available storage devices.
+#   smartctl --scan
+#
+# Enable SMART support for and display detailed information about the device.
+#   smartctl -iHs on /dev/sda
+# 
+# Verify the SMART capabilities of the device.
+#   smartctl -c /dev/sda
+#
+# Manually run a short self-test.
+#   smartctl -t short /dev/sda
+#
+# Manually run a long self-test.
+#   smartctl -t long /dev/sda
+#
+# Display recent self-tests in reverse chronological order.
+#   smartctl -l selftest /dev/sda
+
+
+- name: smartmontools installed 
+  package:
+    state: present
+    name: smartmontools
+
+- name: smartd configuration 
+  template: src={{ item }}.j2
+    dest=/etc/{{ item }}
+    owner=root group=root mode='0644'
+  with_items:
+    - smartd.conf
+  notify: restart smartd
+
+- name: smartd enabled
+  service: 
+    name: smartd
+    enabled: true
+
