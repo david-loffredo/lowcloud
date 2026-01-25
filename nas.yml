@@ -23,4 +23,3 @@
     - { role: bacula-director, tags: bacula-director }
     - { role: media-srv, tags: media-srv }
 
-## Need smartmontools, 

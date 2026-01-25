@@ -35,5 +35,3 @@
   with_items:
     - auto.usb
     - usb.autofs
-    
-
