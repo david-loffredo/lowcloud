@@ -7,14 +7,18 @@
 # important (convenience or speed).
 #
 
-*	-fstype=auto,{{ usbdrive_sync }},noatime
+{% for item in usbdrive_mounts %}
+{{ item.name }}	-fstype=auto,{{ usbdrive_sync }},noatime
 {%- if usbdrive_user -%}
 ,uid={{ ansible_facts.getent_passwd[usbdrive_user].1}}
 {%- endif -%}
 {%- if usbdrive_group -%}
-,uid={{ ansible_facts.getent_group[usbdrive_group].1}}
+,gid={{ ansible_facts.getent_group[usbdrive_group].1}}
 {%- endif -%}
 {%- if usbdrive_umask -%}
 ,umask={{ usbdrive_umask }}
-{%- endif %}	:/dev/sd&
+{%- endif %}	:{{ item.dev }}
+{% endfor %}            
+
+
 

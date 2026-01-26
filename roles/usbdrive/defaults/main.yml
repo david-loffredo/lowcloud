@@ -6,6 +6,15 @@
 usbdrive_mountflags:
 usbdrive_mountdir: /media
 
+# For automounting USB drives.  When using by-path entries, you must
+# escape any colons with a backslash.
+#  - name: usb1
+#    dev: '/dev/disk/by-path/pci-0000\:00\:14.0-usb-0\:8 etc
+#  - name: '*'
+#    dev: '/dev/sd&'
+
+usbdrive_mounts: []
+
 # change to async for faster performance, but must umount before
 # removing it.
 usbdrive_sync: sync
@@ -14,3 +23,4 @@ usbdrive_sync: sync
 usbdrive_user:
 usbdrive_group: 
 usbdrive_umask: '002'
+

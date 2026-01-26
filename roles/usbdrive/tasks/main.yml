@@ -13,7 +13,6 @@
   file: path="{{ usbdrive_mountdir }}" state=directory
     owner=root group=root mode='0755'
 
-
 # Get lookup information if we
 # want to mount with uid=1000,gid=1000,umask=002
 - name: Get usbdrive user info
@@ -35,3 +34,5 @@
   with_items:
     - auto.usb
     - usb.autofs
+  notify:
+    - restart autofs

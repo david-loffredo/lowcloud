@@ -1,0 +1,6 @@
+---
+# Defines handlers applicable across all machines in the infrastructure.
+
+- name: restart autofs
+  service: name=autofs state=restarted
+
