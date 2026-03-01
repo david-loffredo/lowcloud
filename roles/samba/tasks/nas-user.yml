@@ -4,7 +4,7 @@
 - name: "{{ nasuser.name }} account present"
   user:
     name: "{{ nasuser.name }}"
-    group: nas-data
+    group: "{{ nas_data_group }}"
     groups: users
     append: yes
     shell: /bin/bash

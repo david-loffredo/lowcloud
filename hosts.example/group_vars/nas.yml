@@ -1,21 +1,26 @@
 ---
 # NAS/BACKUP SERVER MACHINE
 
+# use_logwatch: yes
+# use_autofs: yes
+
 firewall_services: [ 'samba' ]
 
-
-# 
 # ZFS Filesystems
 #
 # Use the disk ID from /dev/disk/by-id when creating the pool because
 # it is more stable than sda/sdb if disks are moved around.
+#
+# Use entire SSD as cache for the pool.  If we ever add a second pool,
+# we can remove the SSD as cache, partition it into two, and then add
+# one partition back to each pool.
 #
 # The default settings enable case sensitive filesystem, utf8
 # filenames and formD comparison (for Mac compatibility).  Those need
 # to be specified at create time.  Can add quotas later if desired to
 # limit filesystem sizes.
 #      quota: 200G
-
+#
 zfs_pools: 
   - name: tank
     vdev: >-
@@ -25,19 +30,26 @@ zfs_pools:
        cache
        nvme-FASTDRIVE
 
-# Data for media files and other general public stuff
-# Vault for backups, private system stuff
-# Might want samba users homedirs on ZFS, sys accts still /home
-zfs_filesystems: 
+zfs_filesystems:
+  # Common data for music, pictures, and movies
   - name: tank/data
     properties:
       mountpoint: /data
       casesensitivity: mixed
-      
+
+  # System data for like bacula backups of mail server, application
+  # state for jellyfin et al.
   - name: tank/vault
     properties:
       mountpoint: /vault
-      
+       
+  # Individual personal files
+  # samba users homedirs on ZFS, sys accts still /home
+  - name: tank/home
+    properties:
+      mountpoint: "{{ nas_home }}"
+
+
 samba_shares:
   - name: homes
     comment: Home Directories
@@ -69,8 +81,8 @@ samba_shares:
     writable: true
     create mask: '0755'
     directory mask: '0775'
-    force user: nas-data
-    force group: nas-data
+    force user:  "{{ nas_data_user }}"
+    force group: "{{ nas_data_group }}"
     
 # read only = !writable
 # allow delete readonly?  Lets user delete file if readonly like on unix but not dos.

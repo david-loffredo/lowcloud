@@ -60,6 +60,9 @@ partition with a fresh OS image, then configure with Ansible as usual.
 The small amount of data on the system disk (like certbot keys) can be
 handled by the <a href="snapshot.html">snapshot</a> role.</p>
 
+<p>When updating a NAS with ZFS pools, you should export the pools
+before you.
+
 <p>On Linode, I create <code>/dev/sda</code> from an OS image, swap
 as <code>/dev/sdb</code>, then create <code>/dev/sdc</code> for a LUKS
 encrypted data disk.  Using their online manager, you can delete

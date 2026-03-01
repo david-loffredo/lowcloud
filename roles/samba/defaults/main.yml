@@ -38,7 +38,11 @@ samba_shares:
 samba_share_defaults: {}
 
 
-# Make everything on these shares owned by nas-data for simplicity
+# Common user/group for shared data
+nas_data_user:  nas-data
+nas_data_group: nas-data
+
+# Everything on these shares owned by the nas data user for simplicity
 nas_data_shares: []
 
 # Salt must be [./0-9A-Za-z]+

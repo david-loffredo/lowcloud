@@ -9,6 +9,10 @@
 
 # If sudo is not installed, like with a stock debian install, you
 # can call the playbook with --become-method=su
+#
+# If deploy account is already present, you can specify it on the
+# command line with --extra-vars "first_acct=deploy" 
+
 
 - name: first setup of new server
   hosts: all

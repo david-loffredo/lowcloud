@@ -1,30 +1,30 @@
 ---
+# Create user account and group to own all common files on the NAS.
+- name: "{{ nas_data_group }} group present"
+  group:
+    name: "{{ nas_data_group }}"
+    state: present
 
-# Create a NAS-Data account to own common data files.
-
-# Should already be present on Debian.  Use for the web management
-# user accounts for each website.
-- name: nas-data group present
-  group: name=nas-data state=present
-
-# Create nas-data user account to own all common files on the nas.
-- name: nas-data account present
-  user: name=nas-data  group=nas-data
-    shell=/sbin/nologin password='*'
-    state=present
+- name: "{{ nas_data_user }} account present"
+  user:
+    name: "{{ nas_data_user }}"
+    group: "{{ nas_data_group }}"
+    shell: /sbin/nologin
+    password: '*'
+    state: present
 
 # create_home: false
 
 # - name: smb account has authorized keys
 #   authorized_key:
-#     user: nas-data
+#     user: "{{ nas_data_user }}"
 #     key:  "{{ lookup('file', nas_acct_sshpub) }}"
 
-- name: nas data root has proper ownership
+- name: NAS data shares have proper ownership
   file:
     path: "{{ item }}"
     state: directory
-    owner: nas-data
-    group: nas-data
+    owner: "{{ nas_data_user }}"
+    group: "{{ nas_data_group }}"
     mode: '02775'
   with_items: "{{ nas_data_shares }}"

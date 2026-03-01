@@ -1,7 +1,7 @@
 ---
-# Defaults for the Jellyfin media server
-plex_user:     nas-data
-plex_group:    nas-data
+# Defaults for the Plex media server
+plex_user:     "{{ nas_data_user }}"
+plex_group:    "{{ nas_data_group }}"
 
 plex_libdir:   /data/media
 plex_cfgdir:   /vault/plex/config

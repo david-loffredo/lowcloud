@@ -1,6 +1,17 @@
 ---
 # All tasks are run as the deploy user, which can sudo when needed.
 
+# Common settings for all machines
+- hosts: all
+  remote_user: "{{ deploy_acct }}"
+  become: True
+  force_handlers: True
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
+    ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
+  roles:
+    - { role: common, tags: common }
+    
 # DNS needs to be up first so that certbot can find us to issue a
 # cert.  This probably means a two phase thing - common firewall and
 # dns, wait for propogation, and then the rest.   
@@ -12,10 +23,9 @@
     ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
     ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
   roles:
-    - { role: common, tags: common }
     - { role: cryptdir, tags: cryptdir }
-    - { role: apache, tags: web }
     - { role: mailhost, tags: mail }
+    - { role: apache, tags: web }
     - { role: bacula-client, tags: bacula-client }
 
 # On the director machine we also need the client because we are doing
@@ -28,8 +38,27 @@
     ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
     ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
   roles:
-    - { role: common, tags: common }
     - { role: mailnull, tags: mail }
     - { role: cryptdir, tags: cryptdir }
-    - { role: bacula-client, tags: bacula-client }
     - { role: bacula-director, tags: bacula-director }
+
+# NAS box will not be public, will live inside the firewall, serve
+# files with SAMBA, run bacula to back up cloud and local machines, do
+# docker plus jellyfin or maybe plex.  Automount USB drives for backup
+# and so forth.
+- hosts: nas
+  remote_user: "{{ deploy_acct }}"
+  become: True
+  force_handlers: True
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
+    ansible_ssh_private_key_file: "{{ deploy_acct_sshkey }}"
+  roles:
+    - { role: mailnull, tags: mail }
+    - { role: zfs, tags: zfs }
+    - { role: samba, tags: samba }
+    - { role: usbdrive, tags: usbdrive }
+    - { role: media-srv, tags: media-srv }
+    - { role: bacula-director, tags: bacula-director }
+
+    

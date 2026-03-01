@@ -12,6 +12,7 @@
 <LI><A href=index.html>[home]</A>
 <p>
 <li><a href="#vars">Variables</a>
+<li><a href="#manage">Managing The System</a>
 <li><a href="#why">Why These Packages?</a>
 </UL>
 </div>
@@ -21,14 +22,15 @@
  
 <p><b>ROLES</b> zfs, samba
 
-<p>The NAS service configuration is primarily handled by the "zfs" and
-"samba" roles.  ZFS is used for software raid/mirroring and Samba is
-used for file sharing to Windows/MacOS clients.  Samba is configured
-on the standard ports.</p>
+<p>The NAS group in the <code>site.yml</code> sets up a machine that
+uses the "zfs" role for software raid/mirroring and the "samba" role
+for file sharing to Windows/MacOS clients.  Samba is configured on the
+standard ports.  If you are building a new machine or adding disks, be
+sure to do adequate <a href="burnin.html">burn-in testing</a>.</p>
 
-<p>Everyone's use case will be different, but my need here is a simple
-home fileserver with a common data area shared among the entire family
-and individual home areas.</p>
+<p>Everyone's use case is different, but my need is a simple
+fileserver with a shared common area for music and pictures, plus home
+directories for individual user files.</p>
 
 <p>The <code>zfs</code> role creates zpools and filesystems.  We just
 use the default Debian monthly scrub/trim cron job.  I trimmed the zfs
@@ -122,19 +124,38 @@ smartd_drives:
 
 <!-- ============================== -->
 <H2 class=rule>
+<A NAME=manage></A>Managing the System</H2>
+
+
+<p>Use <code>arcstat</code> to get basic status on the memory cache or
+use the <code>arc_summary</code> command for a more detailed report on
+the ZFS subsystem.</p>
+
+<PRE class=code>
+% arcstat
+
+% arc_summary | more
+% arc_summary -d | more
+</PRE>
+
+
+
+
+<!-- ============================== -->
+<H2 class=rule>
 <A NAME=why></A>Why These Packages?</H2>
 
-<p>The easy path is to buy a commercial NAS, set things up with their
-web interface and move on.  I wanted to build my own box, but did give
-TrueNAS a try.  It was very nice, but intended to be an appliance. I
-prefer a general purpose machine that serves files, but can easily be
-used for other things.</p>
+<p>The easy path is to buy a commercial NAS and just configure with
+their web interface.  I prefer to assemble my own hardware, but did
+try TrueNAS.  It was very smooth, but assumed total control of the
+machine. I want a machine that serves files, but can easily be used
+for general purpose things as well.</p>
 
-<p>I was impressed by ZFS, and wanted to use a simple mirrored setup.
-Disk sizes have gotten so stupendously huge that I really didn't feel
+<p>Disk sizes have gotten so stupendously huge that I didn't feel
 comfortable running a straight ext4 filesystem.  I've rarely had disk
-problems, but resilvering a replacement disk is a lot simpler than
-finding and restoring double digit terabytes from backups.</p>
+problems, but resilvering a replacement disk on a ZFS mirrored setup
+is a lot simpler than finding and restoring double digit terabytes
+from backups.</p>
 
 <p>Samba is an obvious choice if you are going to support Windows
 clients.  NFS is also an obvious choice if any UNIX machines are in
@@ -145,7 +166,7 @@ sufficient.</p>
 <figure>
 <img src="images/bigiron.jpg" alt="Big Iron Fileserver">
 <figcaption>Your NAS box should be big iron, like a Pentium 4 box
-serving out 120G of pure disk goodness.
+serving 120G of pure disk goodness.
 </figcaption>
 </figure>
 

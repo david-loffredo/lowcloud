@@ -1,5 +1,5 @@
 {%- set dir_names=[] -%}
-{%- for i in groups['backup_server'] -%}
+{%- for i in groups['bacula_director'] -%}
 {{- dir_names.append(
     hostvars[i].bacula_director_name | default(
     hostvars[i].inventory_hostname_short + '-dir')) -}}
@@ -31,7 +31,9 @@ FileDaemon {
   Maximum Concurrent Jobs = {{ bacula_client_max_jobs }}
 }
 
-# All messages except skipped files back to primary director
+# All messages except skipped files back to director.  The director
+# name is ignored and messages are sent to the director that started
+# the job.
 {% for dir_name in [dir_names.0] %}
 Messages {
   Name = Standard

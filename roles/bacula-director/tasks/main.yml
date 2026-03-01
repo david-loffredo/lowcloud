@@ -62,7 +62,7 @@
 - name: bacula config files present
   template: src={{ item }}.j2
     dest=/etc/bacula/{{ item }}
-    owner=root group=bacula mode='0640'
+    owner=bacula group=bacula mode='0640'
   with_items:
     - bacula-dir.conf
     - bacula-sd.conf
@@ -85,14 +85,14 @@
 # SSH Tunnel Things ---------------------------------------
 - name: bacula tunnel script present
   template: src={{ item }} dest=/etc/bacula/{{ item }}
-    owner=root group=bacula mode='0750'
+    owner=bacula group=bacula mode='0750'
   with_items:
     - ssh-tunnel.sh
 
 - name: bacula tunnel keys for all clients
   copy: src={{ item.src }}
     dest=/etc/bacula/tunnel/{{ item.dst }}
-    owner=root group=bacula mode='0640'
+    owner=bacula group=bacula mode='0640'
   with_items: >-
     {%- set ns = namespace(keys=[]) -%}
     {%- for i in bacula_clients -%}

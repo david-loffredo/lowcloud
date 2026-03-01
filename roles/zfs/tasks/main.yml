@@ -40,9 +40,13 @@
     owner=root group=root mode='0644'
   with_items:
     - "{{ ansible_distribution_release }}"
-  notify:
-    - update contrib cache
+  register: contrib_aptsource
 
+# force cache update now if changed
+- name: update contrib apt cache 
+  apt: update_cache=yes
+  when: contrib_aptsource.changed
+  
 - name: zfs packages are installed
   package:
     state: present

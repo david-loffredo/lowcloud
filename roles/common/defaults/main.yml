@@ -216,7 +216,7 @@ fail2ban_jails_expanded: >-
   {%- set ns = namespace(lst=(fail2ban_jail_ssh)) -%}
   {%- for i in fail2ban_jails -%} 
   {%- if i is string -%}
-  {{- ns.lst.extend( lookup('vars', 'fail2ban_jail_' + i, default=[{'name': i}]) ) -}}
+  {{- ns.lst.extend( lookup('vars', 'fail2ban_jail_' + i, default=[]) ) -}}
   {%- elif i is mapping -%}
   {{- ns.lst.append( i ) -}}
   {%- endif -%}

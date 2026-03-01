@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Hardware Validation and Burn-In</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class=toc>
+<UL>
+<LI><A href=index.html>[home]</A>
+<p>
+</UL>
+</div>
+
+<div class=main>
+<H1>Hardware Validation and Burn-In</H1>
+ 
+<p>When building a new machine or adding new disks, it is wise to do
+some hardware validation and burn-in testing.  This can verify that
+the machine has sufficient cooling and that disks have no obvious
+faults before loading all of your data onto it.</p>
+
+<p>The <code>s-tui</code> and <code>stress-ng</code> packages are good
+for stress testing the CPU and thermal behavior under load.
+The <code>s-tui</code> application brings up a nice text-mode summary
+of all processors, loads, and temperatures while saturating the CPU so
+you can see where temperatures stabilize.</p>
+
+<PRE class=code>
+% apt install stress-ng
+% apt install s-tui
+% apt install tmux
+
+% s-tui
+</PRE>
+
+<p>The first phase of testing drives is to run the SMART tests.  First
+run a short self-test, followed by a conveyance test.  These should
+only take a few minutes to complete.  Then finally, run the long test,
+which will take quite some time to complete.
+
+<PRE class=code>
+% smartctl -t short /dev/adaX
+% smartctl -t conveyance /dev/adaX
+% smartctl -t long /dev/adaX
+</PRE>
+
+<p>If the drive is not in service yet, use <code>badblocks</code> to
+do a <b>data-destructive</b> test of the entire disk.  This may take a
+day or two for larger disks</p>
+
+Run <code>tmux</code> to get several virtual consoles that you can run
+copies in parallel, and reconnect if you lose your SSH connection.
+Type <code>Ctrl+B "</code> (double-quote) to split the screen and make
+a new shell and <code>Ctrl+B ;</code> to move between shells.
+Type <code>tmux attach</code> to connect to a running session.</p>
+
+<p>Run badblocks on the drive.  THIS WILL DESTROY ANY DATA ON THE
+DISK.  It will write a series of values to every location on the disk.
+For drives larger than 2TB, it may be necessary to specify a larger
+block size for the test.</p>
+
+<PRE class=code>
+% badblocks -ws /dev/adaX
+% badblocks -b 4096 -ws /dev/adaX   # bigger block size
+% badblocks -b 8192 -ws /dev/daX    # for +14TB
+</PRE>
+
+<p>When done, assuming everything completed successfully, get a SMART
+report and look for anything unusual in the RAW VALUE results.</p>
+
+<PRE class=code>
+% smartctl -A /dev/adaX
+</PRE>
+
+
+
+<div class=copyright>
+<p>Copyright &copy; 2020-2026 David Loffredo, licensed under
+<a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">
+CC BY-SA 4.0</a>.
+</p>
+</div>
+</div>
+</body>
+</html>

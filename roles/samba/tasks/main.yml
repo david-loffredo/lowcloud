@@ -2,13 +2,16 @@
 # Debian 13 version
 # samba      2:4.22.6
 
+# Samba needs firewall ports 137, 138, 139, 445
+# add 'samba' to firewall_services
+
 - name: samba packages are installed
   package:
     state: present
     name:
       - samba
 
-- name: configure for nas-data
+- name: configure for NAS data
   include_tasks: nas-data.yml
   when: nas_data_shares | default([])
 
@@ -32,12 +35,5 @@
   loop_control:
     loop_var: nasuser
   when: nas_users | default([])
-
-
-  # Need to let samba in through the firewall  ports 137, 138, 139, 445
-#iptables -A INPUT -p udp --dport 137 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
-#iptables -A INPUT -p udp --dport 138 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
-#iptables -A INPUT -p tcp --dport 139 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
-#iptables -A INPUT -p tcp --dport 445 -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
 
 

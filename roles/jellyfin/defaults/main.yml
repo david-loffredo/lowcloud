@@ -1,7 +1,7 @@
 ---
 # Defaults for the Jellyfin media server
-jellyfin_user:     nas-data
-jellyfin_group:    nas-data
+jellyfin_user:     "{{ nas_data_user }}"
+jellyfin_group:    "{{ nas_data_group }}"
 
 jellyfin_cfgdir:   /vault/jellyfin/config
 jellyfin_cachedir: /var/cache/jellyfin

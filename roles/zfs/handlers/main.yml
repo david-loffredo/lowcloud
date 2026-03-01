@@ -1,5 +1,0 @@
----
-# Defines handlers applicable across all machines in the infrastructure.
-
-- name: update contrib cache 
-  apt: update_cache=yes
