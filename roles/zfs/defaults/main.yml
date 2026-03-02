@@ -36,6 +36,8 @@ zfs_pools: []
 # https://openzfs.github.io/openzfs-docs/man/7/zpoolprops.7.html
 zfs_pools_defaults: {}
 
+zfs_pools_force_import: true
+
 
 zfs_filesystems: []
 #   - name: mypool/myfs
@@ -64,6 +66,9 @@ zfs_filesystems_properties_defaults:
   snapdir: hidden
   sync: standard
   utf8only: true
-  xattr: sa
+  
+  # As of OpenZFS 2.3.0 xattr=on is equivalent to xattr=sa on Linux
+  # Older versions should still use sa.
+  xattr: on
 
   

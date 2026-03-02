@@ -109,6 +109,10 @@ yaml to keep them from being changed to on/off.</p>
     	"com.sun:auto-snapshot:daily": "true,keep=52"
 </PRE>
 
+<p>The role will create the pools if they do not exist, or force
+import them if they are available, even if they were not previously
+exported.</p>
+
 <p>SMART monitoring can be enabled on disks by listing them in the
 <code>smartd_drives</code> variable.  This sets up periodic short and
 long testing with email to the admin address.  You can customize the

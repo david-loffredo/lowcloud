@@ -31,7 +31,8 @@
     - name: create 'zpool import' command
       ansible.builtin.set_fact:
         zpool_import_command: >-
-          zpool import -f
+          zpool import
+          {{ '-f ' if zfs_pools_force_import | default(true) | bool else '' }}
           {% for property, value in (prepared_zpool_properties.properties | dictsort) %}
           -o {{ (property ~ '=' ~ value) | quote }}
           {% endfor %}

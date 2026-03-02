@@ -1,3 +1,17 @@
+## [2.1] - In Progress
+
+- Added a NAS host config, with ZFS and Samba, smartctl monitoring,
+  usbdrive automounting, and media server.
+
+- Added Jellyfin and Plex media server roles, in docker containers.
+
+- Tested NAS host config with Debian 13.
+
+- Prefer ipv4 for admin emails.
+
+- Completely disable root ssh in first.yml, not just disable pw.
+  Also make sure that sudo is present.
+
 ## [2.0] - 2025-05-22
 
 - Moved to Debian 12, with many fixes to logwatch and fail2ban to

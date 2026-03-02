@@ -7,13 +7,23 @@
   with_items:
     - /srv/jellyfin
 
-- name: jellyfin docker support dirs present
-  file: path={{ item }} recurse=yes state=directory
-    owner="{{jellyfin_user}}" group=docker mode='0775'
+# Recursively set owner/group but not permissions.  Setting
+# the mode with recurse sets all files to '0775' too
+- name: jellyfin docker support dirs present with owner
+  file: path={{ item }} state=directory
+    owner="{{jellyfin_user}}"
+    group="{{jellyfin_group}}"
+    recurse=yes
   with_items:
     - "{{ jellyfin_cfgdir }}"
     - "{{ jellyfin_cachedir }}"
 
+- name: jellyfin docker support dirs permissions
+  file: path={{ item }} state=directory mode='0755' 
+  with_items:
+    - "{{ jellyfin_cfgdir }}"
+    - "{{ jellyfin_cachedir }}"
+    
 - name: Get media user info
   ansible.builtin.getent:
     database: passwd
