@@ -45,10 +45,6 @@ nas_data_group: nas-data
 # Everything on these shares owned by the nas data user for simplicity
 nas_data_shares: []
 
-# Salt must be [./0-9A-Za-z]+
-# nas_user_salt: 12345kjasflak
-
-
 # nas_users:
 #   - name: username
 #     pw: cleartext

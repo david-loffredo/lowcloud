@@ -55,3 +55,12 @@ vault_mbox_user3_pw: [change me to cleartext password]
 # Session data encryption. For DES must be 24char, but we use AES
 vault_webmail_des_key: '123456789012345678901234'
 
+
+# NAS Samba users - These have unix accounts as well as Samba
+# passwords.  They will only be able to SMB mount shared disks, but
+# unless you add an SSH authorized key, they can only log in on the
+# console.
+
+vault_nas_usera_pw: [change me to cleartext password]
+vault_nas_userb_pw: [change me to cleartext password]
+vault_nas_userc_pw: [change me to cleartext password]

@@ -34,6 +34,7 @@
 #    com.sun:auto-snapshot:daily=false tank
 #    com.sun:auto-snapshot:weekly=true,keep=52 tank
 
+     
 - name: contrib repository is configured as a source
   template: src=apt.source.j2
     dest=/etc/apt/sources.list.d/{{ item }}-contrib.sources
@@ -97,20 +98,9 @@
   loop_control:
     loop_var: zfs_filesystem
    
-- name: samba packages are installed
-  package:
-    state: present
-    name:
-      - samba
-
-
-      
-# create pools as needed
+# create pools 
 #  zpool create tank mirror scsi-35000cca2735cbc38 scsi-35000cca266cc4b3c
 #  zpool add tank cache nvme-MT001600KWHAC_S3M0NA0K700264
-
-# make filesystem
-#  zfs create -o casesensitivity=mixed -o xattr=sa -o dnodesize=auto tank/data
 
 # For dumping detailed info use /usr/sbin/zdb -C
 

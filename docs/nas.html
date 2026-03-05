@@ -125,6 +125,36 @@ smartd_drives:
   - /dev/disk/by-id/ata-BIGDRIVE2
 </PRE>
 
+<p>NAS Samba users are created through the <code>nas_users</code>
+variable, which takes a list of name, password, and other values.
+They will have unix accounts with SMB passwords.  They will be able to
+SMB mount shared disks, but unless you add an SSH authorized key, they
+can only log in on the console.</p>
+
+<p>You can set <code>smbonly</code> if the unix account exists already
+from some other action and you just want to set the SMB password.  The
+account must already exist at this point if you set to true.</p>
+
+<PRE class=code>
+nas_users:
+  - name: someuser
+    pw: "{{ vault_nas_someuser_pw }}"
+    # home: /homenas/someuser   if want homedir elsewhere
+    # smbonly: true             skip create unix acct
+</PRE>
+
+<p>To change passwords after account creation, log as the user and
+run <code>smbpasswd</code>.  This will change SMB and unix passwords
+together.</p>
+
+<PRE class=code>
+% smbpasswd
+Old SMB password: *****
+New SMB password: ******** 
+Retype new SMB password: ******** 
+Password changed for user someuser
+</PRE>
+
 
 <!-- ============================== -->
 <H2 class=rule>

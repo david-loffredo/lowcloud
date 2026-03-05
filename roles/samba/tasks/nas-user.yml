@@ -1,6 +1,10 @@
 ---
 # Create unix and smb account settings for a single user
 
+# Only updates password on creation, so no need to manage a consistent
+# salt with an extra param like salt=nasuser.salt|default(nas_salt).  Some
+# people will use the inventory_hostname as the salt in cases like that.
+
 - name: "{{ nasuser.name }} account present"
   user:
     name: "{{ nasuser.name }}"
@@ -9,7 +13,7 @@
     append: yes
     shell: /bin/bash
     home: "{{ nasuser.home | default(omit) }}"
-    password: "{{ nasuser.pw | ansible.builtin.password_hash(hashtype='sha512', salt=nas_salt) }}"
+    password: "{{ nasuser.pw | ansible.builtin.password_hash('sha512') }}"
     update_password: on_create
     state: present
   when: not (nasuser.smbonly | default(false))

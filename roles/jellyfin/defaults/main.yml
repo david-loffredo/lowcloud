@@ -1,7 +1,15 @@
 ---
 # Defaults for the Jellyfin media server
-jellyfin_user:     "{{ nas_data_user }}"
-jellyfin_group:    "{{ nas_data_group }}"
+
+# Could run as the nas data account if you want jellyfin to have write
+# access to the media data or just as its own account if you prefer it
+# to have read only access.
+
+# jellyfin_user:     "{{ nas_data_user }}"
+# jellyfin_group:    "{{ nas_data_group }}"
+
+jellyfin_user:     jellyfin
+jellyfin_group:    jellyfin
 
 jellyfin_cfgdir:   /vault/jellyfin/config
 jellyfin_cachedir: /var/cache/jellyfin

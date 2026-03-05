@@ -1,19 +1,41 @@
 ---
 # Plex in a docker container
+- name: "{{ plex_group }} group present"
+  group:
+    name: "{{ plex_group }}"
+    state: present
+
+- name: "{{ plex_user }} account present"
+  user:
+    name: "{{ plex_user }}"
+    group: "{{ plex_group }}"
+    shell: /sbin/nologin
+    password: '*'
+    state: present
 
 - name: plex docker root present
-  file: path={{ item }} recurse=yes state=directory
+  file: path={{ item }} state=directory
     owner=root group=docker mode='0750'
   with_items:
     - /srv/plex
 
-- name: plex docker support dirs present
-  file: path={{ item }} recurse=yes state=directory
-    owner="{{plex_user}}" group=docker mode='0775'
+# Recursively set owner/group but not permissions.  Setting
+# the mode with recurse sets all files to '0775' too
+- name: plex docker support dirs present with owner
+  file: path={{ item }} state=directory
+    owner="{{plex_user}}"
+    group="{{plex_group}}"
+    recurse=yes
   with_items:
     - "{{ plex_cfgdir }}"
     - "{{ plex_transdir }}"
 
+- name: plex docker support dirs permissions
+  file: path={{ item }} state=directory mode='0755' 
+  with_items:
+    - "{{ plex_cfgdir }}"
+    - "{{ plex_transdir }}"
+    
 - name: Get media user info
   ansible.builtin.getent:
     database: passwd
@@ -25,10 +47,8 @@
 - name: plex docker config present
   template: src='{{ item }}.j2'
     dest='/srv/plex/{{ item }}'
-    owner=root group=root mode='0644'
+    owner=root group=docker mode='0644'
   with_items:
     - docker-compose.yml
   notify:
     - reload plex
-
-

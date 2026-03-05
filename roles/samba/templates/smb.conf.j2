@@ -85,7 +85,10 @@
 # parameters must be set (thanks to Ian Kahan <<kahan@informatik.tu-muenchen.de> for
 # sending the correct chat script for the passwd program in Debian Sarge).
    passwd program = /usr/bin/passwd %u
-   passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* .
+
+# DEFAULT VALUE NO LONGER WORKS - password change wording different in Trixie
+#   passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* .
+   passwd chat = *New\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* .
 
 # This boolean controls whether PAM will be used for password changes
 # when requested by an SMB client instead of the program listed in

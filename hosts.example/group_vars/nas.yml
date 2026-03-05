@@ -101,7 +101,6 @@ nas_data_shares:
 # action and you just want to set the smb password.  The account must
 # already exist at this point if you set to true.
 
-nas_salt: "{{ vault_nas_salt }}"
 nas_users:
   - name: someuser
     pw: "{{ vault_nas_someuser_pw }}"

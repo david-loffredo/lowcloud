@@ -1,7 +1,15 @@
 ---
 # Defaults for the Plex media server
-plex_user:     "{{ nas_data_user }}"
-plex_group:    "{{ nas_data_group }}"
+
+# Could run as the nas data account if you want plex to have write
+# access to the media data or just as its own account if you prefer it
+# to have read only access.
+
+# plex_user:     "{{ nas_data_user }}"
+# plex_group:    "{{ nas_data_group }}"
+
+plex_user:     plex
+plex_group:    plex
 
 plex_libdir:   /data/media
 plex_cfgdir:   /vault/plex/config

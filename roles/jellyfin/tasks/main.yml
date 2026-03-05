@@ -1,5 +1,17 @@
 ---
 # Jellyfin in a docker container
+- name: "{{ jellyfin_group }} group present"
+  group:
+    name: "{{ jellyfin_group }}"
+    state: present
+
+- name: "{{ jellyfin_user }} account present"
+  user:
+    name: "{{ jellyfin_user }}"
+    group: "{{ jellyfin_group }}"
+    shell: /sbin/nologin
+    password: '*'
+    state: present
 
 - name: jellyfin docker root present
   file: path={{ item }} state=directory
