@@ -32,19 +32,21 @@
 
 # changing this after the fact might require dpkg-reconfigure 
 - name: bacula database config installed
-  template: src={{ item }}.conf.j2
-    dest=/etc/dbconfig-common/{{ item }}.conf
+  template: src=bacula-director-{{ item }}.conf.j2
+    dest=/etc/dbconfig-common/bacula-director-{{ item }}.conf
     owner=root group=root mode='0600'
   with_items:
-    - "{{ bacula_db_pkg[bacula_db] }}"
+    - "{{ bacula_db }}"
 
+# with_items will flatten the list in db_pkgs
 - name: bacula director packages installed
   package:
     state: present
-    name:
-      - "{{ bacula_db_pkg[bacula_db] }}"
-      - bacula-server
-      - bacula-console
+    name: "{{ item }}"
+  with_items:
+    - "{{ bacula_db_pkgs[bacula_db] }}"
+    - bacula-server
+    - bacula-console
 
 # Was O/G root/bacula and 770, but changed to bacula/bacula 700
 # because that is the expected config.
@@ -55,9 +57,8 @@
     - "{{ bacula_director_workdir }}"
     - "{{ bacula_storage_workdir }}"
     - "{{ bacula_storage_datadir }}"
-    - /etc/bacula/tunnel
 
-
+   
 # Configs for director, storage daemon, and console
 - name: bacula config files present
   template: src={{ item }}.j2
@@ -89,10 +90,17 @@
   with_items:
     - ssh-tunnel.sh
 
+# SSH requires key dir 700 and file 600
+- name: bacula tunnel key directory present
+  file: state=directory path="{{ item }}"
+    owner=bacula group=bacula mode='0700'
+  with_items:
+    - /etc/bacula/tunnel
+
 - name: bacula tunnel keys for all clients
   copy: src={{ item.src }}
     dest=/etc/bacula/tunnel/{{ item.dst }}
-    owner=bacula group=bacula mode='0640'
+    owner=bacula group=bacula mode='0600'
   with_items: >-
     {%- set ns = namespace(keys=[]) -%}
     {%- for i in bacula_clients -%}
@@ -116,7 +124,6 @@
     - "{{ bacula_storage_host }}"
 
 # RedHat and Suse would also need stuff in sysconfig
-
 - name: bacula services start at boot - {{ bacula_director_bootstart }}
   service: name={{ item }} state=started
     enabled={{ bacula_director_bootstart }}
