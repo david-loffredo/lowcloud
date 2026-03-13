@@ -54,7 +54,9 @@
     name:
       - "{{ zfs_kernel_headers }}"
       - zfsutils-linux
-      - zfs-auto-snapshot
+
+# Use sanoid instead      
+# zfs-auto-snapshot
 
 - name: find available zpools
   ansible.builtin.shell: "set -o pipefail; zpool list | awk 'FNR >1' | awk '{print $1}'"

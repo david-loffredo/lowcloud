@@ -72,7 +72,7 @@ can check dozens of lists at once.
 
 <!-- ============================== -->
 <H2 class=rule>
-<A NAME=backup></A>Backup Server</H2>
+<A NAME=backup></A>Backup Server and NAS</H2>
 
 <p>The backup machine should be something under your physical control,
 usually an old machine in your basement.  It connects to other
@@ -83,6 +83,14 @@ residential ISP connection.</p>
 <p>Literally anything that runs Linux will work fine, as long as it
 has some disk space for the backup data.  For personal email and some
 system files, even a good-sized USB key is probably sufficient.</p>
+
+<p>The playbooks assume that you are using a fresh machine.  If you
+use a NAS that is already running other things,
+the <code>bacula-director</code> role should be fairly self-contained,
+but the <code>common</code> and <code>mailnull</code> roles might
+interfere with existing things on the machine.  I see that FreeNAS
+advertizes a Bacula plugin, so you might be able to use this role as
+the starting point to configure that.</p>
 
 <p>The playbooks assume that you are using a fresh machine.  If you
 use a NAS that is already running other things,

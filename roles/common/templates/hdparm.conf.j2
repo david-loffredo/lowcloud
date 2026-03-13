@@ -1,0 +1,10 @@
+
+{% if hdparm_drives|length > 0 %}
+{% for drv, drvparms in hdparm_drives.items() %}
+{{ drv }} {
+{% for parm, parmval in drvparms.items() %}
+   {{ parm }} = {{ parmval }}
+{% endfor %}
+}
+{% endfor %}
+{% endif %}

@@ -83,6 +83,29 @@ smartd_scan_opts:
 # -M test send a test email on startup
 
 
+
+
+
+#========================================
+
+# HDPARM drive parameters - If any devices are listed in
+# hdparm_drives, hdparm will be installed and a hdparm.conf will be
+# created with the hash of parameters associated with each drive.
+
+use_hdparm:
+  "{{ (hdparm_drives|length) > 0 }}"
+
+
+# Settings for a drive using its persistent UUID (recommended)
+# hdparm_drives:
+#   - /dev/disk/by-uuid/your-drive-uuid:
+#       - apm: 127
+#       - spindown_time: 240
+
+
+hdparm_drives: {}
+
+  
 #========================================
 # Network and Firewall settings
 #

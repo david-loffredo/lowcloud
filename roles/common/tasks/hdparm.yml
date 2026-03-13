@@ -1,0 +1,28 @@
+---
+# hdparm is installed in /sbin.  The settings are not persistent so
+# Debian has a script that runs at boot.  Other distros may have a
+# service to manage that.
+#
+# Get status of hard drives
+#   hdparm -C /dev/sdX see status
+#   hdparm -B apm    1-127 allow standby 128+ no standby
+#   hdparm -S 240    set standby time 20min
+#   hdparm -S 180    set standby time 15min
+#   hdparm -S 241    set standby time 30min
+# 
+# RELOAD CONF BY RUNNING
+# DEVNAME=/dev/sda /usr/lib/udev/hdparm
+
+- name: hdparm installed 
+  package:
+    state: present
+    name: hdparm
+
+- name: hdparm configuration 
+  template: src={{ item }}.j2
+    dest=/etc/{{ item }}
+    owner=root group=root mode='0644'
+  with_items:
+    - hdparm.conf
+  notify: reload hdparm
+
