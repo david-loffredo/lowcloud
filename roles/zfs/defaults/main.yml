@@ -51,7 +51,10 @@ zfs_filesystems: []
 # normalization can only be set at creation time.  formD normalization
 # is the recommended value for interoperation with MacOS.
 # 
-# Can add quotas later if desired to limit filesystem sizes.
+# Can add quotas later if desired to limit filesystem sizes.  Note
+# that you can use M/G/T units for the quota, but you may want to
+# convert it to bytes yourself.  When using M/G/T, Ansible shows the
+# value as changed because zfs reports current the quota in bytes.
 #    quota: 200G
 
 zfs_filesystems_properties_defaults:
@@ -71,4 +74,52 @@ zfs_filesystems_properties_defaults:
   # Older versions should still use sa.
   xattr: on
 
+
+#========================================
+# ZFS Snapshot Policy with SANOID.  If policy is set, install sanoid
+# and create sanoid.conf with the hash of parameters associated with
+# each drive.
+
+use_sanoid:
+  "{{ (zfs_snapshot_policy|length) > 0 }}"
+
   
+# Policy for individual filesystems.  Typically just set use_template
+# to apply templates defined by zfs_snapshot_templates.  Local
+# overrides can be added as needed however.
+#
+# zfs_snapshot_policy:
+#    zpoolname/datasetname:
+#       use_template: base
+#
+#       # local overrides
+#       hourly: 12
+#       monthly: 1
+#
+zfs_snapshot_policy: {}
+
+# Common templates, numbers indicate how many copies to keep before
+# pruning.  For example daily: 7 is keep seven daily snapshots.
+#
+zfs_snapshot_templates:
+  base:
+    frequently: 0
+    hourly: 24
+    daily: 7
+    weekly: 4
+    monthly: 6
+    yearly: 0
+    autosnap: yes
+    autoprune: yes
+
+
+# Sanoid runs periodically from a systemd timer.  If the default timer
+# is not appropriate, change here.  May be needed if it prevents disks
+# from going into standby.
+#
+# zfs_snapshot_timer:
+#    OnCalendar: daily
+#    Description: Run Sanoid Daily
+#
+zfs_snapshot_timer: {}
+    

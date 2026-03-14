@@ -80,11 +80,13 @@ zfs_pools:
 
 Specify pool <code>properties:</code> for a specific ashift,
 or <code>filesystem_properties:</code> for things like compression or
-case sensitivity. </p>
+case sensitivity. The role will create the pools if they do not exist,
+or force import them if they are available, even if they were not
+previously exported.</p>
 
-<p>The <code>zfs_filesystems</code> variable gives a list of
-filesystems, with a list of properties.  The contents
-of <code>zfs_filesystems_properties_defaults:</code> are applied to
+<p>The <code>zfs_filesystems</code> variable lists filesystems, with
+their properties.
+The <code>zfs_filesystems_properties_defaults</code> are applied to
 every filesystem.</p>
 
 <PRE class=code>
@@ -93,36 +95,71 @@ zfs_filesystems:
     properties:
        mountpoint: /myfs
        casesensitivity: mixed
+       quota: 20G
 </PRE>
 
-<p>Automatic snapshots are configured through zfs properties, can be
-set on the pool and will be inherited by all filesystems.  Properties
-are daily, monthly, weekly, hourly, or frequent (~15min).  Quote the
-property value.  Quote the true/false When setting the properties in
-yaml to keep them from being changed to on/off.</p>
+<p>Some settings (casesensitivity, encryption, keyformat, pbkdf2iters,
+utf8only, and normalization) can only be set at creation time.  Use
+the quota keyword to limit filesystem sizes.  The value can use M/G/T
+units, but when doing so, Ansible will always show the value as
+changed because zfs reports current the quota in bytes.</p>
+
+<p>For automatic snapshots, configure filesystems in
+the <code>zfs_snapshot_policy</code> dictionary with templates defined
+by the <b>zfs_snapshot_templates</b> dictionary.  The daily, monthly,
+weekly, hourly, or frequently (~15min) properties list the number of
+copies to maintain.  Zero indicates no snapshot.</p>
 
 <PRE class=code>
-    filesystem_properties:   (when setting on zpool)
-    properties:
-    	"com.sun:auto-snapshot:frequent": "false"
-    	"com.sun:auto-snapshot:daily": "true"
-    	"com.sun:auto-snapshot:daily": "true,keep=52"
+zfs_snapshot_policy:
+    tank/myfs: { use_template: base }
+
+zfs_snapshot_templates:
+  base:
+    frequently: 0
+    hourly: 24
+    daily: 7
+    weekly: 4
+    monthly: 6
+    yearly: 0
+    autosnap: yes
+    autoprune: yes
 </PRE>
 
-<p>The role will create the pools if they do not exist, or force
-import them if they are available, even if they were not previously
-exported.</p>
+<p>Sanoid runs every 15min from a systemd timer.  If this is more
+frequent than you need, perhaps preventing disks from standby, you can
+modify it with the <code>zfs_snapshot_timer</code> variable.</p>
 
-<p>SMART monitoring can be enabled on disks by listing them in the
-<code>smartd_drives</code> variable.  This sets up periodic short and
-long testing with email to the admin address.  You can customize the
-checks by setting <code>smartd_scan_opts</code>, or can put your own
-freeform lines into the config file with <code>smartd_extra_scanlines</code>.
+<p>Enable SMART monitoring on disks by listing them in the
+<code>smartd_drives</code> variable.  If set, smartmontools is
+installed and smard.conf is created.  It will set up periodic short
+and long testing with email to the admin address.  You can customize
+the checks by setting <code>smartd_scan_opts</code>, or
+set <code>smartd_extra_scanlines</code> to put your own freeform lines
+into the config file.
 
 <PRE class=code>
 smartd_drives: 
   - /dev/disk/by-id/ata-BIGDRIVE1
   - /dev/disk/by-id/ata-BIGDRIVE2
+</PRE>
+
+<p>Set power management and spindown time for your HDDs with
+the <code>hdparm_drives</code> variable.  If set, hdparm is installed
+and hdparm.conf is created.  This variable is a dictionary with the
+UUID device of the HDD and the parameters to set.  Automatic power
+management (APM) values 1-127 permit spin-down, while 128-254 do not
+(See "hdparm -B").  Spin down times 1-240 are multiples of 5sec, while
+241-251 are 1-11*30min (See "hdparm -S").</p>
+
+<PRE class=code>
+hdparm_drives:
+    /dev/disk/by-id/ata-BIGDRIVE1:
+         apm: 127
+         spindown_time: 240
+    /dev/disk/by-id/ata-BIGDRIVE2:
+         apm: 127
+         spindown_time: 240
 </PRE>
 
 <p>NAS Samba users are created through the <code>nas_users</code>
@@ -190,6 +227,12 @@ comfortable running a straight ext4 filesystem.  I've rarely had disk
 problems, but resilvering a replacement disk on a ZFS mirrored setup
 is a lot simpler than finding and restoring double digit terabytes
 from backups.</p>
+
+<p>I chose sanoid over zfs-auto-snapshot because sanoid has a simple
+configuration file and actually obeys it.  I did not want frequent and
+hourly snapshots but zfs-auto-snapshot seemed to ignore the
+com.sun:auto-snapshot:frequently and hourly properties, contrary to
+the documentation.</p>
 
 <p>Samba is an obvious choice if you are going to support Windows
 clients.  NFS is also an obvious choice if any UNIX machines are in

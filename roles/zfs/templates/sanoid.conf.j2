@@ -1,0 +1,36 @@
+#
+# Sanoid Configuration
+#
+#[zpoolname/datasetname]
+#       use_template = base
+#	# override settings in the template
+#       hourly = 12
+#       monthly = 1
+#
+
+{% if zfs_snapshot_policy|length > 0 %}
+{% for drv, drvparms in zfs_snapshot_policy.items() %}
+[{{ drv }}]
+{% for parm, parmval in drvparms.items() %}
+	{{ parm }} = {{ parmval }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+
+
+
+# --------------------
+# Templates
+#
+{% if zfs_snapshot_templates|length > 0 %}
+{% for tpl, tplparms in zfs_snapshot_templates.items() %}
+[template_{{ tpl }}]
+{% for parm, parmval in tplparms.items() %}
+	{{ parm }} = {{ parmval }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+

@@ -98,9 +98,9 @@ use_hdparm:
 
 # Settings for a drive using its persistent UUID (recommended)
 # hdparm_drives:
-#   - /dev/disk/by-uuid/your-drive-uuid:
-#       - apm: 127
-#       - spindown_time: 240
+#   /dev/disk/by-uuid/your-drive-uuid:
+#       apm: 127
+#       spindown_time: 240
 
 
 hdparm_drives: {}

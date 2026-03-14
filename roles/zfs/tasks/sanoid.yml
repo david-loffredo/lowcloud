@@ -1,0 +1,38 @@
+---
+#
+# Sanoid Configuration
+#
+# On Debian, sanoid is run by a timer that has a default period of
+# 15min.  It has been reported that this will wake drives so we may
+# want to change it to run at the max frequency of our snapshots.
+# 
+- name: sanoid installed 
+  package:
+    state: present
+    name: sanoid
+
+# no need to reload/restart service, reads config every time sanoid is
+# run by the timer.
+- name: sanoid configuration 
+  template: src={{ item }}.j2
+    dest=/etc/sanoid/{{ item }}
+    owner=root group=root mode='0644'
+  with_items:
+    - sanoid.conf 
+
+# Adjust systemd timer and reload if we want a custom period.
+- name: sanoid timer has custom period
+  lineinfile:
+    dest: /usr/lib/systemd/system/sanoid.timer
+    regexp: "^{{ item.key }}"
+    line: "{{ item.key }}={{ item.value }}"
+    state: present
+  loop: "{{ zfs_snapshot_timer | dict2items }}"
+  when: zfs_snapshot_timer | length > 0
+  register: sanoid_timer_state
+
+- name: reload systemd for sanoid timer
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: sanoid_timer_state.changed
+

@@ -14,16 +14,15 @@ example.com		ansible_host=1.2.3.4
 # and can be behind a residential ISP connection.
 guardian.example.com	ansible_host=5.6.7.8
 
+[nas]
+# ZFS-based file server, also running as a backup server, possibly
+# with a media server like jellyfin or plex,
+nas.example.com	     	ansible_host=13.14.15.16
+
 
 [webmail]
 # runs roundcube in a docker container on a standalone machine
 webmail.example.com	ansible_host=9.10.11.12
-
-
-[nas]
-# ZFS-based file server, possibly with a media server like jellyfin or
-# plex, also running as a backup server.
-nas.example.com	     	ansible_host=13.14.15.16
 
 
 
@@ -38,7 +37,7 @@ cloud
 
 #------------------------------
 # Machines running as a Bacula director.  Primarily anything in the
-# cloud or backup_server groups.
+# nas or backup_server groups.
 [bacula_director]
 
 [bacula_director:children]

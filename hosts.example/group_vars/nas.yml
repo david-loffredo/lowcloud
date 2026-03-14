@@ -5,6 +5,8 @@
 # use_autofs: yes
 
 firewall_services: [ 'samba' ]
+#firewall_services: [ 'web', 'samba', 'jellyfin', 'plex' ]
+
 
 # ZFS Filesystems
 #
@@ -32,13 +34,12 @@ zfs_pools:
 
 zfs_filesystems:
   # Common data for music, pictures, and movies
-  - name: tank/data
+  - name: tank/public
     properties:
-      mountpoint: /data
+      mountpoint: /public
       casesensitivity: mixed
 
-  # System data for like bacula backups of mail server, application
-  # state for jellyfin et al.
+  # System data for like bacula backups of mail server
   - name: tank/vault
     properties:
       mountpoint: /vault
@@ -48,6 +49,43 @@ zfs_filesystems:
   - name: tank/home
     properties:
       mountpoint: "{{ nas_home }}"
+
+# ZFS Snapshots -- keep snapshots, but dial back the frequency a bit.
+# Do not snapshot the Bacula backups, since they already carry a full
+# history.
+zfs_snapshot_policy:
+  tank/home:   { use_template: base }
+  tank/public: { use_template: base }
+  tank/vault:  { use_template: none }
+        
+zfs_snapshot_templates:
+  # for the bacula backups
+  none:
+    autosnap: no
+    
+  # use default frequency and retention
+  base:
+    autosnap: yes
+    autoprune: yes
+
+# Monitor smart status on these drives
+smartd_drives:
+  - /dev/disk/by-id/ata-BIGDRIVE1
+  - /dev/disk/by-id/ata-BIGDRIVE2
+  # boot drive
+  - /dev/disk/by-id/nvme-BOOTDRIVE
+  # zfs cache drive
+  - /dev/disk/by-id/nvme-FASTDRIVE
+
+
+# Allow hard drives to spin down in 20min
+hdparm_drives:
+  /dev/disk/by-id/ata-BIGDRIVE1
+    apm: 127
+    spindown_time: 240
+  /dev/disk/by-id/ata-BIGDRIVE2
+    apm: 127
+    spindown_time: 240
 
 
 samba_shares:
@@ -76,7 +114,7 @@ samba_shares:
 
   - name: data
     comment: Data Share
-    path: /data
+    path: /public
     browseable: true
     writable: true
     create mask: '0755'
@@ -93,7 +131,7 @@ samba_shares:
 
 # make everything on here owned by nas-data for simplicity
 nas_data_shares:
-  - /data
+  - /public
 
 
 # NAS users
@@ -106,3 +144,11 @@ nas_users:
     pw: "{{ vault_nas_someuser_pw }}"
     # home: /homenas/someuser   if want homedir elsewhere
     # smbonly: true             skip create unix acct
+
+
+# We install the bacula client on the director machine too, because we
+# need to back up our own file catalog, but we do not need the tunnel.
+bacula_client_tunnel: no
+
+
+    
