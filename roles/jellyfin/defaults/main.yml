@@ -11,7 +11,7 @@
 jellyfin_user:     jellyfin
 jellyfin_group:    jellyfin
 
-jellyfin_cfgdir:   /vault/jellyfin/config
+jellyfin_cfgdir:   /var/lib/jellyfin
 jellyfin_cachedir: /var/cache/jellyfin
 
 jellyfin_volumes:

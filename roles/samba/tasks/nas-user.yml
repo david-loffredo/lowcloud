@@ -27,6 +27,6 @@
 
 - name: "{{ nasuser.name }} create samba user"
   shell: >
-    (echo {{ nasuser.pw }}; echo {{ nasuser.pw }}) \
+    (echo "{{ nasuser.pw }}"; echo "{{ nasuser.pw }}") \
     | smbpasswd -s -a {{ nasuser.name }}
   when: user_exists.rc != 0

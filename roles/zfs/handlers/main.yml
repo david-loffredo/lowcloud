@@ -1,0 +1,6 @@
+---
+
+# This does not report changed, even if something changed
+- name: reload sanoid timer
+  ansible.builtin.systemd_service:
+    daemon_reload: true

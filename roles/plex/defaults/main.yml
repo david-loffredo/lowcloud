@@ -12,5 +12,5 @@ plex_user:     plex
 plex_group:    plex
 
 plex_libdir:   /data/media
-plex_cfgdir:   /vault/plex/config
+plex_cfgdir:   /var/lib/plex
 plex_transdir: /var/cache/plex

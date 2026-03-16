@@ -13,7 +13,13 @@
 
 # no need to reload/restart service, reads config every time sanoid is
 # run by the timer.
-- name: sanoid configuration 
+- name: sanoid config dir present
+  file: path={{ item }} state=directory
+    owner=root group=root mode='0755'
+  with_items:
+    - /etc/sanoid
+
+- name: sanoid configuration present
   template: src={{ item }}.j2
     dest=/etc/sanoid/{{ item }}
     owner=root group=root mode='0644'
@@ -29,10 +35,4 @@
     state: present
   loop: "{{ zfs_snapshot_timer | dict2items }}"
   when: zfs_snapshot_timer | length > 0
-  register: sanoid_timer_state
-
-- name: reload systemd for sanoid timer
-  ansible.builtin.systemd_service:
-    daemon_reload: true
-  when: sanoid_timer_state.changed
-
+  notify: reload sanoid timer
