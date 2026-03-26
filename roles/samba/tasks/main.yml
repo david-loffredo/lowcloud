@@ -36,4 +36,5 @@
     loop_var: nasuser
   when: nas_users | default([])
 
-
+# Only install if we specifically request wsdd
+- { include_tasks: wsdd.yml,        when: use_wsdd }

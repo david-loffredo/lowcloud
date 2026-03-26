@@ -181,6 +181,9 @@ firewall_opentcp_samba: [139, 445]
 firewall_openudp_smb: '{{ firewall_openudp_samba }}'
 firewall_opentcp_smb: '{{ firewall_opentcp_samba }}'
 
+firewall_openudp_wsdd: [3702, 5355]
+firewall_opentcp_wsdd: [3702, 5355]
+
 firewall_openudp_plex: [1900, 32410, 32412, 32413, 32414]
 firewall_opentcp_plex: [32400, 8324, 32469]
 

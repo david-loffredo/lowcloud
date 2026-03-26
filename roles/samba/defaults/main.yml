@@ -11,6 +11,7 @@ samba_global_defaults:
 # list of shares to create.  name, path, and comment in the top, any
 # other properties in the overflow.
 samba_shares:
+  # [homes] is a special section in the smb.conf
   - name: homes
     comment: Home Directories
     browseable: false
@@ -37,6 +38,9 @@ samba_shares:
    
 samba_share_defaults: {}
 
+# Set to true if you want Web Services Dynamic Discovery (WSDD)
+# Also add 'wsdd' to the firewall_services.
+use_wsdd: false
 
 # Common user/group for shared data
 nas_data_user:  nas-data
