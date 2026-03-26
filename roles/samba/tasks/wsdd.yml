@@ -1,0 +1,13 @@
+---
+# Debian 13 version
+# Web Services Dynamic Discovery (WSDD) 
+
+# wsdd needs firewall ports UDP 3702 and TCP 5355
+# add 'wsdd to firewall_services
+# wsdd2 package is C, wsdd is a python version
+
+- name: Web Services Dynamic Discovery packages are installed
+  package:
+    state: present
+    name:
+      - wsdd2
