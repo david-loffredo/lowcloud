@@ -21,13 +21,12 @@
 <div class=main>
 <H1>Background</H1>
 
-<p>A recent move of some mail and web from an in-house machine, where
-they had been for 25 years, to a VPS in the cloud, gave me a chance to
-look at the setup with fresh eyes.  The result is a familiar, modern
-pattern: virtual users, Postfix, Dovecot, and Apache on Debian, but
-with some differences in the details.  I also wanted to do the
-configuration entirely with Ansible.</p>
-
+<p>Late in 2019, I wanted to move some mail and web from an in-house
+machine, where they had been for 25 years, to a VPS in the cloud.
+This gave me a chance to look at the setup with fresh eyes.  The
+result is a familiar, modern pattern: virtual users, Postfix, Dovecot,
+and Apache on Debian, with some differences here and there.  I also
+wanted to do the configuration entirely with Ansible.</p>
 
 <p>All who lived through the dark times, when bits were hewn from the
 living rock and 640k was enough for anyone, developed a natural
@@ -35,13 +34,13 @@ aversion to waste.  Each package omitted means fewer things to
 understand, a smaller attack surface, and lower machine requirements.
 The <em>LowCloud</em> name is a reflection of this.</p>
 
-<p>For example, many people install MySQL, with 8.5 million lines of
-code, to return account names from a single static table with a dozen
-rows.  SQL does make the job easier, so we use SQLite, which is fast,
-has zero moving parts, and is easily secured with file
-permissions.</p>
+<p>For example, SQL is a nice way of handling virtual users, but many
+people install MySQL, with 8.5 million lines of code, just to return
+account names from a single static table with a dozen rows.  We use
+SQLite instead, which is fast, has zero moving parts, and is easily
+secured with file permissions.</p>
 
-<p>Rather than a mail administration client like postfixadmin, I put
+<p>Instead of a mail administration client like postfixadmin, I put
 together a perl script to handle the common tasks, like adding new
 accounts and changing passwords, from the command line.</p>
 
@@ -52,7 +51,7 @@ and user database, although you could apply it more broadly.
 <p>Backups also differ from common examples.  We use Bacula, and
 control the backups from a separate machine, ideally isolated behind a
 NATed firewall.  This was more difficult to develop Ansible roles for,
-but keeps your backups safe, even if the cloud machine is compromised.
+but your backups remain safe even if the cloud machine is compromised.
 
 <p>Following a recipe is quick, but does not lead to knowledge.  I've
 tried to document my choices and priorities here, so that you can

@@ -21,9 +21,9 @@
 
 <p>These playbooks set up two machines.  Typically, the mail and web
 server is in the cloud while backups are done by a machine that you
-physically control (old PC in a corner).  I have run the setup with a
-$5/mo cloud machine and a <a href="pizero.html">Raspberry Pi Zero</a>
-on a shelf.</p>
+physically control (old PC in a corner).  It doesn't take much
+horsepower. I ran this setup for five years with a $5/mo cloud machine
+and a <a href="pizero.html">Raspberry Pi Zero</a> on a shelf.</p>
 
 <!-- ============================== -->
 <H2 class=rule>
@@ -34,7 +34,7 @@ to all ports.  There are two ways to get this: your own hardware with
 a business class ISP connection, or someone else's hardware provided
 as a Virtual Private Server (VPS) in the cloud.  Residential ISP
 connections have a semi-dynamic IP address and block port 25, so they
-are unusable for a mail server.</p>
+are not usable for a mail server.</p>
 
 <p>There are many VPS providers.  In the USA, Linode (founded 2003),
 Amazon EC2 (launched 2006), Microsoft Azure (launched 2010),
@@ -54,19 +54,19 @@ bigger if you add other services, or a database-heavy dynamic website
 like Wordpress.  You can usually migrate to a larger instance later
 on.</p>
 
-<p>I use Linode and have found them to be well run and simple.  If you
+<p>I use Linode and have found them to be well-run and simple.  If you
 choose them, it would be nice if you signed up using
-<a href="https://www.linode.com/?r=e74c06bee7a764232b36ae63d0cebd3b8287fd4c">my
+<a href="https://www.linode.com/lp/refer/?r=e74c06bee7a764232b36ae63d0cebd3b8287fd4c">my
 referral code</a>.  They give me few bucks off my bill if you stick
-around for three months.
+around for three months.</p>
 
-<p>In any case, once you allocate a machine, verify that the IP
-address is not on any of the spam blacklists.  That would be the
-internet equivalent of like getting a telephone number that used to
-belong to a deadbeat.  Some cloud providers have had more problems
-than others in keeping their networks clean.  Many sites like
+<p>Once you have a machine, verify that the IP address is not on a
+spam blacklists.  That would be the internet equivalent of like
+getting a telephone number that used to belong to a deadbeat.  Some
+cloud providers have had more problems than others in keeping their
+networks clean.  Many sites like
 <a href="https://www.dnsbl.info">https://www.dnsbl.info</a>
-can check dozens of lists at once.
+can check dozens of lists at once.</p>
 
 
 
@@ -95,7 +95,8 @@ Bacula plugin, so you might be able to use this role as the starting
 point to configure that.</p>
 
 <p>When are building a new machine or adding disks, be sure to do
-adequate <a href="burnin.html">burn-in testing</a>.</p>
+adequate <a href="burnin.html">burn-in testing</a> to find any
+problems <b>before</b> you put it into service!</p>
 
 <figure>
 <img src="images/backup.jpg" alt="Backup Server">
