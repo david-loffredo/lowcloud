@@ -72,6 +72,16 @@ jellyfin_volumes:
   - "/data/media:/media"
 </PRE>
 
+<p>For hardware acceleration on Intel machines, set the following
+variables to pass through the necessary resources.  To set other GPUs,
+set <code>jellyfin_hwa_custom</code> to pass a freeform config string
+into the YAML.</p>
+
+<PRE class=code>
+jellyfin_hwa_groups:  "{{ jellyfin_hwa_groups_intel }}"
+jellyfin_hwa_devices: "{{ jellyfin_hwa_devices_intel }}"
+</PRE>
+
 <p>The Plex install has variables for cache, config, and a content
 volume.  This role is currently quite basic, as Plex has changed
 packaging to require an account for install</p>
@@ -86,11 +96,13 @@ plex_transdir: /var/cache/plex
 <H2 class=rule>
 <A NAME=why></A>Why These Packages?</H2>
 
-<p>I ran the Plex server on a Windows box for quite a few years, and
-was planning to do so on a NAS box when I discovered that they no
-longer let servers run completely standalone.  At that point I
-switched to Jellyfin, so the Plex role should be seen as more of a
-starting point than a finished install.</p>
+<p>I ran the Plex server on a Windows box for about ten years, and was
+planning to continue, but switched to Jellyfin when I discovered that
+Plex now requires an account.  I have been very happy with Jellyfin
+and have tested it with hardware acceleration on Intel. The Plex role
+should be seen as more of a starting point than a finished install. I
+use the official docker images, for both isolation and dependency
+management.</p>
 
 <figure>
 <img src="images/movietime.jpg" alt="Anytime Is Movie Time">

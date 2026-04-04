@@ -5,7 +5,13 @@ services:
     container_name: jellyfin
     image: jellyfin/jellyfin:latest
     pull_policy: always
-    user: {{ ansible_facts.getent_passwd[jellyfin_user].1}}:{{ ansible_facts.getent_group[jellyfin_group].1}}
+    user: "{{ ansible_facts.getent_passwd[jellyfin_user].1}}:{{ ansible_facts.getent_group[jellyfin_group].1}}"  # {{ jellyfin_user }} / {{ jellyfin_group }}
+{% if jellyfin_hwa_groups|length > 0 %}
+    group_add:
+{% for g in jellyfin_hwa_groups %}
+      - "{{ ansible_facts.getent_group[g].1}}"   # {{ g }}
+{% endfor -%}
+{% endif %}
     network_mode: bridge
     ports:
       - 8096:8096
@@ -13,7 +19,14 @@ services:
     volumes:
       - {{ jellyfin_cfgdir}}:/config
       - {{ jellyfin_cachedir}}:/cache
-{% for v in jellyfin_volumes %}            
+{% for v in jellyfin_volumes %}
       - {{ v }}
-{% endfor %}            
+{% endfor -%}
+{% if jellyfin_hwa_devices|length > 0 %}
+    devices:
+{% for d in jellyfin_hwa_devices %}
+      - {{ d }}
+{% endfor -%}
+{% endif %}
     restart: unless-stopped
+{{ jellyfin_hwa_custom }}

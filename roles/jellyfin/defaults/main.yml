@@ -21,3 +21,28 @@ jellyfin_volumes:
 #   source: /path/to/media2
 #   target: /media2
 #   read_only: true
+
+jellyfin_hwa_groups: []
+jellyfin_hwa_devices: []
+jellyfin_hwa_custom:
+
+# Appropriate settings for Intel 
+jellyfin_hwa_groups_intel:
+  - video
+  - render
+  
+jellyfin_hwa_devices_intel:
+  - "/dev/dri:/dev/dri"
+  
+# Not tested with NVIDIA, but docs say you need the
+# following in the config.  Set jellyfin_hwa_custom
+# to a string containing something like the following
+#
+#     runtime: nvidia
+#     deploy:
+#       resources:
+#         reservations:
+#           devices:
+#             - driver: nvidia
+#               count: all
+#               capabilities: [gpu]  
