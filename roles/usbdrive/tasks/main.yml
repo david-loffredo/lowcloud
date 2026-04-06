@@ -2,19 +2,22 @@
 # Install settings necessary to automount USB disks.  FAT32/vfat is
 # well supported, need extra packages for NTFS filesystems.
 
-- name: USB automount and NTFS installed
+# Automounting is handled by three components, a shell script to mount
+# and unmount, a systemd service to manage the mountpoint, and a udef
+# rule to trigger on device plug/unplug.
+
+- name: NTFS support installed
   package:
     state: present
     name:
-      - autofs
       - ntfs-3g
-
+      
 - name: media mount directory present
   file: path="{{ usbdrive_mountdir }}" state=directory
     owner=root group=root mode='0755'
 
-# Get lookup information if we
-# want to mount with uid=1000,gid=1000,umask=002
+# Get lookup information so that we can mount
+# with specific uid=1000,gid=1000,umask=002
 - name: Get usbdrive user info
   ansible.builtin.getent:
     database: passwd
@@ -25,14 +28,27 @@
     database: group
   when: usbdrive_group
 
-# install some custom configs so that it recognizes where we put
-# everything and in particular, the dateext log rotation.
-- name: autofs usb configs are installed
-  template: src=autofs/{{ item }}.j2
-    dest=/etc/auto.master.d/{{ item }}
+- name: usb-mount script installed
+  template: src={{ item }}.j2
+    dest=/usr/local/sbin/{{ item }}
+    owner=root group=root mode='0755'
+  with_items:
+    - usb-mount.sh
+
+- name: usb-mount service installed
+  copy: src={{ item }}
+    dest=/etc/systemd/system/{{ item }}
     owner=root group=root mode='0644'
   with_items:
-    - auto.usb
-    - usb.autofs
+    - usb-mount@.service
   notify:
-    - restart autofs
+    - reload usb-mount service
+
+- name: usb-mount udev rules installed
+  copy: src={{ item }}
+    dest=/etc/udev/rules.d/{{ item }}
+    owner=root group=root mode='0644'
+  with_items:
+    - 99-local.rules
+  notify:
+    - reload udev rules

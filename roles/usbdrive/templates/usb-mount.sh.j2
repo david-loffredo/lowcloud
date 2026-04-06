@@ -1,0 +1,63 @@
+#!/bin/bash
+ACTION=$1
+DEVBASE=$2
+DEVICE="/dev/${DEVBASE}"
+
+# See if this drive is already mounted
+MOUNT_POINT=$(/bin/mount | /bin/grep ${DEVICE} | /usr/bin/awk '{ print $3 }')
+
+if [ "${ACTION}" == "add" ]; then
+   if [ -n "${MOUNT_POINT}" ]; then exit 1; fi          # Already mounted, exit
+
+   TYPE="auto"
+   
+   # Get info for this drive: $LABEL and $TYPE
+   eval $(/sbin/blkid -o export ${DEVICE})
+   case "$TYPE" in
+
+       vfat)  TYPE="vfat"
+              OPTS="rw,{{ usbdrive_sync }},noatime
+{%- if usbdrive_user -%}
+,uid={{ ansible_facts.getent_passwd[usbdrive_user].1}}
+{%- endif -%}
+{%- if usbdrive_group -%}
+,gid={{ ansible_facts.getent_group[usbdrive_group].1}}
+{%- endif -%}
+{%- if usbdrive_umask -%}
+,umask={{ usbdrive_umask }}
+{%- endif %}"
+              ;;
+
+       ntfs)  OPTS="rw,{{ usbdrive_sync }},noatime
+{%- if usbdrive_user -%}
+,uid={{ ansible_facts.getent_passwd[usbdrive_user].1}}
+{%- endif -%}
+{%- if usbdrive_group -%}
+,gid={{ ansible_facts.getent_group[usbdrive_group].1}}
+{%- endif -%}
+{%- if usbdrive_umask -%}
+,umask={{ usbdrive_umask }}
+{%- endif %}"
+              ;;
+
+       *)     OPTS="rw,{{ usbdrive_sync }},noatime"
+              ;;
+   esac
+
+   # create mountpoint if it does not exist
+   if [ ! -e "{{ usbdrive_mountdir }}/${LABEL}" ]; then mkdir "{{ usbdrive_mountdir }}/${LABEL}"; fi
+
+   # check for error during mount
+   if ! /bin/mount -t ${TYPE} -o ${OPTS} ${DEVICE} "{{ usbdrive_mountdir }}/${LABEL}"; then exit 1; fi
+   exit 0
+fi
+
+
+if [ "${ACTION}" == "remove" ]; then
+   if [ -n "${MOUNT_POINT}" ]; then
+      if ! /bin/umount -l ${DEVICE}; then exit 1; fi
+      if [ -e "${MOUNT_POINT}" ]; then rmdir "${MOUNT_POINT}"; fi
+   fi
+   exit 0
+fi
+

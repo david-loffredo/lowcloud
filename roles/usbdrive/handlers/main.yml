@@ -1,6 +1,12 @@
 ---
-# Defines handlers applicable across all machines in the infrastructure.
 
-- name: restart autofs
-  service: name=autofs state=restarted
+# This does not report changed, even if something changed
+- name: reload usb-mount service
+  ansible.builtin.systemd_service:
+    daemon_reload: true
 
+- name: reload udev rules
+  ansible.builtin.command:
+    cmd: "udevadm control --reload-rules"
+    
+    
