@@ -37,14 +37,17 @@ you can see where temperatures stabilize.</p>
 </PRE>
 
 <p>The first phase of testing drives is to run the SMART tests.  First
-run a short self-test, followed by a conveyance test.  These should
-only take a few minutes to complete.  Then finally, run the long test,
-which will take quite some time to complete.
+run a short self-test, followed by a conveyance test.  These only take
+a few minutes to complete.  Finally, run the long test, which will
+take quite some time to complete.</p>
 
 <PRE class=code>
-% smartctl -t short /dev/adaX
-% smartctl -t conveyance /dev/adaX
-% smartctl -t long /dev/adaX
+% smartctl -t short /dev/sdX
+% smartctl -t conveyance /dev/sdX
+% smartctl -t long /dev/sdX
+
+% smartctl -l selftest /dev/sdX   # print test results
+% smartctl -l scttemp /dev/sdX    # print temperature history
 </PRE>
 
 <p>If the drive is not in service yet, use <code>badblocks</code> to
@@ -63,16 +66,16 @@ For drives larger than 2TB, it may be necessary to specify a larger
 block size for the test.</p>
 
 <PRE class=code>
-% badblocks -ws /dev/adaX
-% badblocks -b 4096 -ws /dev/adaX   # bigger block size
-% badblocks -b 8192 -ws /dev/daX    # for +14TB
+% badblocks -ws /dev/sdX
+% badblocks -b 4096 -ws /dev/sdX   # bigger block size
+% badblocks -b 8192 -ws /dev/sdX    # for +14TB
 </PRE>
 
 <p>When done, assuming everything completed successfully, get a SMART
 report and look for anything unusual in the RAW VALUE results.</p>
 
 <PRE class=code>
-% smartctl -A /dev/adaX
+% smartctl -A /dev/sdX
 </PRE>
 
 
