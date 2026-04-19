@@ -58,7 +58,7 @@
     - { role: zfs, tags: zfs }
     - { role: samba, tags: samba }
     - { role: usbdrive, tags: usbdrive }
-    - { role: media-srv, tags: media-srv }
+    - { role: media-srv, tags: [media-srv, jellyfin, plex] }
     - { role: bacula-director, tags: bacula-director }
 
     

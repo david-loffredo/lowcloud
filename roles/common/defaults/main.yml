@@ -70,12 +70,13 @@ use_smartctl:
 smartd_drives: []
 smartd_extra_scanlines: []
 
-# Monitor all attributes, enable automatic online data collection,
-# automatic Attribute autosave, and start a short self-test every day
-# between 2-3am, and a long self test Saturdays between 3-4am.
+# The default settings monitor all attributes, do automatic data
+# collection, automatic attribute autosave, short self-test daily
+# between 2-3am, and long self-test Saturdays between 3-4am.  For big
+# disks, consider changing long to monthly like "L/../05/./03", which
+# runs on the fifth day of every month at 3am.
 smartd_scan_opts: 
   "-a -o on -S on -s (S/../.././02|L/../../6/03) -m {{ admin_email }} -M test"
-
 
 # -H display the health status as reported by the device
 # -l error show the increase in the number of SMART errors since last check

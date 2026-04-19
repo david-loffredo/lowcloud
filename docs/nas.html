@@ -132,16 +132,25 @@ modify it with the <code>zfs_snapshot_timer</code> variable.</p>
 
 <p>Enable SMART monitoring on disks by listing them in the
 <code>smartd_drives</code> variable.  If set, smartmontools is
-installed and smard.conf is created.  It will set up periodic short
-and long testing with email to the admin address.  You can customize
-the checks by setting <code>smartd_scan_opts</code>, or
-set <code>smartd_extra_scanlines</code> to put your own freeform lines
-into the config file.
+installed and smard.conf is created with periodic short and long
+testing for each drive with email to the admin address.  It does the
+short test nightly and long test once per week.  A long test can take
+two days on a 20+T drive, so you may want to customize the checks by
+setting <code>smartd_scan_opts</code>, or put your own freeform lines
+into the config file by setting <code>smartd_extra_scanlines</code>.
 
 <PRE class=code>
 smartd_drives: 
   - /dev/disk/by-id/ata-BIGDRIVE1
   - /dev/disk/by-id/ata-BIGDRIVE2
+
+<i># The default settings monitor all attributes, do automatic data
+# collection, automatic attribute autosave, short self-test daily
+# between 2-3am, and long self-test Saturdays between 3-4am.  For big
+# disks, consider changing long to monthly like "L/../05/./03", which
+# runs on the fifth day of every month at 3am.</i>
+smartd_scan_opts: 
+  "-a -o on -S on -s (S/../.././02|L/../../6/03) -m {{ admin_email }} -M test"
 </PRE>
 
 <p>Set power management and spindown time for your HDDs with
