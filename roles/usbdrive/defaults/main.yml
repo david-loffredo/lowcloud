@@ -7,9 +7,10 @@
 # Drives will be automounted by label under here
 usbdrive_mountdir: /media
 
-# change to async for faster performance, but must umount before
-# removing it.
-usbdrive_sync: sync
+# async is the faster default, but should umount before removing.
+# sync is way slower, but more tolerant of removal.
+usbdrive_sync: async
+#usbdrive_sync: sync
 
 # Mount vfat/ntfs as the following if desired
 usbdrive_user:
